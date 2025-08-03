@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ArrowLeft, Edit, Trash2, Phone, Calendar, Clock, MapPin, User, FileText, Bell, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Phone, Calendar, Clock, User, FileText, Bell, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { Appointment } from '@/types/appointment'
 
 interface AppointmentDetailProps {
@@ -33,7 +33,7 @@ export default function AppointmentDetail({
         return 'bg-green-100 text-green-800 border-green-200'
       case 'cancelled':
         return 'bg-red-100 text-red-800 border-red-200'
-      case 'no-show':
+      case 'no_show':
         return 'bg-gray-100 text-gray-800 border-gray-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
@@ -50,7 +50,7 @@ export default function AppointmentDetail({
         return '완료됨'
       case 'cancelled':
         return '취소됨'
-      case 'no-show':
+      case 'no_show':
         return '노쇼'
       default:
         return '알 수 없음'
@@ -62,7 +62,7 @@ export default function AppointmentDetail({
       case 'completed':
         return <CheckCircle className="w-5 h-5 text-green-600" />
       case 'cancelled':
-      case 'no-show':
+      case 'no_show':
         return <XCircle className="w-5 h-5 text-red-600" />
       case 'confirmed':
         return <CheckCircle className="w-5 h-5 text-blue-600" />
@@ -75,14 +75,12 @@ export default function AppointmentDetail({
     switch (type) {
       case 'consultation':
         return '상담'
-      case 'checkup':
-        return '검진'
-      case 'follow-up':
+      case 'follow_up':
         return '재진'
-      case 'weight-check':
-        return '체중 측정'
-      case 'diet-consultation':
-        return '식단 상담'
+      case 'initial':
+        return '초진'
+      case 'emergency':
+        return '응급'
       default:
         return '상담'
     }
@@ -218,20 +216,20 @@ export default function AppointmentDetail({
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
                 <span className="text-xl font-bold text-blue-600">
-                  {appointment.patientName.charAt(0)}
+                  {appointment.customerName.charAt(0)}
                 </span>
               </div>
               <div>
-                <h4 className="text-xl font-semibold text-gray-900">{appointment.patientName}</h4>
+                <h4 className="text-xl font-semibold text-gray-900">{appointment.customerName}</h4>
                 <div className="flex items-center space-x-4 mt-2">
                   <div className="flex items-center text-gray-600">
                     <Phone className="w-4 h-4 mr-2" />
-                    <a href={`tel:${appointment.patientPhone}`} className="hover:text-blue-600 transition-colors">
-                      {appointment.patientPhone}
+                    <a href={`tel:${appointment.customerPhone}`} className="hover:text-blue-600 transition-colors">
+                      {appointment.customerPhone}
                     </a>
                   </div>
                   <span className="text-gray-400">•</span>
-                  <span className="text-gray-600">ID: {appointment.patientId}</span>
+                  <span className="text-gray-600">ID: {appointment.customerId}</span>
                 </div>
               </div>
             </div>
@@ -267,16 +265,6 @@ export default function AppointmentDetail({
                   {getTypeText(appointment.type)}
                 </span>
               </div>
-
-              {appointment.location && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">장소</label>
-                  <div className="flex items-center text-gray-900">
-                    <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                    {appointment.location}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
@@ -289,6 +277,19 @@ export default function AppointmentDetail({
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-gray-900 whitespace-pre-wrap">{appointment.notes}</p>
+              </div>
+            </div>
+          )}
+
+          {/* 증상 */}
+          {appointment.symptoms && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center space-x-2 mb-4">
+                <FileText className="w-5 h-5 text-orange-600" />
+                <h3 className="text-lg font-semibold text-gray-900">증상</h3>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-900 whitespace-pre-wrap">{appointment.symptoms}</p>
               </div>
             </div>
           )}
@@ -337,7 +338,7 @@ export default function AppointmentDetail({
               
               {appointment.status === 'confirmed' && appointmentPast && (
                 <button
-                  onClick={() => onUpdateStatus('no-show')}
+                  onClick={() => onUpdateStatus('no_show')}
                   className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
                 >
                   노쇼 처리
@@ -356,12 +357,10 @@ export default function AppointmentDetail({
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-700">SMS 알림</span>
-                <span className={`text-sm ${appointment.reminderSent ? 'text-green-600' : 'text-gray-500'}`}>
-                  {appointment.reminderSent ? '발송됨' : '미발송'}
-                </span>
+                <span className="text-sm text-gray-500">미발송</span>
               </div>
               
-              {!appointment.reminderSent && appointment.status !== 'cancelled' && (
+              {appointment.status !== 'cancelled' && (
                 <button
                   onClick={onSendReminder}
                   className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
@@ -415,7 +414,7 @@ export default function AppointmentDetail({
             </div>
             
             <p className="text-gray-700 mb-6">
-              <strong>{appointment.patientName}</strong>님의 {formatDate(appointment.date)} {formatTime(appointment.time)} 예약을 삭제하시겠습니까?
+              <strong>{appointment.customerName}</strong>님의 {formatDate(appointment.date)} {formatTime(appointment.time)} 예약을 삭제하시겠습니까?
             </p>
             
             <div className="flex items-center justify-end space-x-3">
