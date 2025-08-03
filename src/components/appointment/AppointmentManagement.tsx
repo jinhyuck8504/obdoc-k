@@ -240,6 +240,10 @@ export default function AppointmentManagement() {
         onEdit={() => handleEditAppointment(selectedAppointment)}
         onDelete={() => handleDeleteAppointment(selectedAppointment.id)}
         onUpdateStatus={(status) => handleUpdateStatus(selectedAppointment.id, status)}
+        onSendReminder={() => {
+          // TODO: 알림 발송 기능 구현
+          alert('알림이 발송되었습니다.')
+        }}
       />
     )
   }
