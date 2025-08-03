@@ -50,8 +50,8 @@ export default function AppointmentManagement() {
     // 검색 필터
     if (filters.search) {
       filtered = filtered.filter(appointment =>
-        appointment.patientName.toLowerCase().includes(filters.search!.toLowerCase()) ||
-        appointment.patientPhone.includes(filters.search!) ||
+        appointment.customerName.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        appointment.customerPhone.includes(filters.search!) ||
         appointment.notes?.toLowerCase().includes(filters.search!.toLowerCase()) ||
         appointment.symptoms?.toLowerCase().includes(filters.search!.toLowerCase())
       )
@@ -103,9 +103,9 @@ export default function AppointmentManagement() {
           aValue = new Date(`${a.date}T${a.time}`)
           bValue = new Date(`${b.date}T${b.time}`)
           break
-        case 'patient':
-          aValue = a.patientName
-          bValue = b.patientName
+        case 'customer':
+          aValue = a.customerName
+          bValue = b.customerName
           break
         case 'type':
           aValue = a.type
@@ -335,7 +335,7 @@ export default function AppointmentManagement() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="환자명, 전화번호, 메모로 검색"
+              placeholder="고객명, 전화번호, 메모로 검색"
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -391,7 +391,7 @@ export default function AppointmentManagement() {
             >
               <option value="date-asc">날짜 (빠른순)</option>
               <option value="date-desc">날짜 (늦은순)</option>
-              <option value="patient-asc">환자명 (가나다순)</option>
+              <option value="customer-asc">고객명 (가나다순)</option>
               <option value="status-asc">상태순</option>
             </select>
           </div>
