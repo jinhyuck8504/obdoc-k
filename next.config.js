@@ -2,13 +2,12 @@
 const nextConfig = {
   // 성능 최적화 설정
   experimental: {
-    // 앱 디렉토리 사용
-    appDir: true,
-    // 서버 컴포넌트 최적화
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
     // 메모리 사용량 최적화
     optimizePackageImports: ['lucide-react', 'date-fns'],
   },
+
+  // 서버 외부 패키지 설정 (experimental에서 이동)
+  serverExternalPackages: ['@supabase/supabase-js'],
 
   // 이미지 최적화
   images: {
