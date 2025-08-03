@@ -3,15 +3,11 @@ import React, { useState, useEffect } from 'react'
 import { 
   Building2, 
   User, 
-  Phone, 
-  Mail, 
   CreditCard,
-  MapPin,
   FileText,
   Edit,
   Save,
   X,
-  Check,
   AlertTriangle
 } from 'lucide-react'
 import { BillingInfo } from '@/types/invoice'
@@ -74,8 +70,8 @@ export default function BillingInfoManager({ doctorId, onClose }: BillingInfoMan
       
       // 더미 데이터로 업데이트
       const updatedInfo: BillingInfo = {
-        id: billingInfo?.id || `billing-${Date.now()}`,
         ...formData as BillingInfo,
+        id: billingInfo?.id || `billing-${Date.now()}`,
         createdAt: billingInfo?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
