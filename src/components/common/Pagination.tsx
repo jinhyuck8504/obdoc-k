@@ -186,7 +186,7 @@ export function usePagination(
   }, [])
 
   // 현재 페이지의 데이터 범위 계산
-  const getPageData = React.useCallback(<T>(data: T[]): T[] => {
+  const getPageData = React.useCallback((data: any[]): any[] => {
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
     return data.slice(startIndex, endIndex)
