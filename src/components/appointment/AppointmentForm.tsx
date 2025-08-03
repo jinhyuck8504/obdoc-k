@@ -75,7 +75,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
         
         // TODO: 실제로는 기존 예약과 비교해서 available 결정
         const isAvailable = Math.random() > 0.3 // 임시로 랜덤하게 설정
-        const isCurrentAppointmentTime = appointment?.time === timeString
+        const isCurrentAppointmentTime = Boolean(appointment?.time === timeString)
         
         slots.push({
           time: timeString,
