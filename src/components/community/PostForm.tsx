@@ -10,6 +10,14 @@ interface PostFormProps {
   initialData?: Partial<PostFormData>
 }
 
+interface FormErrors {
+  title?: string
+  content?: string
+  category?: string
+  tags?: string
+  image?: string
+}
+
 export default function PostForm({ isOpen, onClose, onSave, initialData }: PostFormProps) {
   const [formData, setFormData] = useState<PostFormData>({
     title: initialData?.title || '',
@@ -18,13 +26,13 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
     tags: initialData?.tags || [],
     image: initialData?.image
   })
-  const [errors, setErrors] = useState<Partial<PostFormData>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tagInput, setTagInput] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<PostFormData> = {}
+    const newErrors: FormErrors = {}
 
     if (!formData.title.trim()) {
       newErrors.title = '제목을 입력해주세요'
@@ -77,7 +85,7 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
   const handleInputChange = (field: keyof PostFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
