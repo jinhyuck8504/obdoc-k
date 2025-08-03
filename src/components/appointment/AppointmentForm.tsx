@@ -26,6 +26,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
     }
     fetchCustomers()
   }, [])
+
   const [formData, setFormData] = useState<AppointmentFormData>({
     customerId: '',
     date: '',
@@ -44,7 +45,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
   useEffect(() => {
     if (appointment) {
       setFormData({
-        patientId: appointment.patientId,
+        customerId: appointment.customerId,
         date: appointment.date,
         time: appointment.time,
         duration: appointment.duration,
@@ -88,8 +89,8 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
   const validateForm = (): boolean => {
     const newErrors: Partial<AppointmentFormData> = {}
 
-    if (!formData.patientId) {
-      newErrors.patientId = '환자를 선택해주세요'
+    if (!formData.customerId) {
+      newErrors.customerId = '환자를 선택해주세요'
     }
 
     if (!formData.date) {
@@ -158,7 +159,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
     }
   }
 
-  const selectedPatient = patients.find(p => p.id === formData.patientId)
+  const selectedCustomer = customers.find(c => c.id === formData.customerId)
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -196,32 +197,32 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
                 환자 <span className="text-red-500">*</span>
               </label>
               <select
-                value={formData.patientId}
-                onChange={(e) => handleInputChange('patientId', e.target.value)}
+                value={formData.customerId}
+                onChange={(e) => handleInputChange('customerId', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.patientId ? 'border-red-500' : 'border-gray-300'
+                  errors.customerId ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
                 <option value="">환자를 선택하세요</option>
-                {patients.map(patient => (
-                  <option key={patient.id} value={patient.id}>
-                    {patient.name} ({patient.phone})
+                {customers.map(customer => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name} ({customer.phone})
                   </option>
                 ))}
               </select>
-              {errors.patientId && (
-                <p className="mt-1 text-sm text-red-600">{errors.patientId}</p>
+              {errors.customerId && (
+                <p className="mt-1 text-sm text-red-600">{errors.customerId}</p>
               )}
             </div>
 
-            {selectedPatient && (
+            {selectedCustomer && (
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h3 className="font-medium text-blue-900 mb-2">선택된 환자 정보</h3>
                 <div className="space-y-1 text-sm text-blue-800">
-                  <p><strong>이름:</strong> {selectedPatient.name}</p>
-                  <p><strong>전화번호:</strong> {selectedPatient.phone}</p>
-                  <p><strong>현재 체중:</strong> {selectedPatient.currentWeight}kg</p>
-                  <p><strong>상태:</strong> {selectedPatient.status === 'active' ? '진행중' : '비활성'}</p>
+                  <p><strong>이름:</strong> {selectedCustomer.name}</p>
+                  <p><strong>전화번호:</strong> {selectedCustomer.phone}</p>
+                  <p><strong>현재 체중:</strong> {selectedCustomer.currentWeight}kg</p>
+                  <p><strong>상태:</strong> {selectedCustomer.status === 'active' ? '진행중' : '비활성'}</p>
                 </div>
               </div>
             )}
@@ -358,7 +359,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
         </div>
 
         {/* 예약 요약 */}
-        {formData.patientId && formData.date && formData.time && (
+        {formData.customerId && formData.date && formData.time && (
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 p-6">
             <div className="flex items-center space-x-2 mb-4">
               <AlertCircle className="w-5 h-5 text-blue-600" />
@@ -367,8 +368,8 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-blue-700"><strong>환자:</strong> {selectedPatient?.name}</p>
-                <p className="text-blue-700"><strong>전화번호:</strong> {selectedPatient?.phone}</p>
+                <p className="text-blue-700"><strong>환자:</strong> {selectedCustomer?.name}</p>
+                <p className="text-blue-700"><strong>전화번호:</strong> {selectedCustomer?.phone}</p>
               </div>
               <div>
                 <p className="text-blue-700"><strong>날짜:</strong> {new Date(formData.date).toLocaleDateString('ko-KR')}</p>
