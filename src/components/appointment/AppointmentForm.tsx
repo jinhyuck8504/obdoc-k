@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { ArrowLeft, Save, X, Calendar, Clock, User, FileText, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Save, X, Calendar, User, FileText, AlertCircle } from 'lucide-react'
 import { Appointment, AppointmentFormData, TimeSlot } from '@/types/appointment'
 import { Customer } from '@/types/customer'
 import { customerService } from '@/lib/customerService'
@@ -61,9 +61,9 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
     if (formData.date) {
       generateTimeSlots(formData.date)
     }
-  }, [formData.date])
+  }, [formData.date, appointment])
 
-  const generateTimeSlots = (date: string) => {
+  const generateTimeSlots = (selectedDate: string) => {
     const slots: TimeSlot[] = []
     const startHour = 9
     const endHour = 18
@@ -75,10 +75,11 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
         
         // TODO: 실제로는 기존 예약과 비교해서 available 결정
         const isAvailable = Math.random() > 0.3 // 임시로 랜덤하게 설정
+        const isCurrentAppointmentTime = appointment?.time === timeString
         
         slots.push({
           time: timeString,
-          available: isAvailable || (appointment && appointment.time === timeString)
+          available: isAvailable || isCurrentAppointmentTime
         })
       }
     }
@@ -159,7 +160,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
     }
   }
 
-  const selectedCustomer = customers.find(c => c.id === formData.customerId)
+  const selectedCustomer = customers.find((customer: Customer) => customer.id === formData.customerId)
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -204,7 +205,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
                 }`}
               >
                 <option value="">환자를 선택하세요</option>
-                {customers.map(customer => (
+                {customers.map((customer: Customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.name} ({customer.phone})
                   </option>
