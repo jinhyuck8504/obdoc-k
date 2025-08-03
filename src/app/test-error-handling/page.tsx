@@ -262,7 +262,7 @@ export default function TestErrorHandlingPage() {
               <Button onClick={testNetworkError} variant="outline" size="sm" className="w-full">
                 네트워크 오류
               </Button>
-              <Button onClick={testErrorBoundary} variant="destructive" size="sm" className="w-full">
+              <Button onClick={testErrorBoundary} variant="danger" size="sm" className="w-full">
                 ErrorBoundary 테스트
               </Button>
             </div>
