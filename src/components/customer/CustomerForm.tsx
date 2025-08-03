@@ -11,6 +11,25 @@ interface CustomerFormProps {
   onCancel: () => void
 }
 
+interface FormErrors {
+  name?: string
+  email?: string
+  phone?: string
+  birthDate?: string
+  gender?: string
+  height?: string
+  initialWeight?: string
+  currentWeight?: string
+  targetWeight?: string
+  address?: string
+  medicalHistory?: string
+  allergies?: string
+  medications?: string
+  emergencyContactName?: string
+  emergencyContactPhone?: string
+  emergencyContactRelationship?: string
+}
+
 export default function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) {
   const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
@@ -31,7 +50,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
     emergencyContactRelationship: ''
   })
 
-  const [errors, setErrors] = useState<Partial<CustomerFormData>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 수정 모드일 때 기존 데이터 로드
@@ -59,7 +78,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
   }, [customer])
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CustomerFormData> = {}
+    const newErrors: FormErrors = {}
 
     // 필수 필드 검증
     if (!formData.name.trim()) {
@@ -135,7 +154,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
