@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Edit, Trash2, Eye, Phone, Calendar, Clock, MapPin, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Edit, Trash2, Eye, Phone, Calendar, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EmptyState from '@/components/common/EmptyState'
 import { Appointment } from '@/types/appointment'
@@ -184,12 +184,12 @@ export default function AppointmentList({
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <span className="text-sm font-medium text-blue-600">
-                        {appointment.patientName.charAt(0)}
+                        {appointment.customerName.charAt(0)}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{appointment.patientName}</p>
-                      <p className="text-sm text-gray-600">ID: {appointment.patientId}</p>
+                      <p className="font-medium text-gray-900">{appointment.customerName}</p>
+                      <p className="text-sm text-gray-600">ID: {appointment.customerId}</p>
                     </div>
                   </div>
                 </div>
@@ -216,12 +216,6 @@ export default function AppointmentList({
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(appointment.type)}`}>
                       {getTypeText(appointment.type)}
                     </span>
-                    {appointment.location && (
-                      <div className="flex items-center text-xs text-gray-600">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {appointment.location}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -278,18 +272,13 @@ export default function AppointmentList({
                   <div className="flex items-center text-sm text-gray-600">
                     <Phone className="w-3 h-3 mr-1" />
                     <a 
-                      href={`tel:${appointment.patientPhone}`}
+                      href={`tel:${appointment.customerPhone}`}
                       onClick={(e) => e.stopPropagation()}
                       className="hover:text-blue-600 transition-colors"
                     >
-                      {appointment.patientPhone}
+                      {appointment.customerPhone}
                     </a>
                   </div>
-                  {appointment.reminderSent && (
-                    <div className="text-xs text-green-600 mt-1">
-                      ✓ 알림 발송됨
-                    </div>
-                  )}
                 </div>
 
                 {/* 액션 */}
