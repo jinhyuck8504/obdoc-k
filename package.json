@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
+    "@netlify/functions": "^2.8.1",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.52.1",
     "chart.js": "^4.5.0",
