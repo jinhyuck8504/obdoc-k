@@ -1,7 +1,6 @@
 [build]
-  base = "obdoc-mvp"
-  publish = "obdoc-mvp/.next"
-  command = "cd obdoc-mvp && npm run build"
+  publish = ".next"
+  command = "npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -53,7 +52,7 @@
 
 # Functions configuration
 [functions]
-  directory = "obdoc-mvp/netlify/functions"
+  directory = "netlify/functions"
   node_bundler = "esbuild"
 
 # Plugin configuration
@@ -62,21 +61,21 @@
 
 # Environment-specific settings
 [context.production]
-  command = "cd obdoc-mvp && npm run build"
+  command = "npm run build"
   
 [context.production.environment]
   NODE_ENV = "production"
   NEXT_TELEMETRY_DISABLED = "1"
 
 [context.deploy-preview]
-  command = "cd obdoc-mvp && npm run build"
+  command = "npm run build"
   
 [context.deploy-preview.environment]
   NODE_ENV = "preview"
   NEXT_TELEMETRY_DISABLED = "1"
 
 [context.branch-deploy]
-  command = "cd obdoc-mvp && npm run build"
+  command = "npm run build"
   
 [context.branch-deploy.environment]
   NODE_ENV = "development"
