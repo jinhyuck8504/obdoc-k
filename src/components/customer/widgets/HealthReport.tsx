@@ -1,12 +1,138 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { TrendingDown, TrendingUp, Target, Weight, Calendar, Award, Plus, Edit, Trash2, BarChart3, Activity } from 'lucide-react'
-import { WeightRecord, HealthMetrics, WeightFormData, GoalFormData } from '@/types/health'
-import { getWeightRecords, getWeightChange, addWeightRecord, updateWeightRecord, deleteWeightRecord, updateWeightGoal } from '@/lib/healthService'
-import WeightInputModal from '../WeightInputModal'
-import GoalSettingModal from '../GoalSettingModal'
-import WeightChart from '../charts/WeightChart'
-import BMIIndicator from '../charts/BMIIndicator'
+
+// 임시 타입 정의 (healthService가 없으므로)
+interface WeightRecord {
+  id: string
+  weight: number
+  date: string
+  note?: string
+}
+
+interface HealthMetrics {
+  currentWeight: number
+  targetWeight: number
+  initialWeight: number
+  weightLoss: number
+  progress: number
+  remainingWeight: number
+  bmi: number
+  targetBMI: number
+  height: number
+}
+
+interface WeightFormData {
+  weight: number
+  date: string
+  note?: string
+}
+
+interface GoalFormData {
+  targetWeight: number
+  targetDate?: string
+}
+
+// 임시 서비스 함수들 (healthService가 없으므로)
+const getWeightRecords = async (customerId: string): Promise<WeightRecord[]> => {
+  // 임시 더미 데이터
+  return [
+    { id: '1', weight: 70, date: new Date().toISOString(), note: '시작 체중' },
+    { id: '2', weight: 69.5, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), note: '1주차' },
+    { id: '3', weight: 69, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), note: '2주차' }
+  ]
+}
+
+const getWeightChange = (records: WeightRecord[], days: number) => {
+  if (records.length < 2) return { change: 0, trend: 'stable' as const }
+  
+  const recent = records[records.length - 1]
+  const previous = records[records.length - 2]
+  const change = recent.weight - previous.weight
+  
+  return {
+    change: Math.abs(change),
+    trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'stable' as const
+  }
+}
+
+const addWeightRecord = async (customerId: string, data: WeightFormData): Promise<void> => {
+  console.log('체중 기록 추가:', customerId, data)
+}
+
+const updateWeightRecord = async (recordId: string, data: WeightFormData): Promise<void> => {
+  console.log('체중 기록 수정:', recordId, data)
+}
+
+const deleteWeightRecord = async (recordId: string): Promise<void> => {
+  console.log('체중 기록 삭제:', recordId)
+}
+
+const updateWeightGoal = async (customerId: string, data: GoalFormData): Promise<void> => {
+  console.log('목표 체중 수정:', customerId, data)
+}
+
+// 임시 컴포넌트들
+const WeightInputModal = ({ isOpen, onClose, onSave, initialData }: any) => {
+  if (!isOpen) return null
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-96">
+        <h3 className="text-lg font-semibold mb-4">체중 기록</h3>
+        <p className="text-gray-600 mb-4">체중 입력 기능은 준비 중입니다.</p>
+        <button
+          onClick={onClose}
+          className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const GoalSettingModal = ({ isOpen, onClose, onSave, currentMetrics }: any) => {
+  if (!isOpen) return null
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-96">
+        <h3 className="text-lg font-semibold mb-4">목표 설정</h3>
+        <p className="text-gray-600 mb-4">목표 설정 기능은 준비 중입니다.</p>
+        <button
+          onClick={onClose}
+          className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const WeightChart = ({ records, targetWeight, initialWeight, height }: any) => {
+  return (
+    <div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg">
+      <div className="text-center">
+        <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-600">체중 차트 기능은 준비 중입니다.</p>
+      </div>
+    </div>
+  )
+}
+
+const BMIIndicator = ({ currentBMI, targetBMI, height, currentWeight, targetWeight }: any) => {
+  return (
+    <div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg">
+      <div className="text-center">
+        <Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-600">BMI 지표 기능은 준비 중입니다.</p>
+        <p className="text-sm text-gray-500 mt-2">현재 BMI: {currentBMI?.toFixed(1) || 'N/A'}</p>
+      </div>
+    </div>
+  )
+}
 
 interface HealthReportProps {
   customerId: string
@@ -417,8 +543,6 @@ export default function HealthReport({
             </div>
           </>
         )}
-
-
       </div>
 
       {/* 모달들 */}
