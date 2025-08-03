@@ -13,7 +13,7 @@ import {
   LineElement,
   PointElement,
 } from 'chart.js'
-import { Bar, Line } from 'react-chartjs-2'
+import { Chart } from 'react-chartjs-2'
 
 ChartJS.register(
   CategoryScale,
@@ -47,7 +47,7 @@ export default function RevenueChart({ data, loading }: RevenueChartProps) {
   const totalRevenue = data.reduce((sum, d) => sum + d.revenue, 0)
   const averageRevenue = totalRevenue / data.length
 
-  // Chart.js 데이터 설정
+  // Chart.js 데이터 설정 (혼합 차트)
   const chartData = {
     labels: data.map(item => {
       const date = new Date(item.month + '-01')
@@ -55,6 +55,7 @@ export default function RevenueChart({ data, loading }: RevenueChartProps) {
     }),
     datasets: [
       {
+        type: 'bar' as const,
         label: '수익',
         data: data.map(item => item.revenue),
         backgroundColor: 'rgba(59, 130, 246, 0.8)',
@@ -64,9 +65,9 @@ export default function RevenueChart({ data, loading }: RevenueChartProps) {
         borderSkipped: false,
       },
       {
+        type: 'line' as const,
         label: '신규 구독',
         data: data.map(item => item.newSubscriptions * 100000), // 시각화를 위해 스케일 조정
-        type: 'line' as const,
         backgroundColor: 'rgba(34, 197, 94, 0.2)',
         borderColor: 'rgba(34, 197, 94, 1)',
         borderWidth: 3,
@@ -184,7 +185,7 @@ export default function RevenueChart({ data, loading }: RevenueChartProps) {
 
       {/* 차트 영역 */}
       <div className="relative h-64 mb-6">
-        <Bar data={chartData} options={chartOptions} />
+        <Chart type="bar" data={chartData} options={chartOptions} />
       </div>
 
       {/* 범례 */}
