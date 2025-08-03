@@ -59,3 +59,6 @@ export function CardFooter({ children, className = '' }: CardFooterProps) {
     </div>
   )
 }
+
+// Default export 추가
+export default Card
