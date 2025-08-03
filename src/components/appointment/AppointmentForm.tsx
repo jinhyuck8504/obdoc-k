@@ -37,7 +37,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
     symptoms: ''
   })
 
-  const [errors, setErrors] = useState<Partial<AppointmentFormData>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
 
@@ -88,7 +88,7 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
   }
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<AppointmentFormData> = {}
+    const newErrors: Record<string, string> = {}
 
     if (!formData.customerId) {
       newErrors.customerId = '환자를 선택해주세요'
@@ -141,7 +141,9 @@ export default function AppointmentForm({ appointment, onSave, onCancel }: Appoi
     
     // 에러 메시지 제거
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+      const newErrors = { ...errors }
+      delete newErrors[field]
+      setErrors(newErrors)
     }
   }
 
