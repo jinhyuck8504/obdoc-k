@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Shield, Flag, AlertTriangle, CheckCircle, XCircle, Clock, Eye, MessageSquare, User, Calendar } from 'lucide-react'
+import { Shield, Flag, AlertTriangle, CheckCircle, XCircle, Clock, Eye, User, Calendar } from 'lucide-react'
 import { Report } from '@/types/moderation'
 import { moderationService } from '@/lib/moderationService'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -65,7 +65,7 @@ export default function ModerationDashboard() {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'reviewing':
+      case 'reviewed':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'resolved':
         return 'bg-green-100 text-green-800 border-green-200'
@@ -80,7 +80,7 @@ export default function ModerationDashboard() {
     switch (status) {
       case 'pending':
         return '대기중'
-      case 'reviewing':
+      case 'reviewed':
         return '검토중'
       case 'resolved':
         return '처리완료'
@@ -126,7 +126,7 @@ export default function ModerationDashboard() {
   const stats = {
     total: reports.length,
     pending: reports.filter(r => r.status === 'pending').length,
-    reviewing: reports.filter(r => r.status === 'reviewing').length,
+    reviewed: reports.filter(r => r.status === 'reviewed').length,
     resolved: reports.filter(r => r.status === 'resolved').length
   }
 
@@ -177,7 +177,7 @@ export default function ModerationDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100 text-sm font-medium">검토중</p>
-              <p className="text-3xl font-bold">{stats.reviewing}</p>
+              <p className="text-3xl font-bold">{stats.reviewed}</p>
             </div>
             <AlertTriangle className="h-8 w-8 text-purple-200" />
           </div>
@@ -205,7 +205,7 @@ export default function ModerationDashboard() {
           >
             <option value="all">전체</option>
             <option value="pending">대기중</option>
-            <option value="reviewing">검토중</option>
+            <option value="reviewed">검토중</option>
             <option value="resolved">처리완료</option>
             <option value="dismissed">기각됨</option>
           </select>
@@ -250,7 +250,7 @@ export default function ModerationDashboard() {
                         </span>
                         <span className="text-gray-300">•</span>
                         <span className="text-sm text-gray-600">
-                          대상: {report.targetAuthor}
+                          대상: {report.targetAuthorName}
                         </span>
                       </div>
                       
@@ -276,15 +276,15 @@ export default function ModerationDashboard() {
                             처리 완료 - {report.reviewerName}
                           </span>
                         </div>
-                        {report.reviewNotes && (
-                          <p className="text-sm text-green-700">{report.reviewNotes}</p>
+                        {report.reviewNote && (
+                          <p className="text-sm text-green-700">{report.reviewNote}</p>
                         )}
-                        {report.actionTaken && (
+                        {report.action && (
                           <p className="text-xs text-green-600 mt-1">
-                            조치: {report.actionTaken === 'none' ? '조치 없음' :
-                                  report.actionTaken === 'warning' ? '사용자 경고' :
-                                  report.actionTaken === 'content_removed' ? '콘텐츠 삭제' :
-                                  report.actionTaken === 'user_suspended' ? '사용자 정지' : '알 수 없음'}
+                            조치: {report.action === 'none' ? '조치 없음' :
+                                  report.action === 'warning' ? '사용자 경고' :
+                                  report.action === 'content_removed' ? '콘텐츠 삭제' :
+                                  report.action === 'user_suspended' ? '사용자 정지' : '알 수 없음'}
                           </p>
                         )}
                       </div>
@@ -392,7 +392,7 @@ function ReportDetailModal({ report, onClose, onProcess, processing }: ReportDet
             <h3 className="text-md font-medium text-gray-900 mb-3">신고 정보</h3>
             <div className="bg-gray-50 p-4 rounded-lg space-y-2">
               <div><strong>신고자:</strong> {report.reporterName}</div>
-              <div><strong>대상 작성자:</strong> {report.targetAuthor}</div>
+              <div><strong>대상 작성자:</strong> {report.targetAuthorName}</div>
               <div><strong>신고 사유:</strong> {report.reason}</div>
               <div><strong>신고 내용:</strong> {report.description || '없음'}</div>
               <div><strong>신고일:</strong> {new Date(report.createdAt).toLocaleString('ko-KR')}</div>
@@ -469,8 +469,8 @@ function ReportDetailModal({ report, onClose, onProcess, processing }: ReportDet
               <div className="text-sm text-green-700 space-y-1">
                 <div><strong>처리자:</strong> {report.reviewerName}</div>
                 <div><strong>처리일:</strong> {report.reviewedAt && new Date(report.reviewedAt).toLocaleString('ko-KR')}</div>
-                <div><strong>조치:</strong> {report.actionTaken}</div>
-                {report.reviewNotes && <div><strong>메모:</strong> {report.reviewNotes}</div>}
+                <div><strong>조치:</strong> {report.action}</div>
+                {report.reviewNote && <div><strong>메모:</strong> {report.reviewNote}</div>}
               </div>
             </div>
           )}
