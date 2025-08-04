@@ -20,7 +20,10 @@ export default function GoalSettingModal({
     targetWeight: currentMetrics.targetWeight,
     targetDate: ''
   })
-  const [errors, setErrors] = useState<Partial<GoalFormData>>({})
+  const [errors, setErrors] = useState<{
+    targetWeight?: string
+    targetDate?: string
+  }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const calculateBMI = (weight: number, height: number): number => {
@@ -36,7 +39,10 @@ export default function GoalSettingModal({
   }
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<GoalFormData> = {}
+    const newErrors: {
+      targetWeight?: string
+      targetDate?: string
+    } = {}
 
     if (!formData.targetWeight || formData.targetWeight <= 0) {
       newErrors.targetWeight = '목표 체중을 입력해주세요'
@@ -78,7 +84,7 @@ export default function GoalSettingModal({
   const handleInputChange = (field: keyof GoalFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
