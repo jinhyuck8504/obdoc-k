@@ -1,44 +1,56 @@
-/* Obdoc Design System */
+/* Obdoc Design System - Kiro Light Theme */
 
-/* ===== COLOR PALETTE ===== */
+/* ===== KIRO LIGHT COLOR PALETTE ===== */
 :root {
-  /* Primary Colors - Dark Navy */
-  --color-primary-50: #f8fafc;
-  --color-primary-100: #f1f5f9;
-  --color-primary-200: #e2e8f0;
-  --color-primary-300: #cbd5e1;
-  --color-primary-400: #94a3b8;
-  --color-primary-500: #64748b;
-  --color-primary-600: #1e293b; /* Main Brand Color - Dark Navy */
-  --color-primary-700: #0f172a;
-  --color-primary-800: #020617;
-  --color-primary-900: #000000;
+  /* Primary Colors - Kiro Purple/Lavender */
+  --color-primary-50: #faf5ff;
+  --color-primary-100: #f3e8ff;
+  --color-primary-200: #e9d5ff;
+  --color-primary-300: #d8b4fe;
+  --color-primary-400: #c084fc;
+  --color-primary-500: #a855f7;
+  --color-primary-600: #8b5cf6; /* Main Kiro Brand Color */
+  --color-primary-700: #7c3aed;
+  --color-primary-800: #6b21a8;
+  --color-primary-900: #581c87;
 
-  /* Secondary Colors - Green (Health/Success) */
-  --color-secondary-50: #f0fdf4;
-  --color-secondary-100: #dcfce7;
-  --color-secondary-200: #bbf7d0;
-  --color-secondary-300: #86efac;
-  --color-secondary-400: #4ade80;
-  --color-secondary-500: #22c55e;
-  --color-secondary-600: #16a34a;
-  --color-secondary-700: #15803d;
-  --color-secondary-800: #166534;
-  --color-secondary-900: #14532d;
+  /* Secondary Colors - Soft Lavender */
+  --color-secondary-50: #f8fafc;
+  --color-secondary-100: #f1f5f9;
+  --color-secondary-200: #e2e8f0;
+  --color-secondary-300: #cbd5e1;
+  --color-secondary-400: #94a3b8;
+  --color-secondary-500: #64748b;
+  --color-secondary-600: #475569;
+  --color-secondary-700: #334155;
+  --color-secondary-800: #1e293b;
+  --color-secondary-900: #0f172a;
 
-  /* Accent Colors - Purple (Community) */
-  --color-accent-50: #faf5ff;
-  --color-accent-100: #f3e8ff;
-  --color-accent-200: #e9d5ff;
-  --color-accent-300: #d8b4fe;
-  --color-accent-400: #c084fc;
-  --color-accent-500: #a855f7;
-  --color-accent-600: #9333ea;
-  --color-accent-700: #7c3aed;
-  --color-accent-800: #6b21a8;
-  --color-accent-900: #581c87;
+  /* Accent Colors - Warm Purple */
+  --color-accent-50: #fdf4ff;
+  --color-accent-100: #fae8ff;
+  --color-accent-200: #f5d0fe;
+  --color-accent-300: #f0abfc;
+  --color-accent-400: #e879f9;
+  --color-accent-500: #d946ef;
+  --color-accent-600: #c026d3;
+  --color-accent-700: #a21caf;
+  --color-accent-800: #86198f;
+  --color-accent-900: #701a75;
 
-  /* Warning Colors - Orange */
+  /* Success Colors - Soft Green */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+
+  /* Warning Colors - Warm Orange */
   --color-warning-50: #fff7ed;
   --color-warning-100: #ffedd5;
   --color-warning-200: #fed7aa;
@@ -50,7 +62,7 @@
   --color-warning-800: #9a3412;
   --color-warning-900: #7c2d12;
 
-  /* Error Colors - Red */
+  /* Error Colors - Soft Red */
   --color-error-50: #fef2f2;
   --color-error-100: #fee2e2;
   --color-error-200: #fecaca;
@@ -62,17 +74,17 @@
   --color-error-800: #991b1b;
   --color-error-900: #7f1d1d;
 
-  /* Neutral Colors - Gray */
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  /* Neutral Colors - Warm Gray */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
 
   /* ===== TYPOGRAPHY ===== */
   --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -128,11 +140,11 @@
   --radius-full: 9999px;
 
   /* ===== SHADOWS ===== */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 1px 2px 0 rgb(139 92 246 / 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(139 92 246 / 0.1), 0 1px 2px -1px rgb(139 92 246 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(139 92 246 / 0.1), 0 2px 4px -2px rgb(139 92 246 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(139 92 246 / 0.1), 0 4px 6px -4px rgb(139 92 246 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(139 92 246 / 0.1), 0 8px 10px -6px rgb(139 92 246 / 0.1);
 
   /* ===== TRANSITIONS ===== */
   --transition-fast: 150ms ease-in-out;
@@ -150,7 +162,7 @@
   --z-toast: 1080;
 }
 
-/* ===== COMPONENT STYLES ===== */
+/* ===== KIRO LIGHT COMPONENT STYLES ===== */
 
 /* Button Variants */
 .btn {
@@ -158,11 +170,11 @@
 }
 
 .btn-primary {
-  @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  @apply bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500;
 }
 
 .btn-secondary {
-  @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+  @apply bg-purple-100 text-purple-900 hover:bg-purple-200 focus:ring-purple-500;
 }
 
 .btn-success {
@@ -178,11 +190,11 @@
 }
 
 .btn-outline {
-  @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500;
+  @apply border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 focus:ring-purple-500;
 }
 
 .btn-ghost {
-  @apply text-gray-700 hover:bg-gray-100 focus:ring-gray-500;
+  @apply text-purple-700 hover:bg-purple-100 focus:ring-purple-500;
 }
 
 /* Button Sizes */
@@ -200,7 +212,7 @@
 
 /* Input Styles */
 .input {
-  @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm;
+  @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm;
 }
 
 .input-error {
@@ -225,7 +237,7 @@
 }
 
 .card-footer {
-  @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
+  @apply px-6 py-4 border-t border-gray-200 bg-purple-50;
 }
 
 /* Badge Styles */
@@ -234,7 +246,7 @@
 }
 
 .badge-primary {
-  @apply bg-blue-100 text-blue-800;
+  @apply bg-purple-100 text-purple-800;
 }
 
 .badge-success {
@@ -259,7 +271,7 @@
 }
 
 .alert-info {
-  @apply bg-blue-50 border border-blue-200 text-blue-800;
+  @apply bg-purple-50 border border-purple-200 text-purple-800;
 }
 
 .alert-success {
@@ -274,26 +286,26 @@
   @apply bg-red-50 border border-red-200 text-red-800;
 }
 
-/* Utility Classes */
+/* Kiro Brand Utility Classes */
 .text-brand {
-  @apply text-slate-800;
+  @apply text-purple-600;
 }
 
 .bg-brand {
-  @apply bg-slate-800;
+  @apply bg-purple-600;
 }
 
 .border-brand {
-  @apply border-slate-800;
+  @apply border-purple-600;
 }
 
 .shadow-brand {
-  box-shadow: 0 4px 14px 0 rgb(30 41 59 / 0.15);
+  box-shadow: 0 4px 14px 0 rgb(139 92 246 / 0.15);
 }
 
 /* Focus Styles */
 .focus-brand {
-  @apply focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2;
+  @apply focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
 }
 
 /* Hover Effects */
@@ -315,24 +327,28 @@
 }
 
 .text-medical {
-  @apply text-blue-700;
+  @apply text-purple-700;
 }
 
 .bg-medical {
-  @apply bg-blue-50;
+  @apply bg-purple-50;
 }
 
-/* Brand Gradients */
+/* Kiro Brand Gradients */
 .bg-brand-gradient {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .bg-brand-gradient-light {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+}
+
+.bg-brand-gradient-soft {
+  background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
 }
 
 .text-brand-gradient {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -349,8 +365,8 @@
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.5); }
+  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
 }
 
 .animate-glow {
@@ -365,18 +381,28 @@
 }
 
 .glass-dark {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(139, 92, 246, 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.glass-purple {
+  background: rgba(139, 92, 246, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139, 92, 246, 0.1);
 }
 
 /* Enhanced Button Styles */
 .btn-hero {
-  @apply bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-bold shadow-2xl transform hover:scale-105 transition-all duration-200;
+  @apply bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold shadow-2xl transform hover:scale-105 transition-all duration-200;
 }
 
 .btn-hero-outline {
-  @apply bg-white/90 backdrop-blur-sm border-slate-300 text-slate-800 hover:bg-white font-semibold border;
+  @apply bg-white/90 backdrop-blur-sm border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold border;
+}
+
+.btn-hero-soft {
+  @apply bg-gradient-to-r from-purple-100 to-purple-200 hover:from-purple-200 hover:to-purple-300 text-purple-800 font-semibold shadow-lg transform hover:scale-105 transition-all duration-200;
 }
 
 /* Card Hover Effects */
@@ -385,7 +411,11 @@
 }
 
 .card-hover-brand {
-  @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:shadow-blue-500/25;
+  @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:shadow-purple-500/25;
+}
+
+.card-hover-soft {
+  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:shadow-purple-500/10;
 }
 
 /* Text Effects */
@@ -397,6 +427,10 @@
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+.text-shadow-purple {
+  text-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+}
+
 /* Brand Specific Spacing */
 .section-padding {
   @apply py-16 md:py-24;
@@ -404,4 +438,45 @@
 
 .container-padding {
   @apply px-4 sm:px-6 lg:px-8;
+}
+
+/* Kiro Light Specific Styles */
+.kiro-card {
+  @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-100/50;
+}
+
+.kiro-input {
+  @apply bg-white/90 border-purple-200 focus:border-purple-400 focus:ring-purple-400/20;
+}
+
+.kiro-button {
+  @apply bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200;
+}
+
+.kiro-button-soft {
+  @apply bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 hover:border-purple-300 transition-all duration-200;
+}
+
+.kiro-badge {
+  @apply bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border border-purple-200;
+}
+
+.kiro-link {
+  @apply text-purple-600 hover:text-purple-700 transition-colors duration-200;
+}
+
+.kiro-divider {
+  @apply border-purple-200;
+}
+
+/* Background Patterns */
+.bg-pattern-dots {
+  background-image: radial-gradient(circle, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-pattern-grid {
+  background-image: linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
