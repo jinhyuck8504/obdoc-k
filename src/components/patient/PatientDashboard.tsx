@@ -29,7 +29,7 @@ interface CommunityPost {
 
 export default function PatientDashboard() {
   const { user } = useAuth()
-  const [customer, setCustomer] = useState<Customer | null>(null)
+  const [patient, setPatient] = useState<Patient | null>(null)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [healthMetrics, setHealthMetrics] = useState<HealthMetrics>({
     currentWeight: 0,
@@ -56,9 +56,7 @@ export default function PatientDashboard() {
     role: 'customer' as const
   } : user
 
-  const customerId = 'customer-1' // 개발 모드에서는 더미 고객 ID 사용
-
-
+  const patientId = 'patient-1' // 개발 모드에서는 더미 환자 ID 사용
 
   // 데이터 로드
   useEffect(() => {
@@ -69,12 +67,12 @@ export default function PatientDashboard() {
     try {
       setLoading(true)
       
-      // 고객 정보 로드
+      // 환자 정보 로드
       const patientData = await patientService.getPatient(patientId)
       if (patientData) {
         setPatient(patientData)
         
-        // 고객 정보를 기반으로 건강 메트릭 계산
+        // 환자 정보를 기반으로 건강 메트릭 계산
         const metrics: HealthMetrics = {
           currentWeight: patientData.currentWeight,
           targetWeight: patientData.targetWeight,
@@ -92,13 +90,13 @@ export default function PatientDashboard() {
         setHealthMetrics(metrics)
       }
 
-      // 고객의 예약 정보 로드
+      // 환자의 예약 정보 로드
       const appointmentData = await appointmentService.getAppointments('doctor1')
       const patientAppointments = appointmentData.filter(apt => apt.patientId === patientId)
       setAppointments(patientAppointments)
       
     } catch (error) {
-      console.error('고객 데이터 로드 실패:', error)
+      console.error('환자 데이터 로드 실패:', error)
     } finally {
       setLoading(false)
     }
@@ -107,10 +105,6 @@ export default function PatientDashboard() {
   const loadHealthData = () => {
     loadPatientData()
   }
-
-
-
-
 
   const mockCommunityPosts: CommunityPost[] = [
     {
@@ -141,8 +135,6 @@ export default function PatientDashboard() {
       category: '운동팁'
     }
   ]
-
-
 
   // 로딩 중일 때 표시할 내용
   if (loading) {
