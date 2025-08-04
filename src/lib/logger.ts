@@ -1,4 +1,11 @@
-import * as Sentry from '@sentry/nextjs'
+// Optional Sentry import - will be undefined if not installed
+let Sentry: any
+try {
+  Sentry = require('@sentry/nextjs')
+} catch (error) {
+  // Sentry not installed, logging will work without it
+  Sentry = null
+}
 
 export enum LogLevel {
   DEBUG = 0,
@@ -66,11 +73,11 @@ class Logger {
   }
 
   private logToSentry(level: string, message: string, context?: LogContext, error?: Error) {
-    if (!this.isProduction) return
+    if (!this.isProduction || !Sentry) return
 
     const sentryLevel = this.getSentryLevel(level)
     
-    Sentry.withScope((scope) => {
+    Sentry.withScope((scope: any) => {
       if (context) {
         Object.entries(context).forEach(([key, value]) => {
           scope.setTag(key, String(value))
@@ -87,7 +94,7 @@ class Logger {
     })
   }
 
-  private getSentryLevel(level: string): Sentry.SeverityLevel {
+  private getSentryLevel(level: string): string {
     switch (level) {
       case 'DEBUG': return 'debug'
       case 'INFO': return 'info'
