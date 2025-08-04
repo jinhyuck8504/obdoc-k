@@ -25,6 +25,15 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>
 
+// 플랜 정보 타입 정의
+interface PlanInfo {
+  name: string
+  price: number
+  duration: string
+  originalPrice?: number
+  discount?: number
+}
+
 export default function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -57,14 +66,14 @@ export default function SignupForm() {
     }
   }, [searchParams, setValue])
 
-  // 플랜 정보 가져오기
-  const getPlanInfo = (planId: string) => {
-    const plans = {
+  // 플랜 정보 가져오기 (타입 안전성 개선)
+  const getPlanInfo = (planId: string): PlanInfo | null => {
+    const plans: Record<string, PlanInfo> = {
       '1month': { name: '1개월 플랜', price: 199000, duration: '1개월' },
       '6months': { name: '6개월 플랜', price: 1015000, duration: '6개월', originalPrice: 1194000, discount: 15 },
       '12months': { name: '12개월 플랜', price: 1791000, duration: '12개월', originalPrice: 2388000, discount: 25 }
     }
-    return plans[planId as keyof typeof plans]
+    return plans[planId] || null
   }
 
   const onSubmit = async (data: SignupFormData) => {
@@ -419,7 +428,7 @@ export default function SignupForm() {
                               <div className={`text-lg font-bold ${selectedPlan === planId ? 'text-green-900' : 'text-gray-900'}`}>
                                 ₩{plan.price.toLocaleString()}
                               </div>
-                              {plan.originalPrice && (
+                              {plan.originalPrice && plan.discount && (
                                 <div className="text-xs text-gray-500">
                                   <span className="line-through">₩{plan.originalPrice.toLocaleString()}</span>
                                   <span className="ml-1 text-red-600 font-medium">{plan.discount}% 할인</span>
