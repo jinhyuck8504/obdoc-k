@@ -1,43 +1,7 @@
 // 보안 유틸리티 라이브러리
 
-// 임시 더미 객체들 (패키지 설치 전까지)
-const DOMPurify = {
-  sanitize: (html: string, options?: any) => {
-    // 기본적인 XSS 방지 처리
-    return html
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/javascript:/gi, '')
-      .replace(/on\w+\s*=/gi, '')
-  }
-}
-
-const CryptoJS = {
-  AES: {
-    encrypt: (data: string, key: string) => ({ 
-      toString: () => Buffer.from(data).toString('base64') 
-    }),
-    decrypt: (data: any, key: string) => ({ 
-      toString: () => {
-        try {
-          return Buffer.from(data.toString(), 'base64').toString('utf8')
-        } catch {
-          return data.toString()
-        }
-      }
-    })
-  },
-  enc: {
-    Utf8: {
-      stringify: (data: any) => data.toString()
-    }
-  },
-  SHA256: (data: string) => ({
-    toString: () => Buffer.from(data).toString('base64')
-  }),
-  HmacSHA256: (data: string, key: string) => ({
-    toString: () => Buffer.from(data + key).toString('base64')
-  })
-}
+import DOMPurify from 'isomorphic-dompurify'
+import CryptoJS from 'crypto-js'
 
 // 보안 설정
 export const SECURITY_CONFIG = {
@@ -61,7 +25,7 @@ export class XSSProtection {
         .replace(/javascript:/gi, '')
         .replace(/on\w+\s*=/gi, '')
     }
-    
+
     return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a'],
       ALLOWED_ATTR: ['href', 'title', 'target'],
@@ -108,7 +72,7 @@ export class XSSProtection {
       /(--|\/\*|\*\/|;|'|"|`)/,
       /(\bOR\b|\bAND\b).*?[=<>]/i
     ]
-    
+
     return sqlPatterns.some(pattern => pattern.test(input))
   }
 }
@@ -205,7 +169,7 @@ export class InputValidator {
   // 사업자등록번호 검증
   static validateBusinessNumber(number: string): boolean {
     const cleanNumber = number.replace(/[^0-9]/g, '')
-    
+
     if (cleanNumber.length !== 10) return false
 
     const weights = [1, 3, 7, 1, 3, 7, 1, 3, 5]
@@ -239,7 +203,7 @@ export class SessionSecurity {
     }
 
     const sessionToken = this.encryptSessionData(sessionData)
-    
+
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(this.SESSION_KEY, sessionToken)
       sessionStorage.setItem(this.CSRF_KEY, sessionData.csrfToken)
@@ -266,11 +230,11 @@ export class SessionSecurity {
 
       // 비활성 시간 검사
       if (now - sessionData.lastActivity > SECURITY_CONFIG.SESSION_TIMEOUT / 2) {
-        return { 
-          isValid: true, 
-          userId: sessionData.userId, 
+        return {
+          isValid: true,
+          userId: sessionData.userId,
           role: sessionData.role,
-          needsRefresh: true 
+          needsRefresh: true
         }
       }
 
@@ -279,10 +243,10 @@ export class SessionSecurity {
         return { isValid: false }
       }
 
-      return { 
-        isValid: true, 
-        userId: sessionData.userId, 
-        role: sessionData.role 
+      return {
+        isValid: true,
+        userId: sessionData.userId,
+        role: sessionData.role
       }
     } catch {
       return { isValid: false }
@@ -325,7 +289,7 @@ export class SessionSecurity {
   // CSRF 토큰 검증
   static validateCSRFToken(token: string): boolean {
     if (typeof window === 'undefined') return true // 서버사이드에서는 스킵
-    
+
     const storedToken = sessionStorage.getItem(this.CSRF_KEY)
     return storedToken === token
   }
@@ -337,7 +301,7 @@ export class SessionSecurity {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     ctx?.fillText('fingerprint', 10, 10)
-    
+
     const fingerprint = [
       navigator.userAgent,
       navigator.language,
@@ -359,7 +323,7 @@ export class SessionSecurity {
   private static decryptSessionData(encryptedData: string): any {
     const key = this.getEncryptionKey()
     const bytes = CryptoJS.AES.decrypt(encryptedData, key)
-    return JSON.parse(bytes.toString(CryptoJS.enc.Utf8))
+    return JSON.parse(bytes.toString())
   }
 
   // 암호화 키 생성
@@ -494,7 +458,7 @@ export class AuditLogger {
 
   // 로그 ID 생성
   private static generateLogId(): string {
-    return `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    return `log_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
   }
 
   // 클라이언트 IP 주소 가져오기
@@ -541,7 +505,7 @@ export const SecurityUtils = {
   generateSecureRandom: (length: number = 32): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
-    
+
     if (typeof window !== 'undefined' && window.crypto) {
       const array = new Uint8Array(length)
       window.crypto.getRandomValues(array)
@@ -553,7 +517,7 @@ export const SecurityUtils = {
         result += chars[Math.floor(Math.random() * chars.length)]
       }
     }
-    
+
     return result
   },
 
