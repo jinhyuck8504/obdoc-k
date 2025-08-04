@@ -11,7 +11,7 @@ interface ValidationRule {
   severity: 'error' | 'warning'
 }
 
-interface ValidationResult {
+export interface ValidationResult {
   isValid: boolean
   errors: Array<{
     rule: string
