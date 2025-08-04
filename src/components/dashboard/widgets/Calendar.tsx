@@ -71,7 +71,7 @@ export default function Calendar() {
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
 
-    const days = []
+    const days: (number | null)[] = []
     
     // Previous month's days
     for (let i = 0; i < startingDayOfWeek; i++) {
