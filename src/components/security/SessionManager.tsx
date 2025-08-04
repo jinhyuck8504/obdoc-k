@@ -15,7 +15,7 @@ export default function SessionManager({
   warningTime = 5, 
   sessionTimeout = 30 
 }: SessionManagerProps) {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const [showWarningModal, setShowWarningModal] = useState(false)
   const [remainingTime, setRemainingTime] = useState(0)
   const [lastActivity, setLastActivity] = useState(Date.now())
@@ -29,10 +29,10 @@ export default function SessionManager({
   // 자동 로그아웃 처리
   const handleAutoLogout = useCallback(async () => {
     setShowWarningModal(false)
-    await logout()
+    await signOut()
     // 로그아웃 후 로그인 페이지로 리다이렉트
     window.location.href = '/login?reason=session_expired'
-  }, [logout])
+  }, [signOut])
 
   // 활동 감지 및 세션 타이머 관리
   useEffect(() => {
