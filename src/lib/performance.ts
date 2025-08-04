@@ -1,4 +1,5 @@
 // 성능 모니터링 및 최적화 유틸리티
+import React from 'react'
 
 // 성능 메트릭 타입
 export interface PerformanceMetrics {
