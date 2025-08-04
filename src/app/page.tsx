@@ -83,7 +83,7 @@ export default function Home() {
                 <Button 
                   variant="outline" 
                   size="xl"
-                  className="bg-transparent border-white text-white hover:bg-white hover:text-slate-900 font-semibold transition-all duration-200"
+                  className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-slate-900 font-bold transition-all duration-200 shadow-lg"
                 >
                   로그인
                 </Button>
@@ -361,10 +361,6 @@ export default function Home() {
             <br className="hidden md:block" />
             고객과의 지속적인 관계를 구축해보세요
           </p>
-          
-
-
-
         </div>
       </div>
     </div>
