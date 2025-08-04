@@ -92,7 +92,7 @@ export default function PatientDashboard() {
 
       // 환자의 예약 정보 로드
       const appointmentData = await appointmentService.getAppointments('doctor1')
-      const patientAppointments = appointmentData.filter(apt => apt.patientId === patientId)
+      const patientAppointments = appointmentData.filter(apt => apt.customerId === patientId)
       setAppointments(patientAppointments)
       
     } catch (error) {
