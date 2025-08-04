@@ -204,7 +204,7 @@ export default function SecureInput({
           onBlur={() => setIsFocused(false)}
           className={`pr-10 ${
             validationResult.isValid ? 'border-gray-300' : 'border-red-300'
-          } ${props.className || ''}`}
+          }`}
           maxLength={maxLength}
         />
         
@@ -318,7 +318,7 @@ export function SecureTextarea({
         onChange={handleChange}
         className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
           validationResult.isValid ? 'border-gray-300' : 'border-red-300'
-        } ${props.className || ''}`}
+        }`}
         maxLength={maxLength}
       />
 
