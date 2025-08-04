@@ -482,7 +482,7 @@ export function useCache<T>(
 
       // 강제 새로고침이 아닌 경우 캐시 확인
       if (!forceRefresh) {
-        const cachedData = cache.get(key)
+        const cachedData = cache.get(key) as T | null
         if (cachedData !== null) {
           setData(cachedData)
           setLoading(false)
