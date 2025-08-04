@@ -169,7 +169,7 @@ export default function PatientManagement() {
   if (showForm) {
     return (
       <PatientForm
-        customer={editingPatient}
+        patient={editingPatient}
         onSave={handleSavePatient}
         onCancel={() => {
           setShowForm(false)
