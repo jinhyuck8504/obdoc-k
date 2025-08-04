@@ -145,19 +145,23 @@ export default function LoginForm() {
           </div>
         </div>
 
-        <Button
+        <button
           type="submit"
-          variant="primary"
-          size="lg"
           disabled={isSubmitting}
-          className="w-full"
-          loading={isSubmitting}
+          className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
         >
-          <div className="flex items-center justify-center">
-            <LogIn className="h-5 w-5 mr-2" />
-            로그인
-          </div>
-        </Button>
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+              <span className="text-white font-bold">로그인 중...</span>
+            </>
+          ) : (
+            <>
+              <LogIn className="h-5 w-5 mr-3 text-white" />
+              <span className="text-white font-bold">로그인</span>
+            </>
+          )}
+        </button>
 
       </form>
     </div>
