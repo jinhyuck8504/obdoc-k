@@ -154,7 +154,7 @@ interface ErrorBoundaryState {
   hasError: boolean
   error?: Error
   errorInfo?: {
-    componentStack: string
+    componentStack: string | null | undefined
   }
   errorId?: string
   retryCount: number
@@ -182,13 +182,15 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     return {
       hasError: true,
       error,
-      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      errorId: `error_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
     }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({
-      errorInfo
+      errorInfo: {
+        componentStack: errorInfo.componentStack
+      }
     })
 
     // 오류 정보를 부모 컴포넌트에 전달
