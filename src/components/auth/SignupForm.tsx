@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, User, Building, Stethoscope, CheckCircle, AlertCircle, UserPlus } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Eye, EyeOff, Mail, Lock, User, Building, Stethoscope, CheckCircle, AlertCircle, UserPlus, CreditCard } from 'lucide-react'
 import { auth } from '@/lib/auth'
 import Button from '@/components/ui/Button'
 import { supabase } from '@/lib/supabase'
@@ -17,6 +17,7 @@ const signupSchema = z.object({
   role: z.enum(['doctor', 'customer']),
   hospitalName: z.string().optional(),
   hospitalType: z.string().optional(),
+  subscriptionPlan: z.enum(['1month', '6months', '12months']).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "비밀번호가 일치하지 않습니다",
   path: ["confirmPassword"],
@@ -26,6 +27,7 @@ type SignupFormData = z.infer<typeof signupSchema>
 
 export default function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [signupError, setSignupError] = useState<string | null>(null)
   const [signupSuccess, setSignupSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -35,6 +37,7 @@ export default function SignupForm() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -44,6 +47,25 @@ export default function SignupForm() {
   })
 
   const selectedRole = watch('role')
+  const selectedPlan = watch('subscriptionPlan')
+
+  // URL 파라미터에서 플랜 정보 읽기
+  useEffect(() => {
+    const planParam = searchParams.get('plan')
+    if (planParam && ['1month', '6months', '12months'].includes(planParam)) {
+      setValue('subscriptionPlan', planParam as '1month' | '6months' | '12months')
+    }
+  }, [searchParams, setValue])
+
+  // 플랜 정보 가져오기
+  const getPlanInfo = (planId: string) => {
+    const plans = {
+      '1month': { name: '1개월 플랜', price: 199000, duration: '1개월' },
+      '6months': { name: '6개월 플랜', price: 1015000, duration: '6개월', originalPrice: 1194000, discount: 15 },
+      '12months': { name: '12개월 플랜', price: 1791000, duration: '12개월', originalPrice: 2388000, discount: 25 }
+    }
+    return plans[planId as keyof typeof plans]
+  }
 
   const onSubmit = async (data: SignupFormData) => {
     try {
@@ -56,7 +78,8 @@ export default function SignupForm() {
         {
           role: data.role,
           hospitalName: data.hospitalName,
-          hospitalType: data.hospitalType
+          hospitalType: data.hospitalType,
+          subscriptionPlan: data.subscriptionPlan
         }
       )
 
@@ -79,6 +102,7 @@ export default function SignupForm() {
                 hospital_name: data.hospitalName || '',
                 hospital_type: data.hospitalType || 'clinic',
                 subscription_status: 'pending',
+                subscription_plan: data.subscriptionPlan || '1month',
                 is_approved: false
               })
 
@@ -322,38 +346,102 @@ export default function SignupForm() {
 
           {/* 의사 전용 필드 */}
           {selectedRole === 'doctor' && (
-            <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h4 className="text-sm font-medium text-blue-900 flex items-center">
-                <Building className="h-4 w-4 mr-2" />
-                병원 정보
-              </h4>
-              
-              <div>
-                <label htmlFor="hospitalName" className="block text-sm font-medium text-gray-700 mb-2">
-                  병원명
-                </label>
-                <input
-                  {...register('hospitalName')}
-                  type="text"
-                  id="hospitalName"
-                  placeholder="예: 서울비만클리닉"
-                  className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                />
+            <div className="space-y-4">
+              {/* 병원 정보 */}
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="text-sm font-medium text-blue-900 flex items-center mb-4">
+                  <Building className="h-4 w-4 mr-2" />
+                  병원 정보
+                </h4>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="hospitalName" className="block text-sm font-medium text-gray-700 mb-2">
+                      병원명
+                    </label>
+                    <input
+                      {...register('hospitalName')}
+                      type="text"
+                      id="hospitalName"
+                      placeholder="예: 서울비만클리닉"
+                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="hospitalType" className="block text-sm font-medium text-gray-700 mb-2">
+                      병원 유형
+                    </label>
+                    <select
+                      {...register('hospitalType')}
+                      id="hospitalType"
+                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="clinic">의원</option>
+                      <option value="oriental_clinic">한의원</option>
+                      <option value="hospital">병원</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="hospitalType" className="block text-sm font-medium text-gray-700 mb-2">
-                  병원 유형
-                </label>
-                <select
-                  {...register('hospitalType')}
-                  id="hospitalType"
-                  className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                  <option value="clinic">의원</option>
-                  <option value="oriental_clinic">한의원</option>
-                  <option value="hospital">병원</option>
-                </select>
+              {/* 구독 플랜 선택 */}
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <h4 className="text-sm font-medium text-green-900 flex items-center mb-4">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  구독 플랜 선택
+                </h4>
+                
+                <div className="space-y-3">
+                  {['1month', '6months', '12months'].map((planId) => {
+                    const plan = getPlanInfo(planId)
+                    if (!plan) return null
+                    
+                    return (
+                      <label key={planId} className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${selectedPlan === planId ? 'border-green-500 bg-green-100' : 'border-gray-300 bg-white'}`}>
+                        <input
+                          {...register('subscriptionPlan')}
+                          type="radio"
+                          value={planId}
+                          className="sr-only"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className={`text-sm font-medium ${selectedPlan === planId ? 'text-green-900' : 'text-gray-900'}`}>
+                                {plan.name}
+                              </div>
+                              <div className={`text-xs ${selectedPlan === planId ? 'text-green-700' : 'text-gray-500'}`}>
+                                {plan.duration}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`text-lg font-bold ${selectedPlan === planId ? 'text-green-900' : 'text-gray-900'}`}>
+                                ₩{plan.price.toLocaleString()}
+                              </div>
+                              {plan.originalPrice && (
+                                <div className="text-xs text-gray-500">
+                                  <span className="line-through">₩{plan.originalPrice.toLocaleString()}</span>
+                                  <span className="ml-1 text-red-600 font-medium">{plan.discount}% 할인</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
+                
+                {selectedPlan && (
+                  <div className="mt-3 p-3 bg-white rounded border border-green-200">
+                    <div className="text-xs text-gray-600">
+                      💡 선택하신 플랜: <span className="font-medium text-green-700">{getPlanInfo(selectedPlan)?.name}</span>
+                      <br />
+                      회원가입 후 결제 페이지로 이동합니다.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
