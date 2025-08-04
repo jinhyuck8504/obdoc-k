@@ -1,14 +1,24 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { ArrowLeft, Save, X, User, Phone, Mail, Calendar, Ruler, Weight, Target, MapPin, FileText, AlertTriangle, Pill, UserPlus } from 'lucide-react'
+import { ArrowLeft, Save, X, User, Phone, Mail, Ruler, Weight, Target, MapPin, FileText, AlertTriangle, Pill, UserPlus } from 'lucide-react'
 import { Customer, CustomerFormData } from '@/types/customer'
-import { customerService } from '@/lib/customerService'
 
 interface PatientFormProps {
   patient?: Customer | null
   onSave: (data: CustomerFormData) => void
   onCancel: () => void
+}
+
+interface FormErrors {
+  name?: string
+  email?: string
+  phone?: string
+  birthDate?: string
+  height?: string
+  initialWeight?: string
+  currentWeight?: string
+  targetWeight?: string
 }
 
 export default function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
@@ -31,7 +41,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
     emergencyContactRelationship: ''
   })
 
-  const [errors, setErrors] = useState<Partial<CustomerFormData>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 수정 모드일 때 기존 데이터 로드
@@ -59,7 +69,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
   }, [patient])
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CustomerFormData> = {}
+    const newErrors: FormErrors = {}
 
     // 필수 필드 검증
     if (!formData.name.trim()) {
@@ -135,7 +145,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
