@@ -131,16 +131,16 @@ export const adminService = {
       // 통계 계산 로직 구현
       const stats: AdminStats = {
         totalUsers: usersData.data?.length || 0,
-        totalDoctors: usersData.data?.filter(u => u.role === 'doctor').length || 0,
-        totalPatients: usersData.data?.filter(u => u.role === 'patient').length || 0,
+        totalDoctors: usersData.data?.filter((u: any) => u.role === 'doctor').length || 0,
+        totalPatients: usersData.data?.filter((u: any) => u.role === 'patient').length || 0,
         activeUsers: 0, // 실제 활성 사용자 계산 필요
         newUsersThisMonth: 0, // 이번 달 신규 사용자 계산 필요
         
         totalSubscriptions: subscriptionsData.data?.length || 0,
-        activeSubscriptions: subscriptionsData.data?.filter(s => s.status === 'active').length || 0,
-        pendingSubscriptions: subscriptionsData.data?.filter(s => s.status === 'pending').length || 0,
-        expiredSubscriptions: subscriptionsData.data?.filter(s => s.status === 'expired').length || 0,
-        subscriptionRevenue: subscriptionsData.data?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0,
+        activeSubscriptions: subscriptionsData.data?.filter((s: any) => s.status === 'active').length || 0,
+        pendingSubscriptions: subscriptionsData.data?.filter((s: any) => s.status === 'pending').length || 0,
+        expiredSubscriptions: subscriptionsData.data?.filter((s: any) => s.status === 'expired').length || 0,
+        subscriptionRevenue: subscriptionsData.data?.reduce((sum: number, s: any) => sum + (s.amount || 0), 0) || 0,
         monthlyRevenue: 0, // 월별 매출 계산 필요
         
         hospitalTypeStats: [], // 병원 유형별 통계 계산 필요
