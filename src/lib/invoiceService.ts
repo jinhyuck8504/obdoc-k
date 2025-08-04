@@ -286,9 +286,9 @@ export const invoiceService = {
 
       // 금액 계산
       const planPrices = {
-        '1month': 120000,
-        '6months': 600000,
-        '12months': 1000000
+        '1month': 199000,
+        '6months': 1015000,
+        '12months': 1791000
       }
       const baseAmount = planPrices[subscription.plan as keyof typeof planPrices]
       const vatAmount = Math.floor(baseAmount * 0.1)
