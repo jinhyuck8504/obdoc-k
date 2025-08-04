@@ -57,7 +57,7 @@ export default function ValidatedForm<T>({
     try {
       // 폼 데이터 수집
       const formData = new FormData(e.currentTarget)
-      const data = Object.fromEntries(formData.entries())
+      const data: Record<string, any> = Object.fromEntries(formData.entries())
       
       // 체크박스 처리 (체크되지 않은 경우 false로 설정)
       const checkboxes = e.currentTarget.querySelectorAll('input[type="checkbox"]')
@@ -73,7 +73,7 @@ export default function ValidatedForm<T>({
       numberInputs.forEach((input) => {
         const numberInput = input as HTMLInputElement
         if (data[numberInput.name]) {
-          data[numberInput.name] = Number(data[numberInput.name])
+          data[numberInput.name] = Number(data[numberInput.name] as string)
         }
       })
 
@@ -262,7 +262,7 @@ interface MultiStepFormProps<T extends Record<string, any>> {
   className?: string
   showProgress?: boolean
   allowSkipSteps?: boolean
-  stepTitles?: Record<keyof T, string>
+  stepTitles?: Partial<Record<keyof T, string>>
 }
 
 export function MultiStepForm<T extends Record<string, any>>({
