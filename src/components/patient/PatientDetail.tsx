@@ -145,7 +145,7 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
           </div>
           <div className="text-center">
             <p className="text-blue-100 text-sm font-medium">현재 체중</p>
-            <p className="text-3xl font-bold">{patient.currentWeight}kg</p>
+            <p className="text-3xl font-bold">{customer.currentWeight}kg</p>
             <div className="flex items-center justify-center mt-1">
               {weightLoss > 0 && (
                 <div className="flex items-center text-green-200">
@@ -157,7 +157,7 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
           </div>
           <div className="text-center">
             <p className="text-blue-100 text-sm font-medium">목표 체중</p>
-            <p className="text-3xl font-bold">{patient.targetWeight}kg</p>
+            <p className="text-3xl font-bold">{customer.targetWeight}kg</p>
             <p className="text-blue-200 text-sm mt-1">
               {remainingWeight > 0 ? `${remainingWeight.toFixed(1)}kg 남음` : '목표 달성!'}
             </p>
@@ -190,29 +190,29 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
                 <label className="block text-sm font-medium text-gray-700 mb-1">생년월일</label>
                 <div className="flex items-center text-gray-900">
                   <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                  {formatDate(patient.birthDate)} (만 {age}세)
+                  {formatDate(customer.birthDate)} (만 {age}세)
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">성별</label>
-                <p className="text-gray-900">{patient.gender === 'male' ? '남성' : '여성'}</p>
+                <p className="text-gray-900">{customer.gender === 'male' ? '남성' : '여성'}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">키</label>
-                <p className="text-gray-900">{patient.height}cm</p>
+                <p className="text-gray-900">{customer.height}cm</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">등록일</label>
-                <p className="text-gray-900">{formatDate(patient.startDate)}</p>
+                <p className="text-gray-900">{formatDate(customer.startDate)}</p>
               </div>
 
-              {patient.lastVisit && (
+              {customer.lastVisit && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">최근 방문</label>
-                  <p className="text-gray-900">{formatDate(patient.lastVisit)}</p>
+                  <p className="text-gray-900">{formatDate(customer.lastVisit)}</p>
                 </div>
               )}
             </div>
@@ -230,30 +230,30 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
                 <label className="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
                 <div className="flex items-center text-gray-900">
                   <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                  <a href={`tel:${patient.phone}`} className="hover:text-blue-600 transition-colors">
-                    {patient.phone}
+                  <a href={`tel:${customer.phone}`} className="hover:text-blue-600 transition-colors">
+                    {customer.phone}
                   </a>
                 </div>
               </div>
 
-              {patient.email && (
+              {customer.email && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
                   <div className="flex items-center text-gray-900">
                     <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                    <a href={`mailto:${patient.email}`} className="hover:text-blue-600 transition-colors">
-                      {patient.email}
+                    <a href={`mailto:${customer.email}`} className="hover:text-blue-600 transition-colors">
+                      {customer.email}
                     </a>
                   </div>
                 </div>
               )}
 
-              {patient.address && (
+              {customer.address && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">주소</label>
                   <div className="flex items-start text-gray-900">
                     <MapPin className="w-4 h-4 mr-2 text-gray-400 mt-0.5" />
-                    <p>{patient.address}</p>
+                    <p>{customer.address}</p>
                   </div>
                 </div>
               )}
@@ -268,43 +268,43 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
             </div>
 
             <div className="space-y-6">
-              {patient.medicalHistory && (
+              {customer.medicalHistory && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">병력</label>
                   <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-gray-900 whitespace-pre-wrap">{patient.medicalHistory}</p>
+                    <p className="text-gray-900 whitespace-pre-wrap">{customer.medicalHistory}</p>
                   </div>
                 </div>
               )}
 
-              {patient.allergies && (
+              {customer.allergies && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">알레르기</label>
                   <div className="flex items-start p-3 bg-red-50 rounded-lg">
                     <AlertTriangle className="w-4 h-4 mr-2 text-red-500 mt-0.5" />
-                    <p className="text-red-800 whitespace-pre-wrap">{patient.allergies}</p>
+                    <p className="text-red-800 whitespace-pre-wrap">{customer.allergies}</p>
                   </div>
                 </div>
               )}
 
-              {patient.medications && (
+              {customer.medications && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">복용 약물</label>
                   <div className="flex items-start p-3 bg-blue-50 rounded-lg">
                     <Pill className="w-4 h-4 mr-2 text-blue-500 mt-0.5" />
-                    <p className="text-blue-800 whitespace-pre-wrap">{patient.medications}</p>
+                    <p className="text-blue-800 whitespace-pre-wrap">{customer.medications}</p>
                   </div>
                 </div>
               )}
 
-              {!patient.medicalHistory && !patient.allergies && !patient.medications && (
+              {!customer.medicalHistory && !customer.allergies && !customer.medications && (
                 <p className="text-gray-500 text-center py-4">등록된 의료 정보가 없습니다</p>
               )}
             </div>
           </div>
 
           {/* 비상 연락처 */}
-          {patient.emergencyContact && (
+          {customer.emergencyContact && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center space-x-2 mb-6">
                 <UserPlus className="w-5 h-5 text-orange-600" />
@@ -314,20 +314,20 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
-                  <p className="text-gray-900">{patient.emergencyContact.name}</p>
+                  <p className="text-gray-900">{customer.emergencyContact.name}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
                   <div className="flex items-center text-gray-900">
                     <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                    <a href={`tel:${patient.emergencyContact.phone}`} className="hover:text-blue-600 transition-colors">
-                      {patient.emergencyContact.phone}
+                    <a href={`tel:${customer.emergencyContact.phone}`} className="hover:text-blue-600 transition-colors">
+                      {customer.emergencyContact.phone}
                     </a>
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">관계</label>
-                  <p className="text-gray-900">{patient.emergencyContact.relationship}</p>
+                  <p className="text-gray-900">{customer.emergencyContact.relationship}</p>
                 </div>
               </div>
             </div>
@@ -360,7 +360,7 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">감량 목표</span>
                   <span className="font-medium text-gray-900">
-                    {(patient.initialWeight - patient.targetWeight).toFixed(1)}kg
+                    {(customer.initialWeight - customer.targetWeight).toFixed(1)}kg
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -390,14 +390,14 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">등록 기간</span>
                 <span className="font-medium text-gray-900">
-                  {Math.ceil((new Date().getTime() - new Date(patient.startDate).getTime()) / (1000 * 60 * 60 * 24))}일
+                  {Math.ceil((new Date().getTime() - new Date(customer.startDate).getTime()) / (1000 * 60 * 60 * 24))}일
                 </span>
               </div>
 
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">주간 평균 감량</span>
                 <span className="font-medium text-gray-900">
-                  {(weightLoss / Math.max(1, Math.ceil((new Date().getTime() - new Date(patient.startDate).getTime()) / (1000 * 60 * 60 * 24 * 7)))).toFixed(2)}kg
+                  {(weightLoss / Math.max(1, Math.ceil((new Date().getTime() - new Date(customer.startDate).getTime()) / (1000 * 60 * 60 * 24 * 7)))).toFixed(2)}kg
                 </span>
               </div>
 
@@ -427,7 +427,7 @@ export default function PatientDetail({ customer, onBack, onEdit, onDelete }: Pa
             </div>
             
             <p className="text-gray-700 mb-6">
-              <strong>{patient.name}</strong> 고객의 모든 정보가 영구적으로 삭제됩니다. 
+              <strong>{customer.name}</strong> 고객의 모든 정보가 영구적으로 삭제됩니다. 
               정말로 삭제하시겠습니까?
             </p>
             
