@@ -144,7 +144,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-gray-900">서울비만클리닉</h3>
-                      <p className="text-sm text-gray-600">6개월 플랜 • ₩528,000</p>
+                      <p className="text-sm text-gray-600">6개월 플랜 • ₩1,015,000</p>
                     </div>
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                       결제완료
@@ -154,7 +154,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-gray-900">대구한의원</h3>
-                      <p className="text-sm text-gray-600">1개월 플랜 • ₩110,000</p>
+                      <p className="text-sm text-gray-600">1개월 플랜 • ₩199,000</p>
                     </div>
                     <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
                       결제대기
@@ -164,7 +164,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-gray-900">인천다이어트병원</h3>
-                      <p className="text-sm text-gray-600">12개월 플랜 • ₩950,400</p>
+                      <p className="text-sm text-gray-600">12개월 플랜 • ₩1,791,000</p>
                     </div>
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                       결제완료
@@ -184,7 +184,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                     <div>
                       <h3 className="font-medium text-gray-900">서울비만클리닉</h3>
-                      <p className="text-sm text-gray-600">6개월 플랜 • ₩528,000</p>
+                      <p className="text-sm text-gray-600">6개월 플랜 • ₩1,015,000</p>
                     </div>
                     <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
                       발행
@@ -194,7 +194,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
                       <h3 className="font-medium text-gray-900">인천다이어트병원</h3>
-                      <p className="text-sm text-gray-600">12개월 플랜 • ₩950,400</p>
+                      <p className="text-sm text-gray-600">12개월 플랜 • ₩1,791,000</p>
                     </div>
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                       발행완료
