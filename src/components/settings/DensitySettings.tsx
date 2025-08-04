@@ -4,7 +4,6 @@ import React from 'react'
 import { useDensity, DensityLevel } from '@/contexts/DensityContext'
 import { DensityCard, DensityCardContent, DensityCardHeader, DensityCardTitle } from '@/components/ui/DensityCard'
 import { DensityButton } from '@/components/ui/DensityButton'
-import { DensityInput } from '@/components/ui/DensityInput'
 import { Monitor, Smartphone, Tablet } from 'lucide-react'
 
 const densityOptions: Array<{
@@ -148,9 +147,13 @@ export default function DensitySettings() {
             </div>
             
             <div className="space-y-2">
-              <DensityInput 
+              <input 
                 type="text" 
                 placeholder="텍스트 입력 필드"
+                className={`
+                  w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500
+                  input-${density}
+                `}
               />
               <select className={`
                 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500
