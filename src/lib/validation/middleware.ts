@@ -290,7 +290,7 @@ export function createRateLimitMiddleware(
   const requests = new Map<string, { count: number; resetTime: number }>()
 
   return async function rateLimitMiddleware(request: NextRequest): Promise<NextResponse | null> {
-    const clientIp = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const now = Date.now()
     
     const clientData = requests.get(clientIp)
@@ -360,22 +360,20 @@ export function createCorsMiddleware(options: {
 // 로깅 미들웨어
 export function createLoggingMiddleware() {
   return async function loggingMiddleware(request: NextRequest): Promise<NextResponse | null> {
-    const start = Date.now()
     const method = request.method
     const url = request.url
     const userAgent = request.headers.get('user-agent')
-    const ip = request.ip || request.headers.get('x-forwarded-for')
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
 
     console.log(`[${new Date().toISOString()}] ${method} ${url} - IP: ${ip} - UA: ${userAgent}`)
 
-    // 응답 시간 측정을 위해 응답 후 로깅하려면 별도 처리 필요
     return null
   }
 }
 
 // 보안 헤더 미들웨어
 export function createSecurityHeadersMiddleware() {
-  return async function securityHeadersMiddleware(request: NextRequest): Promise<NextResponse | null> {
+  return async function securityHeadersMiddleware(_request: NextRequest): Promise<NextResponse | null> {
     // 보안 헤더는 응답에 추가되므로 여기서는 null 반환
     // 실제로는 응답 미들웨어에서 처리해야 함
     return null
