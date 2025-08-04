@@ -47,7 +47,7 @@ export function useValidation<T>(
   const validateForm = useCallback((data: unknown): ValidationResult<T> => {
     setIsValidating(true)
     const result = validateSchema(schema, data)
-    
+
     if (!result.success && result.errors) {
       setErrors(result.errors)
       // 모든 필드를 touched로 설정
@@ -59,7 +59,7 @@ export function useValidation<T>(
     } else {
       setErrors({})
     }
-    
+
     setIsValidating(false)
     return result
   }, [schema])
@@ -74,7 +74,7 @@ export function useValidation<T>(
   // 필드 블러 처리
   const handleFieldBlur = useCallback((fieldName: string, value: unknown) => {
     setTouched(prev => ({ ...prev, [fieldName]: true }))
-    
+
     if (validateOnBlur) {
       setIsValidating(true)
       const isValid = validator.validateField(fieldName, value)
@@ -104,7 +104,7 @@ export function useValidation<T>(
 
   // 전체 폼 유효성 확인
   const isFormValid = useMemo(() => {
-    return Object.keys(errors).every(field => 
+    return Object.keys(errors).every(field =>
       !errors[field] || errors[field].length === 0
     )
   }, [errors])
@@ -139,20 +139,20 @@ export function useValidation<T>(
     validateForm,
     validateField,
     handleFieldBlur,
-    
+
     // 상태
     errors,
     touched,
     isValidating,
     isFormValid,
-    
+
     // 헬퍼 함수들
     getFieldError,
     isFieldValid,
     clearErrors,
     clearFieldError,
     setFieldTouched,
-    
+
     // 유틸리티
     validator
   }
@@ -262,14 +262,14 @@ export function useAsyncValidation<T>(
 ) {
   const [isAsyncValidating, setIsAsyncValidating] = useState(false)
   const [asyncErrors, setAsyncErrors] = useState<Record<string, string>>({})
-  
+
   const validation = useValidation(schema)
 
   // 비동기 검증 실행
   const validateAsync = useCallback(async (data: unknown): Promise<ValidationResult<T>> => {
     // 먼저 동기 검증 실행
     const syncResult = validation.validateForm(data)
-    
+
     if (!syncResult.success || !asyncValidator) {
       return syncResult
     }
@@ -280,12 +280,17 @@ export function useAsyncValidation<T>(
 
     try {
       const asyncResult = await asyncValidator(syncResult.data!)
-      
+
       if (!asyncResult.isValid && asyncResult.errors) {
         setAsyncErrors(asyncResult.errors)
+        // string을 string[]로 변환
+        const formattedErrors: Record<string, string[]> = {}
+        Object.entries(asyncResult.errors).forEach(([key, value]) => {
+          formattedErrors[key] = [value]
+        })
         return {
           success: false,
-          errors: asyncResult.errors,
+          errors: formattedErrors,
           message: '서버 검증에 실패했습니다'
         }
       }
@@ -341,11 +346,11 @@ export function useMultiStepValidation<T extends Record<string, any>>(
   // 다음 단계로 이동
   const goToNextStep = useCallback((data: any) => {
     const result = validation.validateForm(data)
-    
+
     if (result.success) {
       updateStepData(currentStep, result.data)
       setCompletedSteps(prev => new Set([...prev, currentStep]))
-      
+
       const steps = Object.keys(schemas) as (keyof T)[]
       const currentIndex = steps.indexOf(currentStep)
       if (currentIndex < steps.length - 1) {
@@ -413,19 +418,19 @@ export function useMultiStepValidation<T extends Record<string, any>>(
     currentStep,
     stepData,
     completedSteps,
-    
+
     // 단계 제어
     goToNextStep,
     goToPreviousStep,
     goToStep,
-    
+
     // 데이터 관리
     updateStepData,
-    
+
     // 검증
     validateAllSteps,
     ...validation,
-    
+
     // 유틸리티
     isStepCompleted,
     isLastStep,
