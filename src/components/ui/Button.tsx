@@ -21,30 +21,30 @@ export default function Button({
   
   const variantClasses = {
     primary: 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl focus:ring-purple-500',
-    secondary: 'bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-200 hover:border-purple-300 focus:ring-purple-500',
+    secondary: 'bg-purple-100 hover:bg-purple-200 text-purple-900 border border-purple-300 hover:border-purple-400 focus:ring-purple-500 font-bold shadow-sm hover:shadow-md',
     success: 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl focus:ring-green-500',
     warning: 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white shadow-lg hover:shadow-xl focus:ring-orange-500',
     danger: 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl focus:ring-red-500',
-    outline: 'border-2 border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:border-purple-400 focus:ring-purple-500',
-    ghost: 'text-purple-700 hover:bg-purple-100 hover:text-purple-800 focus:ring-purple-500',
-    soft: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 hover:border-purple-300 focus:ring-purple-500',
+    outline: 'border-2 border-purple-400 bg-white text-purple-900 hover:bg-purple-50 hover:border-purple-500 hover:text-purple-900 focus:ring-purple-500 font-bold shadow-sm hover:shadow-md',
+    ghost: 'text-purple-900 hover:bg-purple-100 hover:text-purple-900 focus:ring-purple-500 font-semibold',
+    soft: 'bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-300 hover:border-purple-400 hover:text-purple-900 focus:ring-purple-500 font-semibold shadow-sm',
     gradient: 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl focus:ring-purple-500'
   }
-  
+
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2 text-sm',
     lg: 'px-6 py-3 text-base',
     xl: 'px-8 py-4 text-lg'
   }
-  
+
   const classes = [
     baseClasses,
     variantClasses[variant],
     sizeClasses[size],
     className
   ].filter(Boolean).join(' ')
-  
+
   return (
     <button
       className={classes}
@@ -151,7 +151,7 @@ export function KiroHeroButtonOutline({
     <Button
       variant="outline"
       size="lg"
-      className={`bg-white/90 backdrop-blur-sm border-purple-300 text-purple-700 hover:bg-white hover:border-purple-400 shadow-lg hover:shadow-xl ${className}`}
+      className={`bg-white/90 backdrop-blur-sm border-purple-400 text-purple-900 hover:bg-white hover:border-purple-500 hover:text-purple-900 shadow-lg hover:shadow-xl font-bold ${className}`}
       {...props}
     >
       {children}
