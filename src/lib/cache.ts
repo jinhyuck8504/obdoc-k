@@ -399,11 +399,11 @@ export class CacheManager {
   multilayer = {
     get: <T>(key: string): T | null => {
       // 먼저 메모리 캐시 확인
-      let data = this.memoryCache.get<T>(key)
+      let data = this.memoryCache.get(key) as T | null
       if (data !== null) return data
 
       // 로컬 스토리지 확인
-      data = this.localStorageCache.get<T>(key)
+      data = this.localStorageCache.get(key) as T | null
       if (data !== null) {
         // 메모리 캐시에도 저장
         this.memoryCache.set(key, data, 5 * 60 * 1000)
@@ -437,7 +437,7 @@ export function cached(
 
     descriptor.value = async function (...args: any[]) {
       const cacheKey = keyGenerator(...args)
-      
+
       // 캐시에서 확인
       const cachedResult = cache.get(cacheKey)
       if (cachedResult !== null) {
@@ -446,10 +446,10 @@ export function cached(
 
       // 캐시 미스 시 원본 메서드 실행
       const result = await originalMethod.apply(this, args)
-      
+
       // 결과를 캐시에 저장
       cache.set(cacheKey, result, ttl)
-      
+
       return result
     }
 
@@ -492,11 +492,11 @@ export function useCache<T>(
 
       // 데이터 페치
       const result = await fetcher()
-      
+
       // 캐시에 저장
       cache.set(key, result, ttl)
       setData(result)
-      
+
       return result
     } catch (err) {
       setError(err as Error)
