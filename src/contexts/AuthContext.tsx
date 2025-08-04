@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let subscription: any = null
     if (!isDummySupabase) {
       const { data } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async (event: string, session: any) => {
           console.log('Auth state changed:', event, session?.user?.id)
           
           if (!mounted) return
