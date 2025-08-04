@@ -1,7 +1,51 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, LogIn, Heart, Users, BarChart3 } from 'lucide-react'
 import Logo from '@/components/common/Logo'
 import SignupForm from '@/components/auth/SignupForm'
+
+// SignupForm을 Suspense로 래핑하는 컴포넌트
+function SignupFormWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-md mx-auto">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+          <div className="animate-pulse space-y-6">
+            {/* 역할 선택 스켈레톤 */}
+            <div>
+              <div className="h-4 bg-gray-200 rounded mb-2 w-20"></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-16 bg-gray-200 rounded-lg"></div>
+                <div className="h-16 bg-gray-200 rounded-lg"></div>
+              </div>
+            </div>
+            
+            {/* 입력 필드 스켈레톤 */}
+            <div className="space-y-4">
+              <div>
+                <div className="h-4 bg-gray-200 rounded mb-2 w-24"></div>
+                <div className="h-12 bg-gray-200 rounded-lg"></div>
+              </div>
+              <div>
+                <div className="h-4 bg-gray-200 rounded mb-2 w-16"></div>
+                <div className="h-12 bg-gray-200 rounded-lg"></div>
+              </div>
+              <div>
+                <div className="h-4 bg-gray-200 rounded mb-2 w-20"></div>
+                <div className="h-12 bg-gray-200 rounded-lg"></div>
+              </div>
+            </div>
+            
+            {/* 버튼 스켈레톤 */}
+            <div className="h-12 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SignupForm />
+    </Suspense>
+  )
+}
 
 export default function SignupPage() {
   return (
@@ -88,29 +132,27 @@ export default function SignupPage() {
                 </p>
               </div>
 
-              {/* Signup Form Card */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-                <SignupForm />
-                
-                {/* Additional Actions */}
-                <div className="mt-6 space-y-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-white text-gray-500">이미 계정이 있으신가요?</span>
-                    </div>
+              {/* Signup Form with Suspense */}
+              <SignupFormWithSuspense />
+              
+              {/* Additional Actions */}
+              <div className="mt-6 space-y-4">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
                   </div>
-                  
-                  <Link
-                    href="/login"
-                    className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-                  >
-                    <LogIn className="h-5 w-5 mr-2" />
-                    로그인하기
-                  </Link>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-gray-500">이미 계정이 있으신가요?</span>
+                  </div>
                 </div>
+                
+                <Link
+                  href="/login"
+                  className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                >
+                  <LogIn className="h-5 w-5 mr-2" />
+                  로그인하기
+                </Link>
               </div>
 
               {/* Back to Home */}
