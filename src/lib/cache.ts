@@ -1,5 +1,17 @@
 // 캐싱 시스템
 
+import React from "react"
+
+import React from "react"
+
+import React from "react"
+
+import React from "react"
+
+import React from "react"
+
+import React from "react"
+
 // 캐시 엔트리 인터페이스
 interface CacheEntry<T> {
   data: T
@@ -184,8 +196,8 @@ export class MemoryCache<T = any> {
 
 // 로컬 스토리지 캐시 클래스
 export class LocalStorageCache<T = any> {
-  private readonly prefix: string
-  private readonly defaultTTL: number
+  protected readonly prefix: string
+  protected readonly defaultTTL: number
 
   constructor(prefix = 'obdoc_cache_', defaultTTL = 24 * 60 * 60 * 1000) {
     this.prefix = prefix
