@@ -2,16 +2,6 @@
 
 import React from "react"
 
-import React from "react"
-
-import React from "react"
-
-import React from "react"
-
-import React from "react"
-
-import React from "react"
-
 // 캐시 엔트리 인터페이스
 interface CacheEntry<T> {
   data: T
@@ -441,7 +431,7 @@ export function cached(
   ttl: number = 5 * 60 * 1000,
   cacheType: 'memory' | 'local' | 'session' | 'multilayer' = 'memory'
 ) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
     const cache = cacheManager[cacheType]
 
@@ -492,7 +482,7 @@ export function useCache<T>(
 
       // 강제 새로고침이 아닌 경우 캐시 확인
       if (!forceRefresh) {
-        const cachedData = cache.get<T>(key)
+        const cachedData = cache.get(key)
         if (cachedData !== null) {
           setData(cachedData)
           setLoading(false)
