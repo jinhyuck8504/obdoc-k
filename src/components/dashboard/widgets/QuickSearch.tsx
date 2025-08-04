@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Search, User, Phone, Calendar, MapPin, Star, Clock } from 'lucide-react'
 import { Customer } from '@/types/customer'
 import { customerService } from '@/lib/customerService'
+import { useDensity } from '@/contexts/DensityContext'
 
 export default function QuickSearch() {
   const { density, getDensityClass } = useDensity()
@@ -252,8 +253,8 @@ export default function QuickSearch() {
                     <div className="w-16 bg-gray-200 rounded-full h-1">
                       <div 
                         className={`h-1 rounded-full transition-all duration-300 ${
-                          patient.status === 'completed' ? 'bg-green-500' :
-                          patient.status === 'active' ? 'bg-blue-500' : 'bg-gray-400'
+                          customer.status === 'completed' ? 'bg-green-500' :
+                          customer.status === 'active' ? 'bg-blue-500' : 'bg-gray-400'
                         }`}
                         style={{ width: `${Math.min(100, progress)}%` }}
                       ></div>
