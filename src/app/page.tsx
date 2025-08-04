@@ -227,16 +227,19 @@ export default function Home() {
             {/* Basic Plan */}
             <div className="relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 lg:p-10 border border-gray-100">
               <div className="text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">1개월</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">1개월 플랜</h3>
                 <p className="text-gray-500 mb-6">단기 체험용</p>
                 <div className="mb-8">
                   <div className="text-5xl font-bold text-gray-900 mb-2">
-                    110,000
+                    199,000
                     <span className="text-2xl font-normal text-gray-500">원</span>
                   </div>
-                  <div className="text-gray-500">/월</div>
+                  <div className="text-gray-500 mb-2">/월</div>
+                  <div className="text-sm font-medium text-gray-600">
+                    할인율: 0%
+                  </div>
                 </div>
-                <Link href="/signup">
+                <Link href="/signup?plan=1month">
                   <Button className="w-full mb-6" variant="outline">
                     시작하기
                   </Button>
@@ -253,26 +256,26 @@ export default function Home() {
               </div>
               <div className="absolute -top-4 right-4">
                 <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 text-sm font-bold shadow-lg animate-pulse">
-                  20% 할인
+                  15% 할인
                 </Badge>
               </div>
               <div className="text-center text-white">
-                <h3 className="text-2xl font-bold mb-2">6개월</h3>
+                <h3 className="text-2xl font-bold mb-2">6개월 플랜</h3>
                 <p className="text-gray-300 mb-6">가장 인기있는 플랜</p>
                 <div className="mb-8">
                   <div className="text-5xl font-bold mb-2">
-                    528,000
+                    1,015,000
                     <span className="text-2xl font-normal text-gray-300">원</span>
                   </div>
                   <div className="text-gray-300 mb-2">/6개월</div>
                   <div className="text-sm text-gray-400 line-through mb-1">
-                    정가: 660,000원
+                    정가: 1,194,000원
                   </div>
                   <div className="text-sm font-medium text-orange-300">
-                    월 88,000원 (<span className="text-yellow-300 font-bold">22,000원 절약</span>)
+                    월 169,000원 (<span className="text-yellow-300 font-bold">30,000원 절약</span>)
                   </div>
                 </div>
-                <Link href="/signup">
+                <Link href="/signup?plan=6months">
                   <Button className="w-full mb-6 bg-white text-slate-800 hover:bg-gray-100 font-bold">
                     지금 시작하기
                   </Button>
@@ -284,26 +287,26 @@ export default function Home() {
             <div className="relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 lg:p-10 border border-gray-100">
               <div className="absolute -top-4 right-4">
                 <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 text-sm font-bold shadow-lg animate-pulse">
-                  39% 할인
+                  25% 할인
                 </Badge>
               </div>
               <div className="text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">12개월</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">12개월 플랜</h3>
                 <p className="text-gray-500 mb-6">최대 할인 혜택</p>
                 <div className="mb-8">
                   <div className="text-5xl font-bold text-gray-900 mb-2">
-                    799,000
+                    1,791,000
                     <span className="text-2xl font-normal text-gray-500">원</span>
                   </div>
                   <div className="text-gray-500 mb-2">/년</div>
                   <div className="text-sm text-gray-500 line-through mb-1">
-                    정가: 1,320,000원
+                    정가: 2,388,000원
                   </div>
                   <div className="text-sm font-medium text-green-600">
-                    월 66,583원 (<span className="text-green-700 font-bold">521,000원 절약</span>)
+                    월 149,000원 (<span className="text-green-700 font-bold">50,000원 절약</span>)
                   </div>
                 </div>
-                <Link href="/signup">
+                <Link href="/signup?plan=12months">
                   <Button className="w-full mb-6" variant="outline">
                     시작하기
                   </Button>
