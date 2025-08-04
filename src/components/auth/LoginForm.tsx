@@ -147,20 +147,16 @@ export default function LoginForm() {
 
         <Button
           type="submit"
+          variant="primary"
+          size="lg"
           disabled={isSubmitting}
-          className="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full"
+          loading={isSubmitting}
         >
-          {isSubmitting ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-              로그인 중...
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <LogIn className="h-5 w-5 mr-2" />
-              로그인
-            </div>
-          )}
+          <div className="flex items-center justify-center">
+            <LogIn className="h-5 w-5 mr-2" />
+            로그인
+          </div>
         </Button>
 
       </form>
