@@ -11,6 +11,12 @@ interface WeightInputModalProps {
   initialData?: Partial<WeightFormData>
 }
 
+interface WeightFormErrors {
+  weight?: string
+  date?: string
+  note?: string
+}
+
 export default function WeightInputModal({ 
   isOpen, 
   onClose, 
@@ -23,11 +29,11 @@ export default function WeightInputModal({
     note: initialData?.note || ''
   })
 
-  const [errors, setErrors] = useState<Partial<WeightFormData>>({})
+  const [errors, setErrors] = useState<WeightFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<WeightFormData> = {}
+    const newErrors: WeightFormErrors = {}
 
     if (!formData.weight || formData.weight <= 0) {
       newErrors.weight = '체중을 입력해주세요'
@@ -80,7 +86,7 @@ export default function WeightInputModal({
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as keyof WeightFormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
