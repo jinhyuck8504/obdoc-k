@@ -1,13 +1,3 @@
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
 import { supabase } from './supabase'
 import { Customer } from '@/types/customer'
 
