@@ -30,14 +30,15 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
   asChild?: boolean
   density?: 'compact' | 'comfortable' | 'spacious'
 }
 
 const DensityButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, density, asChild = false, ...props }, ref) => {
+  ({ className, variant = 'default', size = 'default', density, asChild = false, ...props }, ref) => {
     const { density: contextDensity, getDensityClass } = useDensity()
     const activeDensity = density || contextDensity
 
