@@ -16,40 +16,58 @@ export default function QuickSearch() {
   // 실제 고객 데이터와 동기화된 더미 데이터
   const mockCustomers: Customer[] = [
     {
-      id: 1,
+      id: '1',
       name: '김철수',
       phone: '010-1234-5678',
+      birthDate: '1980-01-01',
+      gender: 'male',
+      height: 175,
       address: '서울시 강남구',
       status: 'completed',
       initialWeight: 85,
       currentWeight: 75,
       targetWeight: 70,
       startDate: '2024-01-01',
-      lastVisit: '2024-01-15'
+      lastVisit: '2024-01-15',
+      doctorId: 'doctor1',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-15T00:00:00Z'
     },
     {
-      id: 2,
+      id: '2',
       name: '이영희',
       phone: '010-2345-6789',
+      birthDate: '1985-05-15',
+      gender: 'female',
+      height: 165,
       address: '서울시 서초구',
       status: 'active',
       initialWeight: 70,
       currentWeight: 65,
       targetWeight: 60,
       startDate: '2024-01-05',
-      lastVisit: '2024-01-14'
+      lastVisit: '2024-01-14',
+      doctorId: 'doctor1',
+      createdAt: '2024-01-05T00:00:00Z',
+      updatedAt: '2024-01-14T00:00:00Z'
     },
     {
-      id: 3,
+      id: '3',
       name: '박민수',
       phone: '010-3456-7890',
+      birthDate: '1990-12-20',
+      gender: 'male',
+      height: 180,
       address: '서울시 송파구',
       status: 'active',
       initialWeight: 90,
       currentWeight: 85,
       targetWeight: 75,
       startDate: '2024-01-10',
-      lastVisit: '2024-01-16'
+      lastVisit: '2024-01-16',
+      doctorId: 'doctor1',
+      createdAt: '2024-01-10T00:00:00Z',
+      updatedAt: '2024-01-16T00:00:00Z'
     }
   ]
 
@@ -68,7 +86,7 @@ export default function QuickSearch() {
       const filteredCustomers = mockCustomers.filter(customer => 
         customer.name.toLowerCase().includes(query.toLowerCase()) ||
         customer.phone.includes(query) ||
-        customer.address.toLowerCase().includes(query.toLowerCase())
+        (customer.address && customer.address.toLowerCase().includes(query.toLowerCase()))
       )
       
       setSearchResults(filteredCustomers.slice(0, 5)) // 최대 5개 결과만 표시
