@@ -21,11 +21,19 @@ export default function WeightInputModal({
     date: initialData?.date || new Date().toISOString().split('T')[0],
     note: initialData?.note || ''
   })
-  const [errors, setErrors] = useState<Partial<WeightFormData>>({})
+  const [errors, setErrors] = useState<{
+    weight?: string
+    date?: string
+    note?: string
+  }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<WeightFormData> = {}
+    const newErrors: {
+      weight?: string
+      date?: string
+      note?: string
+    } = {}
 
     if (!formData.weight || formData.weight <= 0) {
       newErrors.weight = '체중을 입력해주세요'
@@ -67,7 +75,7 @@ export default function WeightInputModal({
   const handleInputChange = (field: keyof WeightFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
