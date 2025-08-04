@@ -21,7 +21,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     id: '1month',
     name: '1개월 플랜',
     duration: 1,
-    price: 110000,
+    price: 199000,
     features: [
       '고객 관리 시스템',
       '예약 관리',
@@ -35,9 +35,9 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     id: '6months',
     name: '6개월 플랜',
     duration: 6,
-    price: 528000,
-    originalPrice: 660000,
-    discount: 20,
+    price: 1015000,
+    originalPrice: 1194000,
+    discount: 15,
     popular: true,
     features: [
       '고객 관리 시스템',
@@ -47,15 +47,15 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       '우선 지원',
       '데이터 백업'
     ],
-    description: '가장 인기 있는 플랜으로 20% 할인 혜택'
+    description: '가장 인기 있는 플랜으로 15% 할인 혜택'
   },
   {
     id: '12months',
     name: '12개월 플랜',
     duration: 12,
-    price: 799000,
-    originalPrice: 1320000,
-    discount: 39,
+    price: 1791000,
+    originalPrice: 2388000,
+    discount: 25,
     features: [
       '고객 관리 시스템',
       '예약 관리',
