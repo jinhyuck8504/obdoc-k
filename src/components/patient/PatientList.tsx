@@ -5,10 +5,6 @@ import { Edit, Trash2, Eye, Phone, Mail, Calendar, TrendingDown, User } from 'lu
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EmptyState from '@/components/common/EmptyState'
 import { Customer } from '@/types/customer'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
-import { Patient } from '@/types/patient'
 
 interface PatientListProps {
   patients: Customer[]
