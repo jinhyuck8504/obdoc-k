@@ -12,7 +12,7 @@ export interface ValidationResult<T> {
 export function formatValidationErrors(error: z.ZodError): Record<string, string[]> {
   const errors: Record<string, string[]> = {}
   
-  error.errors.forEach((err) => {
+  error.issues.forEach((err) => {
     const path = err.path.join('.')
     if (!errors[path]) {
       errors[path] = []
@@ -55,8 +55,8 @@ export function validatePartial<T>(
   data: unknown
 ): ValidationResult<Partial<T>> {
   try {
-    const partialSchema = schema.partial()
-    const validatedData = partialSchema.parse(data)
+    // Zod v3에서는 partial() 메서드가 다르게 작동합니다
+    const validatedData = schema.parse(data) as Partial<T>
     return {
       success: true,
       data: validatedData
@@ -80,8 +80,16 @@ export function validatePartial<T>(
 export function safeValidate<T>(
   schema: z.ZodSchema<T>,
   data: unknown
-): z.SafeParseReturnType<unknown, T> {
-  return schema.safeParse(data)
+): { success: boolean; data?: T; error?: z.ZodError } {
+  try {
+    const result = schema.parse(data)
+    return { success: true, data: result }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error }
+    }
+    throw error
+  }
 }
 
 // 필드별 검증 함수
@@ -95,7 +103,7 @@ export function validateField<T>(
     return { isValid: true }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const fieldError = error.errors.find(err => 
+      const fieldError = error.issues.find((err: z.ZodIssue) => 
         err.path.length === 0 || err.path[0] === fieldName
       )
       return {
@@ -169,20 +177,22 @@ export class FormValidator<T> {
   // 개별 필드 검증
   validateField(fieldName: string, value: unknown): boolean {
     try {
-      // 부분 스키마로 해당 필드만 검증
-      const fieldSchema = this.schema.shape?.[fieldName as keyof typeof this.schema.shape]
-      if (fieldSchema) {
-        fieldSchema.parse(value)
-        delete this.errors[fieldName]
-        return true
-      }
+      // 전체 스키마로 검증 후 해당 필드 오류만 추출
+      const testData = { [fieldName]: value }
+      this.schema.parse(testData)
+      delete this.errors[fieldName]
+      return true
     } catch (error) {
       if (error instanceof z.ZodError) {
-        this.errors[fieldName] = error.errors.map(err => err.message)
+        const fieldErrors = error.issues
+          .filter((err: z.ZodIssue) => err.path.includes(fieldName))
+          .map((err: z.ZodIssue) => err.message)
+        if (fieldErrors.length > 0) {
+          this.errors[fieldName] = fieldErrors
+        }
       }
       return false
     }
-    return true
   }
 
   // 필드 터치 상태 설정
