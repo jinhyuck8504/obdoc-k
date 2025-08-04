@@ -117,7 +117,7 @@ export const config: AppConfig = {
     sentry: {
       dsn: getOptionalEnv('SENTRY_DSN'),
       environment: getOptionalEnv('NODE_ENV', 'development'),
-      tracesSampleRate: config.app.environment === 'production' ? 0.1 : 1.0,
+      tracesSampleRate: getOptionalEnv('NODE_ENV', 'development') === 'production' ? 0.1 : 1.0,
     },
     analytics: {
       googleAnalyticsId: getOptionalEnv('NEXT_PUBLIC_GOOGLE_ANALYTICS_ID'),
