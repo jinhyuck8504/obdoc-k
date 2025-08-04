@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Calendar, Clock, MapPin, Phone, User, CheckCircle, AlertCircle, XCircle, Plus } from 'lucide-react'
+import { Calendar, Clock, User, CheckCircle, AlertCircle, XCircle, Plus } from 'lucide-react'
 import { Appointment } from '@/types/appointment'
 
 interface MyAppointmentsProps {
@@ -223,12 +223,7 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
                       </div>
                     </div>
 
-                    {appointment.location && (
-                      <div className="flex items-center space-x-2 mb-2">
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">{appointment.location}</span>
-                      </div>
-                    )}
+
 
                     {appointment.notes && (
                       <div className="text-sm text-gray-600 bg-white p-2 rounded border mt-2">
