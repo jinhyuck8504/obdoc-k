@@ -107,7 +107,7 @@ export const authSchemas = {
       .min(2, '병원명은 최소 2자 이상이어야 합니다')
       .max(50, '병원명은 50자 이하로 입력해주세요'),
     hospitalType: z.enum(['종합병원', '병원', '의원', '치과병원', '치과의원', '한방병원', '한의원', '기타'], {
-      errorMap: () => ({ message: '병원 유형을 선택해주세요' })
+      message: '병원 유형을 선택해주세요'
     }),
     hospitalAddress: commonSchemas.address,
     businessNumber: commonSchemas.businessNumber,
@@ -122,7 +122,7 @@ export const authSchemas = {
     
     // 구독 정보
     subscriptionPlan: z.enum(['1month', '6months', '12months'], {
-      errorMap: () => ({ message: '구독 플랜을 선택해주세요' })
+      message: '구독 플랜을 선택해주세요'
     }),
     
     // 필수 동의 항목
@@ -172,7 +172,7 @@ export const authSchemas = {
     // 기본 개인정보
     dateOfBirth: commonSchemas.date,
     gender: z.enum(['male', 'female', 'other'], {
-      errorMap: () => ({ message: '성별을 선택해주세요' })
+      message: '성별을 선택해주세요'
     }),
     
     // 필수 동의 항목
