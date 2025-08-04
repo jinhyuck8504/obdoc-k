@@ -3,7 +3,7 @@ import { AdminStats, HospitalTypeStats, RevenueData, UserActivityData, Subscript
 
 // 개발 환경 체크
 const isDevelopment = process.env.NODE_ENV === 'development'
-const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
@@ -15,7 +15,7 @@ const generateDummyStats = (): AdminStats => ({
   totalPatients: 1158,
   activeUsers: 892,
   newUsersThisMonth: 156,
-  
+
   // 구독 통계
   totalSubscriptions: 89,
   activeSubscriptions: 67,
@@ -23,7 +23,7 @@ const generateDummyStats = (): AdminStats => ({
   expiredSubscriptions: 10,
   subscriptionRevenue: 45780000,
   monthlyRevenue: 8950000,
-  
+
   // 병원 유형별 통계
   hospitalTypeStats: [
     { type: '종합병원', count: 25, activeCount: 22, revenue: 18500000, percentage: 28.1 },
@@ -32,19 +32,19 @@ const generateDummyStats = (): AdminStats => ({
     { type: '비만클리닉', count: 12, activeCount: 10, revenue: 7200000, percentage: 14.9 },
     { type: '기타', count: 19, activeCount: 8, revenue: 6780000, percentage: 16.6 }
   ],
-  
+
   // 커뮤니티 통계
   totalPosts: 2847,
   totalComments: 8934,
   activeDiscussions: 234,
   reportedContent: 23,
-  
+
   // 예약 통계
   totalAppointments: 5672,
   completedAppointments: 4891,
   cancelledAppointments: 456,
   upcomingAppointments: 325,
-  
+
   // 시스템 통계
   systemHealth: 'healthy',
   lastUpdated: new Date().toISOString()
@@ -62,11 +62,11 @@ const generateDummyRevenueData = (): RevenueData[] => [
 const generateDummyUserActivity = (): UserActivityData[] => {
   const data: UserActivityData[] = []
   const today = new Date()
-  
+
   for (let i = 29; i >= 0; i--) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    
+
     data.push({
       date: date.toISOString().split('T')[0],
       activeUsers: Math.floor(Math.random() * 200) + 600,
@@ -76,7 +76,7 @@ const generateDummyUserActivity = (): UserActivityData[] => {
       appointments: Math.floor(Math.random() * 80) + 20
     })
   }
-  
+
   return data
 }
 
@@ -135,26 +135,26 @@ export const adminService = {
         totalPatients: usersData.data?.filter((u: any) => u.role === 'patient').length || 0,
         activeUsers: 0, // 실제 활성 사용자 계산 필요
         newUsersThisMonth: 0, // 이번 달 신규 사용자 계산 필요
-        
+
         totalSubscriptions: subscriptionsData.data?.length || 0,
         activeSubscriptions: subscriptionsData.data?.filter((s: any) => s.status === 'active').length || 0,
         pendingSubscriptions: subscriptionsData.data?.filter((s: any) => s.status === 'pending').length || 0,
         expiredSubscriptions: subscriptionsData.data?.filter((s: any) => s.status === 'expired').length || 0,
         subscriptionRevenue: subscriptionsData.data?.reduce((sum: number, s: any) => sum + (s.amount || 0), 0) || 0,
         monthlyRevenue: 0, // 월별 매출 계산 필요
-        
+
         hospitalTypeStats: [], // 병원 유형별 통계 계산 필요
-        
+
         totalPosts: postsData.data?.length || 0,
         totalComments: 0, // 댓글 수 계산 필요
         activeDiscussions: 0, // 활성 토론 계산 필요
         reportedContent: 0, // 신고된 콘텐츠 계산 필요
-        
+
         totalAppointments: appointmentsData.data?.length || 0,
-        completedAppointments: appointmentsData.data?.filter(a => a.status === 'completed').length || 0,
-        cancelledAppointments: appointmentsData.data?.filter(a => a.status === 'cancelled').length || 0,
-        upcomingAppointments: appointmentsData.data?.filter(a => a.status === 'scheduled').length || 0,
-        
+        completedAppointments: appointmentsData.data?.filter((a: any) => a.status === 'completed').length || 0,
+        cancelledAppointments: appointmentsData.data?.filter((a: any) => a.status === 'cancelled').length || 0,
+        upcomingAppointments: appointmentsData.data?.filter((a: any) => a.status === 'scheduled').length || 0,
+
         systemHealth: 'healthy',
         lastUpdated: new Date().toISOString()
       }
@@ -184,15 +184,15 @@ export const adminService = {
 
       // 월별 수익 데이터 집계
       const revenueMap = new Map<string, { revenue: number, subscriptions: number, newSubscriptions: number }>()
-      
+
       data?.forEach(subscription => {
         const month = subscription.created_at.substring(0, 7) // YYYY-MM
         const current = revenueMap.get(month) || { revenue: 0, subscriptions: 0, newSubscriptions: 0 }
-        
+
         current.revenue += subscription.amount || 0
         current.subscriptions += 1
         current.newSubscriptions += 1
-        
+
         revenueMap.set(month, current)
       })
 
@@ -247,7 +247,7 @@ export const adminService = {
         current.count += 1
         current.revenue += subscription.amount || 0
         planStats.set(subscription.plan, current)
-        
+
         totalCount += 1
         totalRevenue += subscription.amount || 0
       })
@@ -312,15 +312,15 @@ export const adminService = {
       data?.forEach(doctor => {
         const type = doctor.hospital_type || '기타'
         const current = typeStats.get(type) || { count: 0, activeCount: 0, revenue: 0 }
-        
+
         current.count += 1
         if (doctor.subscription_status === 'active') {
           current.activeCount += 1
         }
-        
+
         // 구독 수익 계산 (실제로는 더 복잡한 로직 필요)
         current.revenue += 0 // subscriptions 데이터에서 계산
-        
+
         typeStats.set(type, current)
         totalCount += 1
       })
