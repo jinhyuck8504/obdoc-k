@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { validationSchemas } from '@/lib/validation/schemas'
 import ValidatedInput, { ValidatedTextarea, ValidatedSelect } from '@/components/validation/ValidatedInput'
 import ValidatedForm from '@/components/validation/ValidatedForm'
-import { Stethoscope, Heart, Phone, Mail, Building2, User, Shield, MessageSquare, Bell } from 'lucide-react'
+import { Stethoscope, Heart, Phone, Building2, User, Shield, Bell } from 'lucide-react'
 
 export default function SignupTestPage() {
   const [signupType, setSignupType] = useState<'doctor' | 'patient'>('doctor')
