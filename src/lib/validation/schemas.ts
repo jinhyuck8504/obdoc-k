@@ -95,13 +95,13 @@ export const authSchemas = {
     password: commonSchemas.password,
     confirmPassword: z.string(),
     name: commonSchemas.name,
-    
+
     // 연락처 정보 (개선됨)
     personalPhone: commonSchemas.phoneNumber, // 개인 휴대폰 (필수 - SMS/카톡용)
     hospitalPhone: z.string()
       .min(1, '병원 대표번호를 입력해주세요')
       .regex(/^0\d{1,2}-\d{3,4}-\d{4}$/, '올바른 전화번호 형식이 아닙니다 (예: 02-1234-5678, 031-123-4567)'),
-    
+
     // 병원 정보
     hospitalName: z.string()
       .min(2, '병원명은 최소 2자 이상이어야 합니다')
@@ -111,7 +111,7 @@ export const authSchemas = {
     }),
     hospitalAddress: commonSchemas.address,
     businessNumber: commonSchemas.businessNumber,
-    
+
     // 의료진 정보
     licenseNumber: z.string()
       .min(1, '의료진 면허번호를 입력해주세요')
@@ -119,12 +119,12 @@ export const authSchemas = {
     specialization: z.string()
       .min(2, '전문과목을 입력해주세요')
       .max(30, '전문과목은 30자 이하로 입력해주세요'),
-    
+
     // 구독 정보
     subscriptionPlan: z.enum(['1month', '6months', '12months'], {
       message: '구독 플랜을 선택해주세요'
     }),
-    
+
     // 필수 동의 항목
     agreeToTerms: z.boolean().refine(val => val === true, {
       message: '이용약관에 동의해주세요'
@@ -135,13 +135,13 @@ export const authSchemas = {
     agreeToMedicalInfo: z.boolean().refine(val => val === true, {
       message: '의료정보 수집·이용에 동의해주세요'
     }),
-    
+
     // 선택 동의 항목
     agreeToMarketing: z.boolean().default(false), // 마케팅 정보 수신 동의 (선택)
     agreeToSms: z.boolean().default(true), // SMS 알림 수신 동의 (기본 true)
     agreeToEmail: z.boolean().default(true), // 이메일 알림 수신 동의 (기본 true)
     agreeToKakao: z.boolean().default(false), // 카카오톡 알림 수신 동의 (선택)
-    
+
     // 추가 정보 (선택)
     position: z.string()
       .max(30, '직책은 30자 이하로 입력해주세요')
@@ -165,16 +165,16 @@ export const authSchemas = {
     password: commonSchemas.password,
     confirmPassword: z.string(),
     name: commonSchemas.name,
-    
+
     // 연락처 정보 (필수 - 알림용)
     phone: commonSchemas.phoneNumber, // 휴대폰 번호 (SMS/카톡 알림용)
-    
+
     // 기본 개인정보
     dateOfBirth: commonSchemas.date,
     gender: z.enum(['male', 'female', 'other'], {
       message: '성별을 선택해주세요'
     }),
-    
+
     // 필수 동의 항목
     agreeToTerms: z.boolean().refine(val => val === true, {
       message: '이용약관에 동의해주세요'
@@ -185,14 +185,14 @@ export const authSchemas = {
     agreeToMedicalInfo: z.boolean().refine(val => val === true, {
       message: '의료정보 수집·이용에 동의해주세요'
     }),
-    
+
     // 선택 동의 항목
     agreeToMarketing: z.boolean().default(false), // 마케팅 정보 수신 동의 (선택)
     agreeToSms: z.boolean().default(true), // SMS 알림 수신 동의 (기본 true - 예약 알림용)
     agreeToEmail: z.boolean().default(true), // 이메일 알림 수신 동의 (기본 true)
     agreeToKakao: z.boolean().default(false), // 카카오톡 알림 수신 동의 (선택)
     agreeToHealthData: z.boolean().default(false), // 건강데이터 활용 동의 (선택)
-    
+
     // 추가 정보 (선택)
     address: commonSchemas.address.optional(), // 주소 (응급상황용)
     emergencyContact: z.object({
@@ -200,7 +200,7 @@ export const authSchemas = {
       phone: commonSchemas.phoneNumber,
       relationship: z.string().min(1, '관계를 입력해주세요')
     }).optional(), // 비상연락처
-    
+
     // 건강 정보 (선택)
     height: commonSchemas.height.optional(),
     weight: commonSchemas.weight.optional(),
@@ -437,25 +437,41 @@ export const searchSchemas = {
   })
 }
 
-// 파일 업로드 관련 스키마
-export const fileSchemas = {
-  // 이미지 업로드
-  imageUpload: z.object({
-    file: z.instanceof(File)
-      .refine(file => file.size <= 5 * 1024 * 1024, '파일 크기는 5MB 이하여야 합니다')
-      .refine(file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type), 
-        '지원하는 이미지 형식: JPEG, PNG, WebP'),
-    alt: z.string().max(100, '대체 텍스트는 100자 이하로 입력해주세요').optional()
-  }),
+// 클라이언트 전용 파일 업로드 관련 스키마 (조건부 생성)
+export const createFileSchemas = () => {
+  // 브라우저 환경에서만 File 스키마 생성
+  if (typeof window === 'undefined') {
+    // 서버 사이드에서는 빈 객체 반환
+    return {
+      imageUpload: z.object({
+        alt: z.string().max(100, '대체 텍스트는 100자 이하로 입력해주세요').optional()
+      }),
+      documentUpload: z.object({
+        description: z.string().max(200, '파일 설명은 200자 이하로 입력해주세요').optional()
+      })
+    }
+  }
 
-  // 문서 업로드
-  documentUpload: z.object({
-    file: z.instanceof(File)
-      .refine(file => file.size <= 10 * 1024 * 1024, '파일 크기는 10MB 이하여야 합니다')
-      .refine(file => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type), 
-        '지원하는 문서 형식: PDF, DOC, DOCX'),
-    description: z.string().max(200, '파일 설명은 200자 이하로 입력해주세요').optional()
-  })
+  // 클라이언트 사이드에서는 실제 File 스키마 반환
+  return {
+    // 이미지 업로드
+    imageUpload: z.object({
+      file: z.instanceof(File)
+        .refine(file => file.size <= 5 * 1024 * 1024, '파일 크기는 5MB 이하여야 합니다')
+        .refine(file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
+          '지원하는 이미지 형식: JPEG, PNG, WebP'),
+      alt: z.string().max(100, '대체 텍스트는 100자 이하로 입력해주세요').optional()
+    }),
+
+    // 문서 업로드
+    documentUpload: z.object({
+      file: z.instanceof(File)
+        .refine(file => file.size <= 10 * 1024 * 1024, '파일 크기는 10MB 이하여야 합니다')
+        .refine(file => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type),
+          '지원하는 문서 형식: PDF, DOC, DOCX'),
+      description: z.string().max(200, '파일 설명은 200자 이하로 입력해주세요').optional()
+    })
+  }
 }
 
 // 설정 관련 스키마
@@ -496,7 +512,7 @@ export const validationSchemas = {
   admin: adminSchemas,
   billing: billingSchemas,
   search: searchSchemas,
-  file: fileSchemas,
+  file: createFileSchemas(), // 조건부로 생성된 파일 스키마
   settings: settingsSchemas
 }
 
