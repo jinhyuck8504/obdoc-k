@@ -1,14 +1,14 @@
 'use client'
+
 import React, { useState } from 'react'
 import { X, Save, Weight, Calendar, FileText } from 'lucide-react'
 import { WeightFormData } from '@/types/health'
-import ClientOnly from '@/components/hydration/ClientOnly'
 
 interface WeightInputModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (data: WeightFormData) => void
-  initialData?: WeightFormData
+  initialData?: Partial<WeightFormData>
 }
 
 export default function WeightInputModal({ 
@@ -22,11 +22,20 @@ export default function WeightInputModal({
     date: initialData?.date || new Date().toISOString().split('T')[0],
     note: initialData?.note || ''
   })
-  const [errors, setErrors] = useState<Partial<WeightFormData>>({})
+
+  const [errors, setErrors] = useState<{
+    weight?: string
+    date?: string
+    note?: string
+  }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<WeightFormData> = {}
+    const newErrors: {
+      weight?: string
+      date?: string
+      note?: string
+    } = {}
 
     if (!formData.weight || formData.weight <= 0) {
       newErrors.weight = '체중을 입력해주세요'
@@ -39,6 +48,8 @@ export default function WeightInputModal({
     } else {
       const selectedDate = new Date(formData.date)
       const today = new Date()
+      today.setHours(23, 59, 59, 999) // 오늘 끝까지 허용
+      
       if (selectedDate > today) {
         newErrors.date = '미래 날짜는 선택할 수 없습니다'
       }
@@ -50,14 +61,22 @@ export default function WeightInputModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     if (!validateForm()) {
       return
     }
 
     setIsSubmitting(true)
+    
     try {
       await onSave(formData)
       onClose()
+      // 폼 리셋
+      setFormData({
+        weight: 0,
+        date: new Date().toISOString().split('T')[0],
+        note: ''
+      })
     } catch (error) {
       console.error('체중 저장 중 오류:', error)
     } finally {
@@ -67,24 +86,29 @@ export default function WeightInputModal({
 
   const handleInputChange = (field: keyof WeightFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
+  }
+
+  const calculateBMI = (weight: number, height: number): number => {
+    if (weight <= 0 || height <= 0) return 0
+    return weight / Math.pow(height / 100, 2)
   }
 
   if (!isOpen) return null
 
   return (
-    <ClientOnly fallback={null}>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
             <Weight className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">
-              {initialData ? '체중 수정' : '체중 기록'}
-            </h3>
+            <h2 className="text-lg font-semibold text-gray-900">
+              {initialData ? '체중 기록 수정' : '체중 기록 추가'}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -105,14 +129,14 @@ export default function WeightInputModal({
               <input
                 type="number"
                 step="0.1"
+                min="30"
+                max="300"
                 value={formData.weight || ''}
                 onChange={(e) => handleInputChange('weight', parseFloat(e.target.value) || 0)}
                 className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.weight ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="체중을 입력하세요"
-                min="30"
-                max="300"
               />
             </div>
             {errors.weight && (
@@ -159,6 +183,15 @@ export default function WeightInputModal({
             </div>
           </div>
 
+          {/* BMI 미리보기 (키 정보가 있을 때) */}
+          {formData.weight > 0 && (
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>참고:</strong> 체중 기록이 저장되면 BMI와 진행률이 자동으로 계산됩니다.
+              </p>
+            </div>
+          )}
+
           {/* 버튼 */}
           <div className="flex items-center justify-end space-x-3 pt-4">
             <button
@@ -180,6 +213,5 @@ export default function WeightInputModal({
         </form>
       </div>
     </div>
-    </ClientOnly>
   )
 }
