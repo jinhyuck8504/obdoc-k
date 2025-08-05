@@ -46,7 +46,7 @@ export class ClaudeService {
       }
     } catch (error) {
       console.error('Claude DII calculation failed:', error)
-      throw new Error(`Claude DII 계산 실패: ${error.message}`)
+      throw new Error(`Claude DII 계산 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -77,7 +77,7 @@ export class ClaudeService {
       }
     } catch (error) {
       console.error('Claude health risk assessment failed:', error)
-      throw new Error(`Claude 건강 위험도 평가 실패: ${error.message}`)
+      throw new Error(`Claude 건강 위험도 평가 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -108,7 +108,7 @@ export class ClaudeService {
       }
     } catch (error) {
       console.error('Claude risk detection failed:', error)
-      throw new Error(`Claude 위험 신호 감지 실패: ${error.message}`)
+      throw new Error(`Claude 위험 신호 감지 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -139,7 +139,7 @@ export class ClaudeService {
       }
     } catch (error) {
       console.error('Claude food analysis failed:', error)
-      throw new Error(`Claude 음식 분석 실패: ${error.message}`)
+      throw new Error(`Claude 음식 분석 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
