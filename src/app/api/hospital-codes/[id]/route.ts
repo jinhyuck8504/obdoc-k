@@ -7,10 +7,10 @@ import { supabase } from '@/lib/supabase'
 // PUT /api/hospital-codes/[id] - 코드 상태 토글
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const codeId = params.id
+    const { id: codeId } = await params
 
     // 인증 확인
     const authHeader = request.headers.get('authorization')
