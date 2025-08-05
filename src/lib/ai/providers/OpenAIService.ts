@@ -51,7 +51,7 @@ export class OpenAIService {
       }
     } catch (error) {
       console.error('OpenAI food analysis failed:', error)
-      throw new Error(`OpenAI 음식 분석 실패: ${error.message}`)
+      throw new Error(`OpenAI 음식 분석 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -87,7 +87,7 @@ export class OpenAIService {
       }
     } catch (error) {
       console.error('OpenAI health risk assessment failed:', error)
-      throw new Error(`OpenAI 건강 위험도 평가 실패: ${error.message}`)
+      throw new Error(`OpenAI 건강 위험도 평가 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -123,7 +123,7 @@ export class OpenAIService {
       }
     } catch (error) {
       console.error('OpenAI risk detection failed:', error)
-      throw new Error(`OpenAI 위험 신호 감지 실패: ${error.message}`)
+      throw new Error(`OpenAI 위험 신호 감지 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
