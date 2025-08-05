@@ -5,22 +5,44 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, User, Building, Stethoscope, CheckCircle, AlertCircle, UserPlus, CreditCard } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Building, Stethoscope, CheckCircle, AlertCircle, UserPlus, Key } from 'lucide-react'
 import { auth } from '@/lib/auth'
 import Button from '@/components/ui/Button'
 import { supabase } from '@/lib/supabase'
+
+// Window 객체 확장
+declare global {
+  interface Window {
+    verifiedHospitalCode?: {
+      id: string
+      code: string
+      name?: string
+      isActive: boolean
+    }
+  }
+}
 
 const signupSchema = z.object({
   email: z.string().email('올바른 이메일을 입력해주세요'),
   password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다'),
   confirmPassword: z.string(),
   role: z.enum(['doctor', 'customer']),
+  hospitalCode: z.string().optional(), // 고객용 병원 가입 코드
   hospitalName: z.string().optional(),
   hospitalType: z.string().optional(),
   subscriptionPlan: z.enum(['1month', '6months', '12months']).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "비밀번호가 일치하지 않습니다",
   path: ["confirmPassword"],
+}).refine((data) => {
+  // 고객인 경우 병원 코드 필수
+  if (data.role === 'customer' && !data.hospitalCode) {
+    return false
+  }
+  return true
+}, {
+  message: "병원 가입 코드를 입력해주세요",
+  path: ["hospitalCode"],
 })
 
 type SignupFormData = z.infer<typeof signupSchema>
@@ -71,12 +93,40 @@ export default function SignupForm() {
     try {
       setSignupError(null)
 
+      // 고객인 경우 병원 코드 검증
+      if (data.role === 'customer' && data.hospitalCode) {
+        try {
+          const response = await fetch('/api/hospital-codes/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code: data.hospitalCode })
+          })
+
+          const result = await response.json()
+
+          if (!response.ok || !result.isValid) {
+            setSignupError(result.message || '유효하지 않은 병원 가입 코드입니다.')
+            return
+          }
+
+          // 검증 성공 시 코드 정보 저장 (나중에 사용 기록용)
+          window.verifiedHospitalCode = result.code
+        } catch (error) {
+          console.error('Hospital code verification error:', error)
+          setSignupError('코드 검증 중 오류가 발생했습니다. 다시 시도해주세요.')
+          return
+        }
+      }
+
       // auth.signUp 사용 (개발 모드 지원)
       const { data: authData, error: authError } = await auth.signUp(
         data.email,
         data.password,
         {
           role: data.role,
+          hospitalCode: data.hospitalCode,
           hospitalName: data.hospitalName,
           hospitalType: data.hospitalType,
           subscriptionPlan: data.subscriptionPlan
@@ -93,7 +143,7 @@ export default function SignupForm() {
         if (isDevelopment && isDummySupabase) {
           console.log('개발 모드: 더미 회원가입 완료')
         } else {
-          // 실제 환경에서만 의사 프로필 생성
+          // 실제 환경에서만 프로필 생성
           if (data.role === 'doctor') {
             const { error: doctorError } = await supabase
               .from('doctors')
@@ -110,6 +160,49 @@ export default function SignupForm() {
               console.error('Doctor profile creation error:', doctorError)
               setSignupError('의사 프로필 생성에 실패했습니다.')
               return
+            }
+          } else if (data.role === 'customer') {
+            // 고객 프로필 생성
+            const { error: customerError } = await supabase
+              .from('customers')
+              .insert({
+                user_id: authData.user.id,
+                hospital_code: data.hospitalCode,
+                name: '', // 나중에 프로필에서 입력
+              })
+
+            if (customerError) {
+              console.error('Customer profile creation error:', customerError)
+              setSignupError('고객 프로필 생성에 실패했습니다.')
+              return
+            }
+
+            // 병원 코드 사용 기록 (검증된 코드가 있는 경우)
+            if (window.verifiedHospitalCode) {
+              try {
+                const { data: customer } = await supabase
+                  .from('customers')
+                  .select('id')
+                  .eq('user_id', authData.user.id)
+                  .single()
+
+                if (customer) {
+                  await supabase
+                    .from('hospital_signup_code_usage')
+                    .insert({
+                      code_id: window.verifiedHospitalCode.id,
+                      customer_id: customer.id
+                    })
+
+                  // 사용 횟수 증가
+                  await supabase.rpc('increment_code_usage', { 
+                    code_id: window.verifiedHospitalCode.id 
+                  })
+                }
+              } catch (error) {
+                console.error('Code usage recording error:', error)
+                // 에러가 발생해도 회원가입은 계속 진행
+              }
             }
           }
         }
@@ -357,6 +450,36 @@ export default function SignupForm() {
               </p>
             )}
           </div>
+
+          {/* 고객용 병원 가입 코드 */}
+          {selectedRole === 'customer' && (
+            <div>
+              <label htmlFor="hospitalCode" className="block text-sm font-medium text-gray-700 mb-2">
+                병원 가입 코드 <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Key className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  {...register('hospitalCode')}
+                  type="text"
+                  id="hospitalCode"
+                  placeholder="병원에서 제공받은 가입 코드를 입력하세요"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
+              {errors.hospitalCode && (
+                <p className="mt-2 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {errors.hospitalCode.message}
+                </p>
+              )}
+              <p className="mt-2 text-sm text-gray-500">
+                💡 병원에서 제공받은 가입 코드가 필요합니다. 코드가 없으시면 담당 의료진에게 문의하세요.
+              </p>
+            </div>
+          )}
 
           {/* 의사 전용 필드 */}
           {selectedRole === 'doctor' && (
