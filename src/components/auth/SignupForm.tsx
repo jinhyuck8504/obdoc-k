@@ -106,7 +106,29 @@ export default function SignupForm() {
 
           const result = await response.json()
 
-          if (!response.ok || !result.isValid) {
+          if (!response.ok) {
+            // Rate Limiting 에러 처리
+            if (response.status === 429) {
+              if (result.error === 'HOSPITAL_CODE_RATE_LIMIT_EXCEEDED') {
+                if (result.blocked) {
+                  setSignupError('병원 코드 검증 시도가 너무 많습니다. 30분 후 다시 시도해주세요.')
+                } else {
+                  const retryMinutes = Math.ceil(result.retryAfter / 60)
+                  setSignupError(`병원 코드 검증 시도가 너무 많습니다. ${retryMinutes}분 후 다시 시도해주세요.`)
+                }
+              } else {
+                const retrySeconds = result.retryAfter || 60
+                setSignupError(`요청이 너무 많습니다. ${retrySeconds}초 후 다시 시도해주세요.`)
+              }
+              return
+            }
+            
+            // 기타 에러 처리
+            setSignupError(result.message || '유효하지 않은 병원 가입 코드입니다.')
+            return
+          }
+
+          if (!result.isValid) {
             setSignupError(result.message || '유효하지 않은 병원 가입 코드입니다.')
             return
           }
@@ -115,7 +137,11 @@ export default function SignupForm() {
           window.verifiedHospitalCode = result.code
         } catch (error) {
           console.error('Hospital code verification error:', error)
-          setSignupError('코드 검증 중 오류가 발생했습니다. 다시 시도해주세요.')
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            setSignupError('네트워크 연결을 확인해주세요.')
+          } else {
+            setSignupError('코드 검증 중 오류가 발생했습니다. 다시 시도해주세요.')
+          }
           return
         }
       }
@@ -195,8 +221,8 @@ export default function SignupForm() {
                     })
 
                   // 사용 횟수 증가
-                  await supabase.rpc('increment_code_usage', { 
-                    code_id: window.verifiedHospitalCode.id 
+                  await supabase.rpc('increment_code_usage', {
+                    code_id: window.verifiedHospitalCode.id
                   })
                 }
               } catch (error) {
