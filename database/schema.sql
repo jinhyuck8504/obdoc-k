@@ -36,6 +36,7 @@ CREATE TABLE customers (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   doctor_id UUID REFERENCES doctors(id) ON DELETE CASCADE,
+  hospital_code TEXT, -- 가입 시 사용한 병원 코드
   name TEXT NOT NULL,
   birth_date DATE,
   gender TEXT CHECK (gender IN ('male', 'female')),
@@ -95,6 +96,28 @@ CREATE TABLE community_comments (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Hospital signup codes table (병원 가입 코드)
+CREATE TABLE hospital_signup_codes (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  doctor_id UUID REFERENCES doctors(id) ON DELETE CASCADE,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT, -- 코드 이름/설명 (예: "신규 환자용", "VIP 환자용")
+  max_uses INTEGER DEFAULT NULL, -- 최대 사용 횟수 (NULL이면 무제한)
+  current_uses INTEGER DEFAULT 0, -- 현재 사용 횟수
+  is_active BOOLEAN DEFAULT true,
+  expires_at TIMESTAMP WITH TIME ZONE DEFAULT NULL, -- 만료일 (NULL이면 무기한)
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Hospital signup code usage log (가입 코드 사용 로그)
+CREATE TABLE hospital_signup_code_usage (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  code_id UUID REFERENCES hospital_signup_codes(id) ON DELETE CASCADE,
+  customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+  used_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Subscriptions table (결제 내역 관리)
 CREATE TABLE subscriptions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -125,6 +148,11 @@ CREATE INDEX idx_appointments_customer_id ON appointments(customer_id);
 CREATE INDEX idx_appointments_date ON appointments(appointment_date);
 CREATE INDEX idx_community_posts_customer_id ON community_posts(customer_id);
 CREATE INDEX idx_community_comments_post_id ON community_comments(post_id);
+CREATE INDEX idx_hospital_signup_codes_doctor_id ON hospital_signup_codes(doctor_id);
+CREATE INDEX idx_hospital_signup_codes_code ON hospital_signup_codes(code);
+CREATE INDEX idx_hospital_signup_codes_active ON hospital_signup_codes(is_active);
+CREATE INDEX idx_hospital_signup_code_usage_code_id ON hospital_signup_code_usage(code_id);
+CREATE INDEX idx_hospital_signup_code_usage_customer_id ON hospital_signup_code_usage(customer_id);
 CREATE INDEX idx_subscriptions_doctor_id ON subscriptions(doctor_id);
 
 -- Updated at trigger function
@@ -143,4 +171,16 @@ CREATE TRIGGER update_customers_updated_at BEFORE UPDATE ON customers FOR EACH R
 CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON appointments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_community_posts_updated_at BEFORE UPDATE ON community_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_community_comments_updated_at BEFORE UPDATE ON community_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_hospital_signup_codes_updated_at BEFORE UPDATE ON hospital_signup_codes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_subscriptions_updated_at BEFORE UPDATE ON subscriptions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-
+- Hospital code usage increment function
+CREATE OR REPLACE FUNCTION increment_code_usage(code_id UUID)
+RETURNS void AS $$
+BEGIN
+    UPDATE hospital_signup_codes 
+    SET current_uses = current_uses + 1,
+        updated_at = NOW()
+    WHERE id = code_id;
+END;
+$$ LANGUAGE plpgsql;
