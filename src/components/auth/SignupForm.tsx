@@ -32,7 +32,7 @@ export default function SignupForm() {
   const [signupSuccess, setSignupSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  
+
   const {
     register,
     handleSubmit,
@@ -60,7 +60,7 @@ export default function SignupForm() {
   // 플랜 정보 가져오기
   const getPlanInfo = (planId: string) => {
     const plans = {
-      '1month': { name: '1개월 플랜', price: 199000, duration: '1개월' },
+      '1month': { name: '1개월 플랜', price: 199000, duration: '1개월', originalPrice: 199000, discount: 0 },
       '6months': { name: '6개월 플랜', price: 1015000, duration: '6개월', originalPrice: 1194000, discount: 15 },
       '12months': { name: '12개월 플랜', price: 1791000, duration: '12개월', originalPrice: 2388000, discount: 25 }
     }
@@ -70,11 +70,11 @@ export default function SignupForm() {
   const onSubmit = async (data: SignupFormData) => {
     try {
       setSignupError(null)
-      
+
       // auth.signUp 사용 (개발 모드 지원)
       const { data: authData, error: authError } = await auth.signUp(
-        data.email, 
-        data.password, 
+        data.email,
+        data.password,
         {
           role: data.role,
           hospitalName: data.hospitalName,
@@ -115,7 +115,7 @@ export default function SignupForm() {
         }
 
         setSignupSuccess(true)
-        
+
         // 회원가입 후 자동 로그인 시도
         try {
           if (isDevelopment && isDummySupabase) {
@@ -126,7 +126,7 @@ export default function SignupForm() {
               email: data.email,
               password: data.password,
             })
-            
+
             if (!loginError) {
               // 자동 로그인 성공 시 AuthContext가 자동으로 리다이렉트 처리
               return
@@ -135,7 +135,7 @@ export default function SignupForm() {
         } catch (error) {
           console.error('Auto login failed:', error)
         }
-        
+
         // 자동 로그인 실패 시 로그인 페이지로 이동
         setTimeout(() => {
           router.push('/login')
@@ -172,7 +172,7 @@ export default function SignupForm() {
 
   // 개발 환경 체크
   const isDevelopment = process.env.NODE_ENV === 'development'
-  const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+  const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
@@ -187,7 +187,7 @@ export default function SignupForm() {
           </p>
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {signupError && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
@@ -198,7 +198,7 @@ export default function SignupForm() {
             </div>
           </div>
         )}
-        
+
         <div className="space-y-4">
           {/* 역할 선택 */}
           <div>
@@ -353,7 +353,7 @@ export default function SignupForm() {
                   <Building className="h-4 w-4 mr-2" />
                   병원 정보
                 </h4>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="hospitalName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -391,12 +391,12 @@ export default function SignupForm() {
                   <CreditCard className="h-4 w-4 mr-2" />
                   구독 플랜 선택
                 </h4>
-                
+
                 <div className="space-y-3">
                   {['1month', '6months', '12months'].map((planId) => {
                     const plan = getPlanInfo(planId)
                     if (!plan) return null
-                    
+
                     return (
                       <label key={planId} className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${selectedPlan === planId ? 'border-green-500 bg-green-100' : 'border-gray-300 bg-white'}`}>
                         <input
@@ -419,7 +419,7 @@ export default function SignupForm() {
                               <div className={`text-lg font-bold ${selectedPlan === planId ? 'text-green-900' : 'text-gray-900'}`}>
                                 ₩{plan.price.toLocaleString()}
                               </div>
-                              {plan.originalPrice && (
+                              {plan.discount > 0 && (
                                 <div className="text-xs text-gray-500">
                                   <span className="line-through">₩{plan.originalPrice.toLocaleString()}</span>
                                   <span className="ml-1 text-red-600 font-medium">{plan.discount}% 할인</span>
@@ -432,7 +432,7 @@ export default function SignupForm() {
                     )
                   })}
                 </div>
-                
+
                 {selectedPlan && (
                   <div className="mt-3 p-3 bg-white rounded border border-green-200">
                     <div className="text-xs text-gray-600">
