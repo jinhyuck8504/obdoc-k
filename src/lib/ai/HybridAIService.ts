@@ -1,7 +1,7 @@
 // ObDoc Hybrid AI Service
 // OpenAI + Claude + Google AI를 활용한 하이브리드 AI 분석 시스템
 
-import { AIProvider, AIAnalysisType, AIAnalysis } from '@/types/challenge'
+import { AIProvider, AIAnalysis } from '@/types/challenge'
 import { AI_SERVICE_CONFIG } from '@/lib/challengeConstants'
 import { OpenAIService } from './providers/OpenAIService'
 import { ClaudeService } from './providers/ClaudeService'
@@ -211,7 +211,7 @@ export class HybridAIService {
     args: any[]
   ): Promise<any> {
     const maxRetries = 3
-    let lastError: Error
+    let lastError: Error | undefined
     
     // Primary provider 시도
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -242,7 +242,7 @@ export class HybridAIService {
     }
     
     // 모든 provider 실패
-    throw new Error(`All AI providers failed. Last error: ${lastError?.message}`)
+    throw new Error(`All AI providers failed. Last error: ${lastError?.message || 'Unknown error'}`)
   }
   
   /**
@@ -322,7 +322,11 @@ export class HybridAIService {
     status: 'healthy' | 'degraded' | 'down'
     responseTime?: number
   }[]> {
-    const statuses = []
+    const statuses: {
+      provider: AIProvider
+      status: 'healthy' | 'degraded' | 'down'
+      responseTime?: number
+    }[] = []
     
     for (const [provider, service] of Object.entries(this.providers)) {
       try {
