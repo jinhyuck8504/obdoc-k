@@ -45,7 +45,7 @@ export class GoogleAIService {
       }
     } catch (error) {
       console.error('Google AI food analysis failed:', error)
-      throw new Error(`Google AI 음식 분석 실패: ${error.message}`)
+      throw new Error(`Google AI 음식 분석 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -75,7 +75,7 @@ export class GoogleAIService {
       }
     } catch (error) {
       console.error('Google AI DII calculation failed:', error)
-      throw new Error(`Google AI DII 계산 실패: ${error.message}`)
+      throw new Error(`Google AI DII 계산 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -105,7 +105,7 @@ export class GoogleAIService {
       }
     } catch (error) {
       console.error('Google AI health risk assessment failed:', error)
-      throw new Error(`Google AI 건강 위험도 평가 실패: ${error.message}`)
+      throw new Error(`Google AI 건강 위험도 평가 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -135,7 +135,7 @@ export class GoogleAIService {
       }
     } catch (error) {
       console.error('Google AI risk detection failed:', error)
-      throw new Error(`Google AI 위험 신호 감지 실패: ${error.message}`)
+      throw new Error(`Google AI 위험 신호 감지 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
