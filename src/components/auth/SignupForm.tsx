@@ -120,6 +120,13 @@ export default function SignupForm() {
         try {
           if (isDevelopment && isDummySupabase) {
             // 개발 모드에서는 바로 성공 처리
+            setTimeout(() => {
+              if (data.role === 'doctor') {
+                router.push('/subscription')
+              } else {
+                router.push('/dashboard/customer')
+              }
+            }, 2000)
             return
           } else {
             const { error: loginError } = await supabase.auth.signInWithPassword({
@@ -128,7 +135,14 @@ export default function SignupForm() {
             })
 
             if (!loginError) {
-              // 자동 로그인 성공 시 AuthContext가 자동으로 리다이렉트 처리
+              // 자동 로그인 성공 시 역할에 따라 리디렉트
+              setTimeout(() => {
+                if (data.role === 'doctor') {
+                  router.push('/subscription')
+                } else {
+                  router.push('/dashboard/customer')
+                }
+              }, 2000)
               return
             }
           }
@@ -385,64 +399,7 @@ export default function SignupForm() {
                 </div>
               </div>
 
-              {/* 구독 플랜 선택 - 의사만 표시 */}
-              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="text-sm font-medium text-green-900 flex items-center mb-4">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  구독 플랜 선택
-                </h4>
 
-                <div className="space-y-3">
-                  {['1month', '6months', '12months'].map((planId) => {
-                    const plan = getPlanInfo(planId)
-                    if (!plan) return null
-
-                    return (
-                      <label key={planId} className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${selectedPlan === planId ? 'border-green-500 bg-green-100' : 'border-gray-300 bg-white'}`}>
-                        <input
-                          {...register('subscriptionPlan')}
-                          type="radio"
-                          value={planId}
-                          className="sr-only"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className={`text-sm font-medium ${selectedPlan === planId ? 'text-green-900' : 'text-gray-900'}`}>
-                                {plan.name}
-                              </div>
-                              <div className={`text-xs ${selectedPlan === planId ? 'text-green-700' : 'text-gray-500'}`}>
-                                {plan.duration}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className={`text-lg font-bold ${selectedPlan === planId ? 'text-green-900' : 'text-gray-900'}`}>
-                                ₩{plan.price.toLocaleString()}
-                              </div>
-                              {plan.discount > 0 && (
-                                <div className="text-xs text-gray-500">
-                                  <span className="line-through">₩{plan.originalPrice.toLocaleString()}</span>
-                                  <span className="ml-1 text-red-600 font-medium">{plan.discount}% 할인</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </label>
-                    )
-                  })}
-                </div>
-
-                {selectedPlan && (
-                  <div className="mt-3 p-3 bg-white rounded border border-green-200">
-                    <div className="text-xs text-gray-600">
-                      💡 선택하신 플랜: <span className="font-medium text-green-700">{getPlanInfo(selectedPlan)?.name}</span>
-                      <br />
-                      회원가입 후 결제 페이지로 이동합니다.
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </div>
