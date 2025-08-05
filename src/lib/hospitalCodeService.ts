@@ -13,9 +13,9 @@ import type {
 /**
  * 병원 코드 검증
  */
-export async function verifyHospitalCode(code: string): Promise<CodeVerificationResult> {
+export async function verifyHospitalCode(inputCode: string): Promise<CodeVerificationResult> {
   try {
-    const normalizedCode = normalizeCode(code)
+    const normalizedCode = normalizeCode(inputCode)
     
     // 1. 형식 검증
     if (!validateCodeFormat(normalizedCode)) {
