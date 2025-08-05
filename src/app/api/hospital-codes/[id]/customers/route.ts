@@ -7,10 +7,10 @@ import { supabase } from '@/lib/supabase'
 // GET /api/hospital-codes/[id]/customers - 코드별 고객 목록 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const codeId = params.id
+    const { id: codeId } = await params
 
     // 인증 확인
     const authHeader = request.headers.get('authorization')
