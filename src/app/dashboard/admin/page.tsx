@@ -13,6 +13,7 @@ import SubscriptionManager from '@/components/admin/SubscriptionManager'
 import TaxInvoiceManager from '@/components/admin/TaxInvoiceManager'
 import UserManagement from '@/components/admin/UserManagement'
 import SystemSettings from '@/components/admin/SystemSettings'
+import SecurityDashboard from '@/components/admin/SecurityDashboard'
 
 
 interface DoctorSubscription {
@@ -28,7 +29,7 @@ interface DoctorSubscription {
 }
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'subscriptions' | 'moderation' | 'statistics' | 'invoices' | 'users' | 'settings'>('subscriptions')
+  const [activeTab, setActiveTab] = useState<'subscriptions' | 'moderation' | 'statistics' | 'invoices' | 'users' | 'settings' | 'security'>('subscriptions')
   const [doctors, setDoctors] = useState<DoctorSubscription[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -384,7 +385,7 @@ export default function AdminDashboardPage() {
           </div>
 
       {/* 탭 네비게이션 */}
-      <div className="grid grid-cols-3 lg:grid-cols-6 bg-gray-100 rounded-lg p-1 mb-4 gap-1">
+      <div className="grid grid-cols-3 lg:grid-cols-7 bg-gray-100 rounded-lg p-1 mb-4 gap-1">
         <button
           onClick={() => setActiveTab('subscriptions')}
           className={`px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center space-x-2 ${
@@ -441,6 +442,17 @@ export default function AdminDashboardPage() {
           <span>사용자 관리</span>
         </button>
         <button
+          onClick={() => setActiveTab('security')}
+          className={`px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center space-x-2 ${
+            activeTab === 'security'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <Shield className="w-4 h-4" />
+          <span>보안</span>
+        </button>
+        <button
           onClick={() => setActiveTab('settings')}
           className={`px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center space-x-2 ${
             activeTab === 'settings'
@@ -477,6 +489,11 @@ export default function AdminDashboardPage() {
       {/* 사용자 관리 탭 */}
       {activeTab === 'users' && (
         <UserManagement />
+      )}
+
+      {/* 보안 탭 */}
+      {activeTab === 'security' && (
+        <SecurityDashboard />
       )}
 
       {/* 시스템 설정 탭 */}
