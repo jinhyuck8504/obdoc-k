@@ -2,12 +2,12 @@
 
 import { supabase } from '@/lib/supabase'
 import { generateUniqueCode, validateCodeFormat, normalizeCode } from '@/lib/codeGenerator'
-import type { 
-  HospitalCode, 
-  HospitalCodeUsage, 
-  CodeVerificationResult, 
+import type {
+  HospitalCode,
+  HospitalCodeUsageLog,
+  CodeVerificationResult,
   CreateCodeRequest,
-  CodeVerificationError 
+  CodeVerificationError
 } from '@/types/hospitalCode'
 
 /**
@@ -16,10 +16,10 @@ import type {
 export async function verifyHospitalCode(inputCode: string): Promise<CodeVerificationResult> {
   try {
     const normalizedCode = normalizeCode(inputCode)
-    
+
     // 1. 형식 검증
     if (!validateCodeFormat(normalizedCode)) {
-      return { isValid: false, error: 'INVALID_FORMAT' }
+      return { isValid: false, error: 'INVALID_CODE_FORMAT' }
     }
 
     // 2. 데이터베이스에서 코드 조회
@@ -48,24 +48,28 @@ export async function verifyHospitalCode(inputCode: string): Promise<CodeVerific
       return { isValid: false, error: 'CODE_USAGE_EXCEEDED' }
     }
 
-    // 6. 데이터 변환
-    const code: HospitalCode = {
-      id: hospitalCode.id,
-      code: hospitalCode.code,
-      doctorId: hospitalCode.doctor_id,
-      name: hospitalCode.name,
-      maxUses: hospitalCode.max_uses,
-      currentUses: hospitalCode.current_uses,
-      isActive: hospitalCode.is_active,
-      expiresAt: hospitalCode.expires_at,
-      createdAt: hospitalCode.created_at,
-      updatedAt: hospitalCode.updated_at
+    // 6. 병원 정보 조회
+    const { data: hospitalData, error: hospitalError } = await supabase
+      .from('users')
+      .select('id, name, email')
+      .eq('id', hospitalCode.doctor_id)
+      .single()
+
+    if (hospitalError) {
+      console.error('Hospital data fetch error:', hospitalError)
     }
 
-    return { isValid: true, code }
+    return { 
+      isValid: true, 
+      hospitalData: hospitalData ? {
+        id: hospitalData.id,
+        name: hospitalData.name,
+        email: hospitalData.email
+      } : undefined
+    }
   } catch (error) {
     console.error('Code verification error:', error)
-    return { isValid: false, error: 'CODE_NOT_FOUND' }
+    return { isValid: false, error: 'SERVER_ERROR' }
   }
 }
 
@@ -73,7 +77,7 @@ export async function verifyHospitalCode(inputCode: string): Promise<CodeVerific
  * 병원 코드 생성
  */
 export async function createHospitalCode(
-  doctorId: string, 
+  doctorId: string,
   request: CreateCodeRequest
 ): Promise<HospitalCode> {
   try {
@@ -84,7 +88,7 @@ export async function createHospitalCode(
         .select('id')
         .eq('code', code)
         .single()
-      
+
       return !!data
     }
 
@@ -143,7 +147,7 @@ export async function getDoctorHospitalCodes(doctorId: string): Promise<Hospital
       throw new Error(`코드 목록 조회 실패: ${error.message}`)
     }
 
-    return data.map(item => ({
+    return data.map((item: any) => ({
       id: item.id,
       code: item.code,
       doctorId: item.doctor_id,
@@ -165,7 +169,7 @@ export async function getDoctorHospitalCodes(doctorId: string): Promise<Hospital
  * 병원 코드 활성화/비활성화 토글
  */
 export async function toggleHospitalCodeStatus(
-  codeId: string, 
+  codeId: string,
   doctorId: string
 ): Promise<HospitalCode> {
   try {
@@ -216,7 +220,7 @@ export async function toggleHospitalCodeStatus(
  * 코드 사용 기록
  */
 export async function recordCodeUsage(
-  codeId: string, 
+  codeId: string,
   customerId: string
 ): Promise<void> {
   try {
@@ -250,9 +254,9 @@ export async function recordCodeUsage(
  * 코드별 고객 목록 조회
  */
 export async function getCodeCustomers(
-  codeId: string, 
+  codeId: string,
   doctorId: string
-): Promise<HospitalCodeUsage[]> {
+): Promise<HospitalCodeUsageLog[]> {
   try {
     const { data, error } = await supabase
       .from('hospital_signup_code_usage')
@@ -278,7 +282,7 @@ export async function getCodeCustomers(
       throw new Error(`고객 목록 조회 실패: ${error.message}`)
     }
 
-    return data.map(item => ({
+    return data.map((item: any) => ({
       id: item.id,
       codeId: item.code_id,
       customerId: item.customer_id,
