@@ -185,14 +185,14 @@ export default function AdminStatsDashboard() {
       {/* 상세 통계 차트 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 수익 차트 */}
-        <RevenueChart data={revenueData} loading={loading} />
+        <RevenueChart data={revenueData} />
         
         {/* 병원 유형별 차트 */}
-        <HospitalTypeChart data={hospitalTypeData} loading={loading} />
+        <HospitalTypeChart data={hospitalTypeData} />
       </div>
 
       {/* 사용자 활동 차트 */}
-      <UserActivityChart data={userActivityData} loading={loading} />
+      <UserActivityChart data={userActivityData} />
 
       {/* 추가 통계 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
