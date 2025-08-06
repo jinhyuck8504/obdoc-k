@@ -32,6 +32,18 @@ const validateProductionEnvironment = () => {
   }
 }
 
+// 슈퍼 관리자 검증 함수
+const isSuperAdmin = (email?: string): boolean => {
+  if (!email) return false
+  
+  // 환경 변수에서 슈퍼 관리자 이메일 확인
+  const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL
+  const superAdminSecret = process.env.NEXT_PUBLIC_SUPER_ADMIN_SECRET
+  
+  // 슈퍼 관리자 이메일과 정확히 일치하고, 시크릿 키가 설정되어 있어야 함
+  return email === superAdminEmail && superAdminSecret === 'obdoc-super-admin-2024'
+}
+
 // 유효한 환경 변수인지 확인하는 함수
 const isValidSupabaseConfig = (url?: string, key?: string): boolean => {
   if (!url || !key) return false
@@ -79,9 +91,11 @@ const createDummySupabaseClient = () => {
   }
 }
 
-// 브라우저 전용 싱글톤 저장소
-let browserSupabaseClient: any = null
-let browserSupabaseAdminClient: any = null
+// 전역 싱글톤 저장소 (브라우저 전용)
+declare global {
+  var __supabase_client__: any
+  var __supabase_admin_client__: any
+}
 
 // 클라이언트 생성 함수
 const getSupabaseClient = () => {
@@ -100,24 +114,25 @@ const getSupabaseClient = () => {
     })
   }
 
-  // 브라우저에서는 싱글톤 사용
-  if (!browserSupabaseClient) {
+  // 브라우저에서는 전역 싱글톤 사용 (중복 생성 방지)
+  if (!globalThis.__supabase_client__) {
     if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
       console.warn('⚠️ 개발 모드로 실행: Supabase 환경 변수가 설정되지 않았습니다.')
-      browserSupabaseClient = createDummySupabaseClient()
+      globalThis.__supabase_client__ = createDummySupabaseClient()
     } else {
       console.log('✅ 실제 Supabase 클라이언트 초기화')
-      browserSupabaseClient = createClient(supabaseUrl!, supabaseAnonKey!, {
+      globalThis.__supabase_client__ = createClient(supabaseUrl!, supabaseAnonKey!, {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
+          storageKey: 'obdoc-auth-token' // 고유한 스토리지 키 사용
         }
       })
     }
   }
 
-  return browserSupabaseClient
+  return globalThis.__supabase_client__
 }
 
 const getSupabaseAdminClient = () => {
@@ -137,19 +152,19 @@ const getSupabaseAdminClient = () => {
     )
   }
 
-  // 브라우저에서는 싱글톤 사용
-  if (!browserSupabaseAdminClient) {
+  // 브라우저에서는 전역 싱글톤 사용
+  if (!globalThis.__supabase_admin_client__) {
     if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
-      browserSupabaseAdminClient = createDummySupabaseClient()
+      globalThis.__supabase_admin_client__ = createDummySupabaseClient()
     } else {
-      browserSupabaseAdminClient = createClient(
+      globalThis.__supabase_admin_client__ = createClient(
         supabaseUrl!,
         process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey!
       )
     }
   }
 
-  return browserSupabaseAdminClient
+  return globalThis.__supabase_admin_client__
 }
 
 export const supabase = getSupabaseClient()
