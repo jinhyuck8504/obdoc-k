@@ -106,8 +106,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         { 
-          error: verificationResult.error || 'INVALID_CODE',
-          message: verificationResult.error ? ERROR_MESSAGES[verificationResult.error] : ERROR_MESSAGES.INVALID_CODE,
+          error: verificationResult.error || 'CODE_NOT_FOUND',
+          message: verificationResult.error ? ERROR_MESSAGES[verificationResult.error] : ERROR_MESSAGES.CODE_NOT_FOUND,
           isValid: false 
         },
         { status: 400 }
