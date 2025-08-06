@@ -1,201 +1,106 @@
-interface AppConfig {
+// 환경 변수 설정 및 검증
+export const config = {
+  supabase: {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY
+  },
+  email: {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  },
   app: {
-    name: string
-    version: string
-    url: string
-    environment: string
-  }
-  database: {
-    url: string
-    maxConnections: number
-  }
-  auth: {
-    sessionTimeout: number
-    maxLoginAttempts: number
-    lockoutDuration: number
-  }
-  security: {
-    encryptionKey: string
-    csrfSecret: string
-    rateLimiting: {
-      max: number
-      windowMs: number
-    }
-  }
-  features: {
-    community: boolean
-    payments: boolean
-    notifications: boolean
-  }
-  monitoring: {
-    sentry: {
-      dsn: string | undefined
-      environment: string
-      tracesSampleRate: number
-    }
-    analytics: {
-      googleAnalyticsId: string | undefined
-    }
-  }
-  external: {
-    supabase: {
-      url: string
-      anonKey: string
-      serviceRoleKey: string
-    }
-    email: {
-      host: string
-      port: number
-      user: string
-      password: string
-      from: string
-    }
-    storage: {
-      maxFileSize: number
-      allowedTypes: string[]
-    }
+    nodeEnv: process.env.NODE_ENV || 'development',
+    challengesEnabled: process.env.CHALLENGES_ENABLED === 'true',
+    aiAnalysisEnabled: process.env.AI_ANALYSIS_ENABLED === 'true'
   }
 }
 
-function getRequiredEnv(key: string): string {
-  const value = process.env[key]
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`)
-  }
-  return value
-}
-
-function getOptionalEnv(key: string, defaultValue: string = ''): string {
-  return process.env[key] || defaultValue
-}
-
-function getNumberEnv(key: string, defaultValue: number): number {
-  const value = process.env[key]
-  return value ? parseInt(value, 10) : defaultValue
-}
-
-function getBooleanEnv(key: string, defaultValue: boolean = false): boolean {
-  const value = process.env[key]
-  return value ? value.toLowerCase() === 'true' : defaultValue
-}
-
-export const config: AppConfig = {
-  app: {
-    name: getOptionalEnv('NEXT_PUBLIC_APP_NAME', 'OBDOC'),
-    version: getOptionalEnv('NEXT_PUBLIC_APP_VERSION', '1.0.0'),
-    url: getOptionalEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000'),
-    environment: getOptionalEnv('NODE_ENV', 'development'),
-  },
-  
-  database: {
-    url: getRequiredEnv('DATABASE_URL'),
-    maxConnections: getNumberEnv('DB_MAX_CONNECTIONS', 10),
-  },
-  
-  auth: {
-    sessionTimeout: getNumberEnv('SESSION_TIMEOUT', 1800000), // 30 minutes
-    maxLoginAttempts: getNumberEnv('MAX_LOGIN_ATTEMPTS', 5),
-    lockoutDuration: getNumberEnv('LOCKOUT_DURATION', 900000), // 15 minutes
-  },
-  
-  security: {
-    encryptionKey: getRequiredEnv('ENCRYPTION_KEY'),
-    csrfSecret: getRequiredEnv('CSRF_SECRET'),
-    rateLimiting: {
-      max: getNumberEnv('RATE_LIMIT_MAX', 100),
-      windowMs: getNumberEnv('RATE_LIMIT_WINDOW', 900000), // 15 minutes
-    },
-  },
-  
-  features: {
-    community: getBooleanEnv('ENABLE_COMMUNITY', true),
-    payments: getBooleanEnv('ENABLE_PAYMENTS', false),
-    notifications: getBooleanEnv('ENABLE_NOTIFICATIONS', true),
-  },
-  
-  monitoring: {
-    sentry: {
-      dsn: getOptionalEnv('SENTRY_DSN'),
-      environment: getOptionalEnv('NODE_ENV', 'development'),
-      tracesSampleRate: getOptionalEnv('NODE_ENV', 'development') === 'production' ? 0.1 : 1.0,
-    },
-    analytics: {
-      googleAnalyticsId: getOptionalEnv('NEXT_PUBLIC_GOOGLE_ANALYTICS_ID'),
-    },
-  },
-  
-  external: {
-    supabase: {
-      url: getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
-      anonKey: getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
-      serviceRoleKey: getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    },
-    email: {
-      host: getOptionalEnv('SMTP_HOST', 'smtp.gmail.com'),
-      port: getNumberEnv('SMTP_PORT', 587),
-      user: getOptionalEnv('SMTP_USER'),
-      password: getOptionalEnv('SMTP_PASSWORD'),
-      from: getOptionalEnv('SMTP_FROM', 'noreply@obdoc.co.kr'),
-    },
-    storage: {
-      maxFileSize: getNumberEnv('NEXT_PUBLIC_MAX_FILE_SIZE', 5242880), // 5MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
-    },
-  },
-}
-
-// Validation
-export function validateConfig(): void {
+// 환경 변수 검증 함수
+export function validateConfig() {
   const errors: string[] = []
   
-  // Required environment variables
-  const requiredVars = [
+  // 필수 Supabase 환경 변수 검증
+  const requiredSupabaseVars = [
     'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'SUPABASE_SERVICE_ROLE_KEY',
-    'ENCRYPTION_KEY',
-    'CSRF_SECRET',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY'
   ]
   
-  requiredVars.forEach(varName => {
-    if (!process.env[varName]) {
-      errors.push(`Missing required environment variable: ${varName}`)
+  requiredSupabaseVars.forEach(varName => {
+    const value = process.env[varName]
+    if (!value) {
+      errors.push(`${varName}이 설정되지 않았습니다.`)
+    } else if (value.includes('your-') || value.includes('dummy')) {
+      errors.push(`${varName}이 더미 값으로 설정되어 있습니다. 실제 값으로 교체해주세요.`)
     }
   })
   
-  // Validate encryption key length
-  if (config.security.encryptionKey.length !== 32) {
-    errors.push('ENCRYPTION_KEY must be exactly 32 characters long')
+  // Supabase URL 형식 검증
+  if (config.supabase.url) {
+    try {
+      const url = new URL(config.supabase.url)
+      if (!url.hostname.includes('supabase.co')) {
+        errors.push('NEXT_PUBLIC_SUPABASE_URL이 올바른 Supabase URL 형식이 아닙니다.')
+      }
+    } catch {
+      errors.push('NEXT_PUBLIC_SUPABASE_URL이 유효한 URL 형식이 아닙니다.')
+    }
   }
   
-  // Validate URLs
-  try {
-    new URL(config.app.url)
-    new URL(config.external.supabase.url)
-  } catch (error) {
-    errors.push('Invalid URL format in configuration')
-  }
-  
+  // 에러가 있으면 콘솔에 출력하고 예외 발생
   if (errors.length > 0) {
-    console.error('Configuration validation failed:')
+    console.error('🚨 환경 변수 설정 오류:')
     errors.forEach(error => console.error(`  - ${error}`))
-    throw new Error('Invalid configuration')
+    console.error('\n📝 해결 방법:')
+    console.error('  1. Supabase 프로젝트를 생성하세요.')
+    console.error('  2. .env 파일의 환경 변수를 실제 값으로 교체하세요.')
+    console.error('  3. 애플리케이션을 다시 시작하세요.')
+    
+    if (config.app.nodeEnv === 'production') {
+      throw new Error('프로덕션 환경에서 환경 변수가 올바르게 설정되지 않았습니다.')
+    } else {
+      console.warn('⚠️  개발 환경에서 환경 변수 오류가 감지되었습니다. 더미 모드로 실행됩니다.')
+    }
+  } else {
+    console.log('✅ 환경 변수 검증 완료')
+  }
+  
+  return errors.length === 0
+}
+
+// 환경 변수 상태 확인 함수
+export function getConfigStatus() {
+  const isValidConfig = validateConfig()
+  
+  return {
+    isValid: isValidConfig,
+    isDevelopment: config.app.nodeEnv === 'development',
+    isProduction: config.app.nodeEnv === 'production',
+    hasSupabase: !!(config.supabase.url && config.supabase.anonKey),
+    hasEmail: !!(config.email.host && config.email.user),
+    supabaseUrl: config.supabase.url,
+    environment: config.app.nodeEnv
   }
 }
 
-// Environment-specific configurations
-export const isDevelopment = config.app.environment === 'development'
-export const isProduction = config.app.environment === 'production'
-export const isTest = config.app.environment === 'test'
+// 개발 모드 여부 확인
+export function isDevelopmentMode(): boolean {
+  return config.app.nodeEnv === 'development'
+}
 
-// Feature flags
-export const features = config.features
+// 프로덕션 모드 여부 확인
+export function isProductionMode(): boolean {
+  return config.app.nodeEnv === 'production'
+}
 
-// Export commonly used values
-export const {
-  app: appConfig,
-  database: dbConfig,
-  auth: authConfig,
-  security: securityConfig,
-  external: externalConfig,
-} = config
+// Supabase 설정 유효성 확인
+export function hasValidSupabaseConfig(): boolean {
+  return !!(
+    config.supabase.url && 
+    config.supabase.anonKey &&
+    !config.supabase.url.includes('your-') &&
+    !config.supabase.anonKey.includes('your-')
+  )
+}
