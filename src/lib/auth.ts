@@ -16,8 +16,10 @@ export interface User {
   }
 }
 
-// 개발 환경 체크
-const isDevelopment = process.env.NODE_ENV === 'development'
+// 프로덕션 환경 체크 (더 엄격한 조건)
+const isDevelopment = process.env.NODE_ENV === 'development' && 
+  (process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') || 
+   process.env.NEXT_PUBLIC_APP_URL?.includes('127.0.0.1'))
 const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url') ||
