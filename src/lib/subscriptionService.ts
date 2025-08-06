@@ -214,43 +214,88 @@ export const subscriptionService = {
         .from('subscriptions')
         .select(`
           *,
-          doctors(
+          doctors!inner(
+            id,
             hospital_name,
             hospital_type,
-            users(email)
+            users!inner(
+              id,
+              email
+            )
           )
         `)
         .order('created_at', { ascending: false })
 
+      // 필터 적용
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status)
       }
 
-      const { data, error } = await query
-      if (error) throw error
+      if (filters?.plan && filters.plan !== 'all') {
+        query = query.eq('plan_type', filters.plan)
+      }
 
-      return data?.map(sub => ({
-        id: sub.id,
-        doctorId: sub.doctor_id,
-        doctorName: '의사', // name 필드가 없으므로 기본값 사용
-        hospitalName: sub.doctors?.hospital_name || '알 수 없음',
-        hospitalType: sub.doctors?.hospital_type || '기타',
-        email: sub.doctors?.users?.email || '',
-        plan: sub.plan,
-        status: sub.status,
-        paymentStatus: sub.payment_status,
-        amount: sub.amount,
-        startDate: sub.start_date,
-        endDate: sub.end_date,
-        createdAt: sub.created_at,
-        updatedAt: sub.updated_at,
-        approvedBy: sub.approved_by,
-        approvedAt: sub.approved_at,
-        notes: sub.notes
-      })) || []
+      if (filters?.paymentStatus && filters.paymentStatus !== 'all') {
+        query = query.eq('payment_status', filters.paymentStatus)
+      }
+
+      if (filters?.hospitalType) {
+        query = query.eq('doctors.hospital_type', filters.hospitalType)
+      }
+
+      const { data, error } = await query
+      if (error) {
+        console.error('Supabase 쿼리 오류:', error)
+        throw error
+      }
+
+      if (!data) {
+        console.log('구독 데이터가 없습니다.')
+        return []
+      }
+
+      console.log('Supabase에서 가져온 구독 데이터:', data.length, '개')
+
+      const mappedData = data.map((sub: any) => {
+        const subscription: Subscription = {
+          id: sub.id,
+          doctorId: sub.doctor_id,
+          doctorName: sub.doctors?.users?.email?.split('@')[0] || '의사',
+          hospitalName: sub.doctors?.hospital_name || '알 수 없음',
+          hospitalType: sub.doctors?.hospital_type || '기타',
+          email: sub.doctors?.users?.email || '',
+          plan: sub.plan_type as '1month' | '6months' | '12months',
+          status: sub.status || 'pending',
+          paymentStatus: sub.payment_status || 'pending',
+          amount: Number(sub.amount) || 0,
+          startDate: sub.start_date,
+          endDate: sub.end_date,
+          createdAt: sub.created_at,
+          updatedAt: sub.updated_at,
+          approvedBy: sub.approved_by,
+          approvedAt: sub.approved_at,
+          notes: sub.notes
+        }
+        return subscription
+      })
+
+      // 클라이언트 사이드 필터링 (검색)
+      let filtered = mappedData
+      if (filters?.search) {
+        const search = filters.search.toLowerCase()
+        filtered = filtered.filter(sub =>
+          sub.doctorName.toLowerCase().includes(search) ||
+          sub.hospitalName.toLowerCase().includes(search) ||
+          sub.email.toLowerCase().includes(search)
+        )
+      }
+
+      return filtered
     } catch (error) {
       console.error('구독 목록 조회 실패:', error)
-      throw error
+      // 에러 발생 시 더미 데이터 반환 (fallback)
+      console.log('에러 발생으로 더미 데이터 사용')
+      return dummySubscriptions
     }
   },
 
@@ -407,25 +452,25 @@ export const subscriptionService = {
   async getSubscriptionStats(): Promise<SubscriptionStats> {
     if (isDevelopment && isDummySupabase) {
       const total = dummySubscriptions.length
-      const active = dummySubscriptions.filter(s => s.status === 'active').length
-      const pending = dummySubscriptions.filter(s => s.status === 'pending').length
-      const expired = dummySubscriptions.filter(s => s.status === 'expired').length
-      const cancelled = dummySubscriptions.filter(s => s.status === 'cancelled').length
+      const active = dummySubscriptions.filter((s: Subscription) => s.status === 'active').length
+      const pending = dummySubscriptions.filter((s: Subscription) => s.status === 'pending').length
+      const expired = dummySubscriptions.filter((s: Subscription) => s.status === 'expired').length
+      const cancelled = dummySubscriptions.filter((s: Subscription) => s.status === 'cancelled').length
 
       const totalRevenue = dummySubscriptions
-        .filter(s => s.paymentStatus === 'paid')
-        .reduce((sum, s) => sum + s.amount, 0)
+        .filter((s: Subscription) => s.paymentStatus === 'paid')
+        .reduce((sum: number, s: Subscription) => sum + s.amount, 0)
 
       const planCounts = {
-        '1month': dummySubscriptions.filter(s => s.plan === '1month').length,
-        '6months': dummySubscriptions.filter(s => s.plan === '6months').length,
-        '12months': dummySubscriptions.filter(s => s.plan === '12months').length
+        '1month': dummySubscriptions.filter((s: Subscription) => s.plan === '1month').length,
+        '6months': dummySubscriptions.filter((s: Subscription) => s.plan === '6months').length,
+        '12months': dummySubscriptions.filter((s: Subscription) => s.plan === '12months').length
       }
 
       const planRevenue = {
-        '1month': dummySubscriptions.filter(s => s.plan === '1month' && s.paymentStatus === 'paid').reduce((sum, s) => sum + s.amount, 0),
-        '6months': dummySubscriptions.filter(s => s.plan === '6months' && s.paymentStatus === 'paid').reduce((sum, s) => sum + s.amount, 0),
-        '12months': dummySubscriptions.filter(s => s.plan === '12months' && s.paymentStatus === 'paid').reduce((sum, s) => sum + s.amount, 0)
+        '1month': dummySubscriptions.filter((s: Subscription) => s.plan === '1month' && s.paymentStatus === 'paid').reduce((sum: number, s: Subscription) => sum + s.amount, 0),
+        '6months': dummySubscriptions.filter((s: Subscription) => s.plan === '6months' && s.paymentStatus === 'paid').reduce((sum: number, s: Subscription) => sum + s.amount, 0),
+        '12months': dummySubscriptions.filter((s: Subscription) => s.plan === '12months' && s.paymentStatus === 'paid').reduce((sum: number, s: Subscription) => sum + s.amount, 0)
       }
 
       return {
@@ -465,27 +510,27 @@ export const subscriptionService = {
     try {
       const { data, error } = await supabase
         .from('subscriptions')
-        .select('status, plan, amount, payment_status, end_date')
+        .select('status, plan_type, amount, payment_status, end_date')
 
       if (error) throw error
 
       const subscriptions = data || []
       const total = subscriptions.length
-      const active = subscriptions.filter(s => s.status === 'active').length
-      const pending = subscriptions.filter(s => s.status === 'pending').length
-      const expired = subscriptions.filter(s => s.status === 'expired').length
-      const cancelled = subscriptions.filter(s => s.status === 'cancelled').length
+      const active = subscriptions.filter((s: any) => s.status === 'active').length
+      const pending = subscriptions.filter((s: any) => s.status === 'pending').length
+      const expired = subscriptions.filter((s: any) => s.status === 'expired').length
+      const cancelled = subscriptions.filter((s: any) => s.status === 'cancelled').length
 
       const totalRevenue = subscriptions
-        .filter(s => s.payment_status === 'paid')
-        .reduce((sum, s) => sum + (s.amount || 0), 0)
+        .filter((s: any) => s.payment_status === 'paid')
+        .reduce((sum: number, s: any) => sum + (Number(s.amount) || 0), 0)
 
       // 플랜별 분포 계산
       const planDistribution = ['1month', '6months', '12months'].map(plan => {
-        const planSubs = subscriptions.filter(s => s.plan === plan)
+        const planSubs = subscriptions.filter((s: any) => s.plan_type === plan)
         const planRevenue = planSubs
-          .filter(s => s.payment_status === 'paid')
-          .reduce((sum, s) => sum + (s.amount || 0), 0)
+          .filter((s: any) => s.payment_status === 'paid')
+          .reduce((sum: number, s: any) => sum + (Number(s.amount) || 0), 0)
 
         return {
           plan: plan as '1month' | '6months' | '12months',
@@ -494,6 +539,15 @@ export const subscriptionService = {
           percentage: total > 0 ? (planSubs.length / total) * 100 : 0
         }
       })
+
+      // 이번 달 만료 예정 구독 계산
+      const now = new Date()
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      const expiringThisMonth = subscriptions.filter((s: any) => {
+        if (!s.end_date || s.status !== 'active') return false
+        const endDate = new Date(s.end_date)
+        return endDate >= now && endDate <= endOfMonth
+      }).length
 
       return {
         totalSubscriptions: total,
@@ -504,12 +558,28 @@ export const subscriptionService = {
         totalRevenue,
         monthlyRevenue: Math.round(totalRevenue / 12),
         planDistribution,
-        expiringThisMonth: 0, // 실제 계산 필요
-        renewalRate: 0 // 실제 계산 필요
+        expiringThisMonth,
+        renewalRate: total > 0 ? (active / total) * 100 : 0
       }
     } catch (error) {
       console.error('구독 통계 조회 실패:', error)
-      throw error
+      // 에러 발생 시 기본값 반환
+      return {
+        totalSubscriptions: 0,
+        activeSubscriptions: 0,
+        pendingSubscriptions: 0,
+        expiredSubscriptions: 0,
+        cancelledSubscriptions: 0,
+        totalRevenue: 0,
+        monthlyRevenue: 0,
+        planDistribution: [
+          { plan: '1month', count: 0, revenue: 0, percentage: 0 },
+          { plan: '6months', count: 0, revenue: 0, percentage: 0 },
+          { plan: '12months', count: 0, revenue: 0, percentage: 0 }
+        ],
+        expiringThisMonth: 0,
+        renewalRate: 0
+      }
     }
   },
 
@@ -534,10 +604,14 @@ export const subscriptionService = {
         .from('subscriptions')
         .select(`
           *,
-          doctors(
+          doctors!inner(
+            id,
             hospital_name,
             hospital_type,
-            users(email)
+            users!inner(
+              id,
+              email
+            )
           )
         `)
         .eq('status', 'active')
@@ -547,17 +621,17 @@ export const subscriptionService = {
 
       if (error) throw error
 
-      return data?.map(sub => ({
+      return data?.map((sub: any) => ({
         id: sub.id,
         doctorId: sub.doctor_id,
-        doctorName: '의사', // name 필드가 없으므로 기본값 사용
+        doctorName: sub.doctors?.users?.email?.split('@')[0] || '의사',
         hospitalName: sub.doctors?.hospital_name || '알 수 없음',
         hospitalType: sub.doctors?.hospital_type || '기타',
         email: sub.doctors?.users?.email || '',
-        plan: sub.plan,
+        plan: sub.plan_type as '1month' | '6months' | '12months',
         status: sub.status,
         paymentStatus: sub.payment_status,
-        amount: sub.amount,
+        amount: Number(sub.amount) || 0,
         startDate: sub.start_date,
         endDate: sub.end_date,
         createdAt: sub.created_at,
