@@ -1,6 +1,5 @@
-// 병원 가입 코드 검증 API
-
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { verifyHospitalCode } from '@/lib/hospitalCodeService'
 import { ERROR_MESSAGES } from '@/types/hospitalCode'
 import { hospitalCodeRateLimiter, globalRateLimiter } from '@/lib/security/rateLimiter'
@@ -13,143 +12,254 @@ export async function POST(request: NextRequest) {
 
   try {
     // 1. 전역 Rate Limiting 체크
-    const globalLimit = globalRateLimiter.check(clientIp)
+    const globalLimit = globalRateLimiter.checkLimit(clientIp)
     if (!globalLimit.allowed) {
       securityLogger.logRateLimitExceeded(clientIp, '/api/hospital-codes/verify', userAgent)
       
       return NextResponse.json(
         { 
-          error: 'RATE_LIMIT_EXCEEDED',
-          message: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-          retryAfter: Math.ceil((globalLimit.resetTime - Date.now()) / 1000)
+          error: ERROR_MESSAGES.RATE_LIMIT_EXCEEDED,
+          message: '요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.',
+          resetTime: globalLimit.resetTime
         },
         { 
           status: 429,
           headers: {
             'X-RateLimit-Limit': '100',
             'X-RateLimit-Remaining': globalLimit.remaining.toString(),
-            'X-RateLimit-Reset': globalLimit.resetTime.toString(),
-            'Retry-After': Math.ceil((globalLimit.resetTime - Date.now()) / 1000).toString()
+            'X-RateLimit-Reset': globalLimit.resetTime.toString()
           }
         }
       )
     }
 
     // 2. 병원 코드 전용 Rate Limiting 체크
-    const codeLimit = hospitalCodeRateLimiter.check(`hospital_code:${clientIp}`)
-    if (!codeLimit.allowed) {
-      // 브루트포스 공격 의심 로깅
-      const ipStats = securityLogger.getIpStats(clientIp)
-      securityLogger.logBruteForceAttempt(clientIp, ipStats.failedAttempts + 1, userAgent)
+    const hospitalCodeLimit = hospitalCodeRateLimiter.checkLimit(clientIp)
+    if (!hospitalCodeLimit.allowed) {
+      securityLogger.logRateLimitExceeded(clientIp, '/api/hospital-codes/verify (hospital-specific)', userAgent)
       
       return NextResponse.json(
         { 
-          error: 'HOSPITAL_CODE_RATE_LIMIT_EXCEEDED',
-          message: codeLimit.blocked 
-            ? '병원 코드 검증 시도가 너무 많습니다. 30분 후 다시 시도해주세요.'
-            : '병원 코드 검증 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.',
-          retryAfter: Math.ceil((codeLimit.resetTime - Date.now()) / 1000),
-          blocked: codeLimit.blocked
+          error: ERROR_MESSAGES.RATE_LIMIT_EXCEEDED,
+          message: '병원 코드 검증 요청이 너무 많습니다. 15분 후 다시 시도해주세요.',
+          resetTime: hospitalCodeLimit.resetTime
         },
         { 
           status: 429,
           headers: {
-            'X-RateLimit-Limit': '5',
-            'X-RateLimit-Remaining': codeLimit.remaining.toString(),
-            'X-RateLimit-Reset': codeLimit.resetTime.toString(),
-            'Retry-After': Math.ceil((codeLimit.resetTime - Date.now()) / 1000).toString()
+            'X-RateLimit-Limit': '10',
+            'X-RateLimit-Remaining': hospitalCodeLimit.remaining.toString(),
+            'X-RateLimit-Reset': hospitalCodeLimit.resetTime.toString()
           }
         }
       )
     }
 
-    // 3. 요청 데이터 검증
+    // 3. 요청 본문 파싱
     const body = await request.json()
     const { code } = body
 
     if (!code || typeof code !== 'string') {
       securityLogger.logSuspiciousActivity(
-        clientIp, 
-        'invalid_hospital_code_format', 
-        { providedCode: typeof code, bodyKeys: Object.keys(body) },
-        userAgent
+        '잘못된 병원 코드 검증 요청 - 코드 누락',
+        clientIp,
+        undefined,
+        { requestBody: body }
       )
-      
+
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.INVALID_REQUEST },
+        { status: 400 }
+      )
+    }
+
+    // 4. 코드 형식 검증
+    if (code.length < 6 || code.length > 20) {
+      securityLogger.logSuspiciousActivity(
+        '잘못된 병원 코드 형식',
+        clientIp,
+        undefined,
+        { code: code.substring(0, 3) + '***' }
+      )
+
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.INVALID_CODE_FORMAT },
+        { status: 400 }
+      )
+    }
+
+    // 5. 병원 코드 검증
+    const verificationResult = await verifyHospitalCode(code)
+
+    if (!verificationResult.isValid) {
+      // 실패 로깅
+      securityLogger.logSuspiciousActivity(
+        '병원 코드 검증 실패',
+        clientIp,
+        undefined,
+        { 
+          code: code.substring(0, 3) + '***',
+          reason: verificationResult.error 
+        }
+      )
+
       return NextResponse.json(
         { 
-          error: 'INVALID_FORMAT',
-          message: ERROR_MESSAGES.INVALID_FORMAT 
-        },
-        { status: 400 }
-      )
-    }
-
-    // 4. 코드 형식 기본 검증 (8자리 영숫자)
-    const codePattern = /^[A-Z0-9]{8}$/
-    if (!codePattern.test(code)) {
-      securityLogger.logHospitalCodeFailure(clientIp, code, 'invalid_format', userAgent)
-      
-      return NextResponse.json(
-        {
-          error: 'INVALID_FORMAT',
-          message: ERROR_MESSAGES.INVALID_FORMAT
-        },
-        { status: 400 }
-      )
-    }
-
-    // 5. 코드 검증
-    const result = await verifyHospitalCode(code)
-
-    if (!result.isValid) {
-      // 실패 로깅
-      securityLogger.logHospitalCodeFailure(clientIp, code, result.error!, userAgent)
-      
-      return NextResponse.json(
-        {
-          error: result.error,
-          message: ERROR_MESSAGES[result.error!]
+          error: verificationResult.error || ERROR_MESSAGES.INVALID_CODE,
+          isValid: false 
         },
         { status: 400 }
       )
     }
 
     // 6. 성공 로깅
-    securityLogger.logHospitalCodeSuccess(clientIp, code, undefined, userAgent)
-
-    // 성공 시 코드 정보 반환 (민감한 정보 제외)
-    return NextResponse.json({
-      isValid: true,
-      code: {
-        id: result.code!.id,
-        code: result.code!.code,
-        name: result.code!.name,
-        isActive: result.code!.isActive
-      }
-    }, {
-      headers: {
-        'X-RateLimit-Limit': '5',
-        'X-RateLimit-Remaining': codeLimit.remaining.toString(),
-        'X-RateLimit-Reset': codeLimit.resetTime.toString()
+    securityLogger.log({
+      type: 'DATA_ACCESS' as any,
+      level: 'LOW' as any,
+      message: '병원 코드 검증 성공',
+      clientIP: clientIp,
+      userAgent,
+      metadata: {
+        hospitalId: verificationResult.hospitalData?.id,
+        hospitalName: verificationResult.hospitalData?.name,
+        action: 'hospital_code_verify'
       }
     })
+
+    // 7. 성공 응답
+    return NextResponse.json({
+      isValid: true,
+      hospitalData: verificationResult.hospitalData,
+      message: '병원 코드가 확인되었습니다.'
+    })
+
   } catch (error) {
-    console.error('POST /api/hospital-codes/verify error:', error)
+    console.error('병원 코드 검증 중 오류:', error)
     
-    // 서버 오류도 로깅
-    securityLogger.logSuspiciousActivity(
-      clientIp,
-      'server_error_in_hospital_code_verification',
-      { error: error instanceof Error ? error.message : 'unknown_error' },
-      userAgent
-    )
-    
+    // 서버 오류 로깅
+    securityLogger.log({
+      type: 'SUSPICIOUS_ACTIVITY' as any,
+      level: 'HIGH' as any,
+      message: '병원 코드 검증 중 서버 오류',
+      clientIP: clientIp,
+      userAgent,
+      metadata: {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: 'hospital_code_verify_error'
+      }
+    })
+
     return NextResponse.json(
-      { 
-        error: 'SERVER_ERROR',
-        message: '서버 오류가 발생했습니다.' 
-      },
+      { error: ERROR_MESSAGES.SERVER_ERROR },
       { status: 500 }
     )
   }
+}
+
+// GET /api/hospital-codes - 병원 코드 목록 조회 (관리자용)
+export async function GET(request: NextRequest) {
+  const clientIp = getClientIp(request)
+  const userAgent = getUserAgent(request)
+
+  try {
+    // Rate Limiting 체크
+    const globalLimit = globalRateLimiter.checkLimit(clientIp)
+    if (!globalLimit.allowed) {
+      securityLogger.logRateLimitExceeded(clientIp, '/api/hospital-codes', userAgent)
+      
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.RATE_LIMIT_EXCEEDED },
+        { status: 429 }
+      )
+    }
+
+    // 관리자 권한 체크 (실제 구현에서는 JWT 토큰 검증 등 필요)
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      securityLogger.logUnauthorizedAccess('/api/hospital-codes', clientIp, undefined, userAgent)
+      
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.UNAUTHORIZED },
+        { status: 401 }
+      )
+    }
+
+    // Supabase 클라이언트 생성
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    // 병원 코드 목록 조회
+    const { data: hospitalCodes, error } = await supabase
+      .from('hospital_codes')
+      .select(`
+        id,
+        code,
+        hospital_name,
+        hospital_type,
+        is_active,
+        created_at,
+        expires_at,
+        usage_count,
+        max_usage
+      `)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('병원 코드 목록 조회 오류:', error)
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.SERVER_ERROR },
+        { status: 500 }
+      )
+    }
+
+    // 성공 로깅
+    securityLogger.logAdminAction(
+      '병원 코드 목록 조회',
+      'admin', // 실제로는 JWT에서 추출한 사용자 ID
+      undefined,
+      { count: hospitalCodes?.length || 0 }
+    )
+
+    return NextResponse.json({
+      hospitalCodes: hospitalCodes || [],
+      total: hospitalCodes?.length || 0
+    })
+
+  } catch (error) {
+    console.error('병원 코드 목록 조회 중 오류:', error)
+    
+    securityLogger.log({
+      type: 'SUSPICIOUS_ACTIVITY' as any,
+      level: 'HIGH' as any,
+      message: '병원 코드 목록 조회 중 서버 오류',
+      clientIP: clientIp,
+      userAgent,
+      metadata: {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: 'hospital_codes_list_error'
+      }
+    })
+
+    return NextResponse.json(
+      { error: ERROR_MESSAGES.SERVER_ERROR },
+      { status: 500 }
+    )
+  }
+}
+
+// OPTIONS - CORS 처리
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production' 
+        ? 'https://obdoc.co.kr' 
+        : '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
+    },
+  })
 }
