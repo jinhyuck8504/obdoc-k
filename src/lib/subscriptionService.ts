@@ -218,7 +218,7 @@ export const subscriptionService = {
           doctors(
             hospital_name,
             hospital_type,
-            users(email, name)
+            users(email)
           )
         `)
         .order('created_at', { ascending: false })
@@ -233,7 +233,7 @@ export const subscriptionService = {
       return data?.map(sub => ({
         id: sub.id,
         doctorId: sub.doctor_id,
-        doctorName: sub.doctors?.users?.name || '알 수 없음',
+        doctorName: '의사', // name 필드가 없으므로 기본값 사용
         hospitalName: sub.doctors?.hospital_name || '알 수 없음',
         hospitalType: sub.doctors?.hospital_type || '기타',
         email: sub.doctors?.users?.email || '',
@@ -334,7 +334,7 @@ export const subscriptionService = {
           doctors(
             hospital_name,
             hospital_type,
-            users(email, name)
+            users(email)
           )
         `)
         .single()
@@ -344,7 +344,7 @@ export const subscriptionService = {
       return {
         id: data.id,
         doctorId: data.doctor_id,
-        doctorName: data.doctors?.users?.name || '알 수 없음',
+        doctorName: '의사', // name 필드가 없으므로 기본값 사용
         hospitalName: data.doctors?.hospital_name || '알 수 없음',
         hospitalType: data.doctors?.hospital_type || '기타',
         email: data.doctors?.users?.email || '',
@@ -538,7 +538,7 @@ export const subscriptionService = {
           doctors(
             hospital_name,
             hospital_type,
-            users(email, name)
+            users(email)
           )
         `)
         .eq('status', 'active')
@@ -551,7 +551,7 @@ export const subscriptionService = {
       return data?.map(sub => ({
         id: sub.id,
         doctorId: sub.doctor_id,
-        doctorName: sub.doctors?.users?.name || '알 수 없음',
+        doctorName: '의사', // name 필드가 없으므로 기본값 사용
         hospitalName: sub.doctors?.hospital_name || '알 수 없음',
         hospitalType: sub.doctors?.hospital_type || '기타',
         email: sub.doctors?.users?.email || '',
