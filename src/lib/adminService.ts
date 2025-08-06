@@ -116,6 +116,8 @@ export const adminService = {
 
     try {
       // 실제 데이터베이스에서 통계 조회
+      console.log('🔍 관리자 통계 데이터 조회 시작...')
+      
       const [
         usersData,
         subscriptionsData,
@@ -123,10 +125,17 @@ export const adminService = {
         appointmentsData
       ] = await Promise.all([
         supabase.from('users').select('role, created_at'),
-        supabase.from('subscriptions').select('plan, status, amount, created_at'),
+        supabase.from('subscriptions').select('plan_type, status, amount, created_at'),
         supabase.from('community_posts').select('created_at'),
         supabase.from('appointments').select('status, created_at')
       ])
+
+      console.log('Supabase에서 가져온 구독 데이터:', subscriptionsData.data?.length || 0, '개')
+      
+      if (subscriptionsData.error) {
+        console.error('구독 데이터 조회 실패:', subscriptionsData.error)
+        throw subscriptionsData.error
+      }
 
       // 통계 계산 로직 구현
       const stats: AdminStats = {
@@ -176,11 +185,14 @@ export const adminService = {
     try {
       const { data, error } = await supabase
         .from('subscriptions')
-        .select('amount, created_at, plan')
+        .select('amount, created_at, plan_type')
         .eq('status', 'active')
         .order('created_at', { ascending: true })
 
-      if (error) throw error
+      if (error) {
+        console.error('수익 데이터 조회 실패:', error)
+        throw error
+      }
 
       // 월별 수익 데이터 집계
       const revenueMap = new Map<string, { revenue: number, subscriptions: number, newSubscriptions: number }>()
@@ -233,9 +245,12 @@ export const adminService = {
     try {
       const { data, error } = await supabase
         .from('subscriptions')
-        .select('plan, amount, status, created_at')
+        .select('plan_type, amount, status, created_at')
 
-      if (error) throw error
+      if (error) {
+        console.error('구독 분석 데이터 조회 실패:', error)
+        throw error
+      }
 
       // 구독 플랜별 분석
       const planStats = new Map<string, { count: number, revenue: number }>()
@@ -243,10 +258,10 @@ export const adminService = {
       let totalRevenue = 0
 
       data?.forEach(subscription => {
-        const current = planStats.get(subscription.plan) || { count: 0, revenue: 0 }
+        const current = planStats.get(subscription.plan_type) || { count: 0, revenue: 0 }
         current.count += 1
         current.revenue += subscription.amount || 0
-        planStats.set(subscription.plan, current)
+        planStats.set(subscription.plan_type, current)
 
         totalCount += 1
         totalRevenue += subscription.amount || 0
