@@ -1,86 +1,79 @@
 import { createClient } from '@supabase/supabase-js'
-import { config, validateConfig, hasValidSupabaseConfig } from './config'
 
-// 애플리케이션 시작 시 환경 변수 검증
-validateConfig()
+// 환경 변수 확인
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// 더미 클라이언트 (환경 변수가 올바르지 않을 때)
+// 프로덕션 환경 변수 검증
+const validateProductionEnvironment = () => {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    const missingVars = []
+    
+    if (!supabaseUrl || supabaseUrl.includes('your_supabase_url_here') || supabaseUrl.startsWith('missing_')) {
+      missingVars.push('NEXT_PUBLIC_SUPABASE_URL')
+    }
+    
+    if (!supabaseAnonKey || supabaseAnonKey.includes('your_supabase_anon_key_here') || supabaseAnonKey.startsWith('missing_')) {
+      missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    }
+    
+    if (missingVars.length > 0) {
+      console.error('🚨 환경 변수 설정 오류:')
+      missingVars.forEach(varName => {
+        console.error(`  - ${varName}이 설정되지 않았습니다.`)
+      })
+      console.error(' 📝 해결 방법:')
+      console.error('  1. Supabase 프로젝트를 생성하세요.')
+      console.error('  2. Netlify 환경 변수에 실제 값을 설정하세요.')
+      console.error('  3. 애플리케이션을 다시 배포하세요.')
+      
+      throw new Error('프로덕션 환경에서 환경 변수가 올바르게 설정되지 않았습니다.')
+    }
+  }
+}
+
+// 유효한 환경 변수인지 확인하는 함수
+const isValidSupabaseConfig = (url?: string, key?: string): boolean => {
+  if (!url || !key) return false
+  if (url.includes('your_supabase_url_here') || key.includes('your_supabase_anon_key_here')) return false
+  if (url.startsWith('missing_') || key.startsWith('missing_')) return false
+  try {
+    new URL(url) // URL 유효성 검사
+    return true
+  } catch {
+    return false
+  }
+}
+
+// 더미 클라이언트 (환경 변수가 없을 때)
 const createDummySupabaseClient = () => {
   console.log('🚀 개발 모드: 더미 Supabase 클라이언트 사용')
-  console.log('📝 실제 서비스를 위해서는 Supabase 프로젝트를 생성하고 Netlify 환경 변수를 설정해주세요.')
 
   return {
     auth: {
-      signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
-        // 개발용 관리자 계정 시뮬레이션
-        if (email === 'admin@obdoc.co.kr' && password === 'admin123!@#') {
-          const mockUser = {
-            id: '00000000-0000-0000-0000-000000000001',
-            email: 'admin@obdoc.co.kr',
-            role: 'admin',
-            user_metadata: { role: 'admin' }
-          }
-          
-          console.log('✅ 개발 모드: 관리자 로그인 성공')
-          return { 
-            data: { 
-              user: mockUser,
-              session: {
-                user: mockUser,
-                access_token: 'dummy-token',
-                refresh_token: 'dummy-refresh-token'
-              }
-            }, 
-            error: null 
-          }
-        }
-        
-        return { 
-          data: { user: null, session: null }, 
-          error: { message: '개발 모드: 관리자 계정(admin@obdoc.co.kr)만 로그인 가능합니다.' } 
-        }
-      },
-      signOut: async () => {
-        console.log('🚪 개발 모드: 로그아웃')
-        return { error: null }
-      },
+      signInWithPassword: async () => ({ data: null, error: { message: 'Supabase가 설정되지 않았습니다.' } }),
+      signOut: async () => ({ error: null }),
       getUser: async () => ({ data: { user: null }, error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
-      resetPasswordForEmail: async () => ({ 
-        data: {}, 
-        error: { message: '개발 모드: 이메일 기능이 비활성화되어 있습니다.' } 
-      }),
-      onAuthStateChange: (callback: any) => {
-        // 더미 구독 객체 반환
-        return { 
-          data: { 
-            subscription: { 
-              unsubscribe: () => console.log('🔄 개발 모드: 인증 상태 구독 해제') 
-            } 
-          } 
-        }
-      },
-      signUp: async () => ({ 
-        data: { user: null, session: null }, 
-        error: { message: '개발 모드: 회원가입이 비활성화되어 있습니다.' } 
-      })
+      resetPasswordForEmail: async () => ({ error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
+      signUp: async () => ({ data: null, error: { message: 'Supabase가 설정되지 않았습니다.' } })
     },
-    from: (table: string) => ({
-      select: (columns?: string) => ({
-        eq: (column: string, value: any) => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
           single: async () => ({ data: null, error: null }),
-          order: (column: string, options?: any) => ({ data: [], error: null }),
-          limit: (count: number) => ({ data: [], error: null })
+          order: () => ({ data: [], error: null })
         }),
-        order: (column: string, options?: any) => ({ data: [], error: null }),
-        limit: (count: number) => ({ data: [], error: null })
+        insert: async () => ({ data: null, error: null }),
+        update: () => ({
+          eq: () => ({ data: null, error: null })
+        }),
+        order: () => ({ data: [], error: null })
       }),
-      insert: async (data: any) => ({ data: null, error: null }),
-      update: (data: any) => ({
-        eq: (column: string, value: any) => ({ data: null, error: null })
-      }),
-      delete: () => ({
-        eq: (column: string, value: any) => ({ data: null, error: null })
+      insert: async () => ({ data: null, error: null }),
+      update: () => ({
+        eq: () => ({ data: null, error: null })
       })
     })
   }
@@ -92,26 +85,29 @@ let browserSupabaseAdminClient: any = null
 
 // 클라이언트 생성 함수
 const getSupabaseClient = () => {
+  // 프로덕션 환경 변수 검증 (브라우저에서만)
+  validateProductionEnvironment()
+  
   // 서버 사이드에서는 항상 새 클라이언트 생성
   if (typeof window === 'undefined') {
-    if (!hasValidSupabaseConfig()) {
+    if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
       return createDummySupabaseClient()
     }
-    return createClient(config.supabase.url!, config.supabase.anonKey!, {
+    return createClient(supabaseUrl!, supabaseAnonKey!, {
       auth: {
         persistSession: false
       }
     })
   }
 
-  // 브라우저에서는 싱글톤 사용 (GoTrueClient 중복 방지)
+  // 브라우저에서는 싱글톤 사용
   if (!browserSupabaseClient) {
-    if (!hasValidSupabaseConfig()) {
-      console.warn('⚠️  Supabase 환경 변수가 올바르게 설정되지 않았습니다. 개발 모드로 실행됩니다.')
+    if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
+      console.warn('⚠️ 개발 모드로 실행: Supabase 환경 변수가 설정되지 않았습니다.')
       browserSupabaseClient = createDummySupabaseClient()
     } else {
       console.log('✅ 실제 Supabase 클라이언트 초기화')
-      browserSupabaseClient = createClient(config.supabase.url!, config.supabase.anonKey!, {
+      browserSupabaseClient = createClient(supabaseUrl!, supabaseAnonKey!, {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
@@ -127,12 +123,12 @@ const getSupabaseClient = () => {
 const getSupabaseAdminClient = () => {
   // 서버 사이드에서는 항상 새 클라이언트 생성
   if (typeof window === 'undefined') {
-    if (!hasValidSupabaseConfig()) {
+    if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
       return createDummySupabaseClient()
     }
     return createClient(
-      config.supabase.url!,
-      config.supabase.serviceRoleKey || config.supabase.anonKey!,
+      supabaseUrl!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey!,
       {
         auth: {
           persistSession: false
@@ -143,12 +139,12 @@ const getSupabaseAdminClient = () => {
 
   // 브라우저에서는 싱글톤 사용
   if (!browserSupabaseAdminClient) {
-    if (!hasValidSupabaseConfig()) {
+    if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
       browserSupabaseAdminClient = createDummySupabaseClient()
     } else {
       browserSupabaseAdminClient = createClient(
-        config.supabase.url!,
-        config.supabase.serviceRoleKey || config.supabase.anonKey!
+        supabaseUrl!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey!
       )
     }
   }
@@ -158,6 +154,3 @@ const getSupabaseAdminClient = () => {
 
 export const supabase = getSupabaseClient()
 export const supabaseAdmin = getSupabaseAdminClient()
-
-// 설정 상태 확인 함수 내보내기
-export { hasValidSupabaseConfig, config }
