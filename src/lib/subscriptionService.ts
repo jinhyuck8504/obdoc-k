@@ -1,17 +1,16 @@
 import { supabase } from './supabase'
-import { 
-  Subscription, 
-  SubscriptionPlan, 
-  PaymentInfo, 
-  SubscriptionNotification, 
-  SubscriptionStats, 
+import {
+  Subscription,
+  SubscriptionPlan,
+  PaymentInfo,
+  SubscriptionStats,
   SubscriptionFilters,
   ApprovalData
 } from '@/types/subscription'
 
 // 개발 환경 체크
 const isDevelopment = process.env.NODE_ENV === 'development'
-const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
@@ -200,7 +199,7 @@ export const subscriptionService = {
 
       if (filters?.search) {
         const search = filters.search.toLowerCase()
-        filtered = filtered.filter(sub => 
+        filtered = filtered.filter(sub =>
           sub.doctorName.toLowerCase().includes(search) ||
           sub.hospitalName.toLowerCase().includes(search) ||
           sub.email.toLowerCase().includes(search)
@@ -264,7 +263,7 @@ export const subscriptionService = {
       }
 
       const now = new Date().toISOString()
-      
+
       if (approvalData.action === 'approve') {
         const startDate = approvalData.startDate || new Date().toISOString().split('T')[0]
         const endDate = approvalData.endDate || (() => {
@@ -519,7 +518,7 @@ export const subscriptionService = {
     if (isDevelopment && isDummySupabase) {
       const now = new Date()
       const futureDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
-      
+
       return dummySubscriptions.filter(sub => {
         if (!sub.endDate || sub.status !== 'active') return false
         const endDate = new Date(sub.endDate)
