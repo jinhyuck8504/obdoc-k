@@ -55,8 +55,8 @@ export function validateConfig() {
     errors.forEach(error => console.error(`  - ${error}`))
     console.error('\n📝 해결 방법:')
     console.error('  1. Supabase 프로젝트를 생성하세요.')
-    console.error('  2. .env 파일의 환경 변수를 실제 값으로 교체하세요.')
-    console.error('  3. 애플리케이션을 다시 시작하세요.')
+    console.error('  2. Netlify 환경 변수에 실제 값을 설정하세요.')
+    console.error('  3. 애플리케이션을 다시 배포하세요.')
     
     if (config.app.nodeEnv === 'production') {
       throw new Error('프로덕션 환경에서 환경 변수가 올바르게 설정되지 않았습니다.')
