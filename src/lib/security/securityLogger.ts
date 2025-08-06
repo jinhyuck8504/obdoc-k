@@ -225,6 +225,64 @@ class SecurityLogger {
 // 싱글톤 인스턴스
 export const securityLogger = new SecurityLogger()
 
+// 클라이언트 IP 추출 유틸리티 함수
+export function getClientIp(request: Request): string {
+  // Netlify의 경우
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim()
+  }
+
+  // 기타 헤더들 확인
+  const realIP = request.headers.get('x-real-ip')
+  if (realIP) {
+    return realIP
+  }
+
+  const cfConnectingIP = request.headers.get('cf-connecting-ip')
+  if (cfConnectingIP) {
+    return cfConnectingIP
+  }
+
+  // 기본값
+  return 'unknown'
+}
+
+// User Agent 추출 유틸리티 함수
+export function getUserAgent(request: Request): string {
+  return request.headers.get('user-agent') || 'unknown'
+}
+
+// 요청에서 보안 관련 정보 추출하는 헬퍼 함수
+export function extractSecurityInfo(request: Request) {
+  return {
+    clientIP: getClientIp(request),
+    userAgent: getUserAgent(request),
+    timestamp: new Date().toISOString(),
+    url: request.url,
+    method: request.method
+  }
+}
+
+// 보안 이벤트를 요청 정보와 함께 로깅하는 편의 함수
+export function logSecurityEventFromRequest(
+  request: Request,
+  event: Omit<SecurityEvent, 'id' | 'timestamp' | 'clientIP' | 'userAgent'>
+) {
+  const securityInfo = extractSecurityInfo(request)
+  
+  securityLogger.log({
+    ...event,
+    clientIP: securityInfo.clientIP,
+    userAgent: securityInfo.userAgent,
+    metadata: {
+      ...event.metadata,
+      url: securityInfo.url,
+      method: securityInfo.method
+    }
+  })
+}
+
 // 편의 함수들
 export const logLoginSuccess = (userId: string, clientIP: string, userAgent?: string) => 
   securityLogger.logLoginSuccess(userId, clientIP, userAgent)
