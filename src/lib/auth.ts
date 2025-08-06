@@ -78,7 +78,12 @@ const createDummyUser = (email: string, role: 'doctor' | 'customer' | 'admin' = 
 const isSuperAdmin = (email?: string): boolean => {
   if (!email) return false
   
-  // 환경 변수에서 슈퍼 관리자 이메일 확인
+  // 개발 환경에서는 특정 이메일을 관리자로 인정
+  if (isDevelopment) {
+    return email === 'jinhyucks@gmail.com'
+  }
+  
+  // 프로덕션 환경에서는 환경 변수 체크
   const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL
   const superAdminSecret = process.env.NEXT_PUBLIC_SUPER_ADMIN_SECRET
   
@@ -234,13 +239,33 @@ export const auth = {
           }
 
           if (profile) {
+            // 🔒 보안 검증: 인증된 이메일과 프로필 이메일이 일치하는지 확인
+            if (user.email !== profile.email) {
+              console.warn('🚨 이메일 불일치 감지:', {
+                authEmail: user.email,
+                profileEmail: profile.email,
+                userId: user.id
+              })
+              
+              // 관리자 역할인 경우 특히 엄격하게 검증
+              if (profile.role === 'admin') {
+                console.error('🚨 관리자 계정 이메일 불일치 - 접근 차단')
+                await supabase.auth.signOut()
+                return null
+              }
+              
+              // 일반 사용자도 이메일 불일치 시 접근 차단
+              console.error('🚨 사용자 계정 이메일 불일치 - 접근 차단')
+              await supabase.auth.signOut()
+              return null
+            }
+
             return {
               id: profile.id,
               email: profile.email,
               phone: profile.phone,
               role: profile.role,
-              isActive: profile.is_active,
-              name: profile.name
+              isActive: profile.is_active
             }
           }
         } catch (error) {
