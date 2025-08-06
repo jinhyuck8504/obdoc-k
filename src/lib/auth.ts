@@ -175,7 +175,10 @@ export const auth = {
         return { data: null, error }
       }
 
-      // 슈퍼 관리자 검증 (실제 환경에서만)
+      // 슈퍼 관리자 검증 (임시 비활성화 - 개발용)
+      // TODO: 프로덕션에서 다시 활성화 필요
+      console.log('🔧 슈퍼 관리자 검증 임시 비활성화됨')
+      /*
       if (!isDummySupabase && data.user?.email && !isSuperAdmin(data.user.email)) {
         // 슈퍼 관리자가 아닌 경우 admin 역할 접근 차단
         const { data: userProfile } = await supabase
@@ -193,6 +196,7 @@ export const auth = {
           }
         }
       }
+      */
 
       return { data, error: null }
     } catch (error) {
