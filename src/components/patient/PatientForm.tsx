@@ -10,17 +10,6 @@ interface PatientFormProps {
   onCancel: () => void
 }
 
-interface FormErrors {
-  name?: string
-  email?: string
-  phone?: string
-  birthDate?: string
-  height?: string
-  initialWeight?: string
-  currentWeight?: string
-  targetWeight?: string
-}
-
 export default function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
   const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
@@ -41,7 +30,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
     emergencyContactRelationship: ''
   })
 
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 수정 모드일 때 기존 데이터 로드
@@ -69,7 +58,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
   }, [patient])
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
+    const newErrors: Record<string, string> = {}
 
     // 필수 필드 검증
     if (!formData.name.trim()) {
@@ -132,7 +121,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
         phone: formData.phone.replace(/[^\d]/g, '').replace(/(\d{3})(\d{4})(\d{4})/, '010-$2-$3')
       }
       
-      await onSave(normalizedData)
+      onSave(normalizedData)
     } catch (error) {
       console.error('고객 저장 중 오류:', error)
       alert('고객 정보 저장에 실패했습니다.')
@@ -145,8 +134,12 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // 에러 메시지 제거
-    if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
     }
   }
 
