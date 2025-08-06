@@ -7,16 +7,16 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 // 프로덕션 환경 변수 검증
 const validateProductionEnvironment = () => {
   if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-    const missingVars = []
-    
+    const missingVars: string[] = []
+
     if (!supabaseUrl || supabaseUrl.includes('your_supabase_url_here') || supabaseUrl.startsWith('missing_')) {
       missingVars.push('NEXT_PUBLIC_SUPABASE_URL')
     }
-    
+
     if (!supabaseAnonKey || supabaseAnonKey.includes('your_supabase_anon_key_here') || supabaseAnonKey.startsWith('missing_')) {
       missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY')
     }
-    
+
     if (missingVars.length > 0) {
       console.error('🚨 환경 변수 설정 오류:')
       missingVars.forEach(varName => {
@@ -26,7 +26,7 @@ const validateProductionEnvironment = () => {
       console.error('  1. Supabase 프로젝트를 생성하세요.')
       console.error('  2. Netlify 환경 변수에 실제 값을 설정하세요.')
       console.error('  3. 애플리케이션을 다시 배포하세요.')
-      
+
       throw new Error('프로덕션 환경에서 환경 변수가 올바르게 설정되지 않았습니다.')
     }
   }
@@ -87,7 +87,7 @@ let browserSupabaseAdminClient: any = null
 const getSupabaseClient = () => {
   // 프로덕션 환경 변수 검증 (브라우저에서만)
   validateProductionEnvironment()
-  
+
   // 서버 사이드에서는 항상 새 클라이언트 생성
   if (typeof window === 'undefined') {
     if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
