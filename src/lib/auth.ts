@@ -78,8 +78,8 @@ const createDummyUser = (email: string, role: 'doctor' | 'customer' | 'admin' = 
 const isSuperAdmin = (email?: string): boolean => {
   if (!email) return false
   
-  // 개발 환경에서는 특정 이메일을 관리자로 인정
-  if (isDevelopment) {
+  // 개발 환경이거나 더미 Supabase를 사용하는 경우 특정 이메일을 관리자로 인정
+  if (isDevelopment || isDummySupabase) {
     return email === 'jinhyucks@gmail.com'
   }
   
@@ -153,8 +153,8 @@ export const auth = {
         return { data: null, error }
       }
 
-      // 슈퍼 관리자 검증 (실제 환경)
-      if (data.user?.email && !isSuperAdmin(data.user.email)) {
+      // 슈퍼 관리자 검증 (실제 환경에서만)
+      if (!isDummySupabase && data.user?.email && !isSuperAdmin(data.user.email)) {
         // 슈퍼 관리자가 아닌 경우 admin 역할 접근 차단
         const { data: userProfile } = await supabase
           .from('users')
