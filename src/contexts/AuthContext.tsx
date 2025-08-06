@@ -26,17 +26,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 개발 환경 체크
   const isDevelopment = process.env.NODE_ENV === 'development'
-  const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+  const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
   const refreshUser = async () => {
     try {
+      setLoading(true)
       const currentUser = await auth.getCurrentUser()
       setUser(currentUser)
     } catch (error) {
       console.error('Error refreshing user:', error)
       setUser(null)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -44,19 +47,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       const { data, error } = await auth.signIn(email, password)
-      
+
       if (error) {
         return { error }
       }
 
       // 사용자 정보 새로고침
       await refreshUser()
-      
+
       // 세션 정보 로컬 스토리지에 저장
       if (data?.session) {
         localStorage.setItem('supabase.auth.token', JSON.stringify(data.session))
       }
-      
+
       return { error: null }
     } catch (error) {
       return { error: { message: '로그인 중 오류가 발생했습니다.' } }
@@ -70,19 +73,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       await auth.signOut()
       setUser(null)
-      
+
       // 로컬 스토리지 정리
       localStorage.removeItem('lastActivity')
       localStorage.removeItem('supabase.auth.token')
       localStorage.removeItem('token_expiry')
-      
+
       // 모든 Supabase 관련 로컬 스토리지 정리
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('supabase.auth.')) {
           localStorage.removeItem(key)
         }
       })
-      
+
       router.push('/login')
     } catch (error) {
       console.error('Sign out error:', error)
@@ -93,19 +96,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user) throw new Error('사용자가 로그인되어 있지 않습니다')
-    
+
     try {
       setLoading(true)
       // 로컬 상태 업데이트 (개발 환경)
       setUser(prev => prev ? { ...prev, ...updates } : null)
-      
+
       // 실제 환경에서는 Supabase 프로필 업데이트
       // const { error } = await supabase
       //   .from('profiles')
       //   .update(updates)
       //   .eq('id', user.id)
       // if (error) throw error
-      
+
     } catch (error) {
       console.error('프로필 업데이트 실패:', error)
       throw error
@@ -155,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // 실제 Supabase 세션 복원 시도
         const { data: { session } } = await supabase.auth.getSession()
-        
+
         if (session?.user && mounted) {
           const currentUser = await auth.getCurrentUser()
           setUser(currentUser)
@@ -182,18 +185,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data } = supabase.auth.onAuthStateChange(
         async (event: string, session: any) => {
           console.log('Auth state changed:', event, session?.user?.id)
-          
+
           if (!mounted) return
 
           if (event === 'SIGNED_IN' && session?.user) {
-            await refreshUser()
+            try {
+              const currentUser = await auth.getCurrentUser()
+              setUser(currentUser)
+            } catch (error) {
+              console.error('Error getting user after sign in:', error)
+              setUser(null)
+            }
           } else if (event === 'SIGNED_OUT') {
             setUser(null)
           } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-            await refreshUser()
+            try {
+              const currentUser = await auth.getCurrentUser()
+              setUser(currentUser)
+            } catch (error) {
+              console.error('Error getting user after token refresh:', error)
+            }
           }
-          
-          setLoading(false)
+
+          if (mounted) {
+            setLoading(false)
+          }
         }
       )
       subscription = data.subscription
@@ -216,7 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 사용자 활동 감지 이벤트
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart']
-    
+
     const handleActivity = () => {
       updateLastActivity()
     }
@@ -241,7 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading && user) {
       const currentPath = window.location.pathname
-      
+
       // 로그인/회원가입 페이지에 있으면 대시보드로 리다이렉트
       if (currentPath === '/login' || currentPath === '/signup') {
         redirectToDashboard(user.role)
@@ -251,11 +267,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         redirectToDashboard(user.role)
       }
     }
-  }, [user, loading])
+  }, [user, loading, router])
 
   const redirectToDashboard = (role: string) => {
     console.log('Redirecting user with role:', role)
-    
+
     switch (role) {
       case 'doctor':
         router.push('/dashboard/doctor')
