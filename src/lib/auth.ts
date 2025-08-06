@@ -74,6 +74,18 @@ const createDummyUser = (email: string, role: 'doctor' | 'customer' | 'admin' = 
   }
 }
 
+// 슈퍼 관리자 검증 함수
+const isSuperAdmin = (email?: string): boolean => {
+  if (!email) return false
+  
+  // 환경 변수에서 슈퍼 관리자 이메일 확인
+  const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL
+  const superAdminSecret = process.env.NEXT_PUBLIC_SUPER_ADMIN_SECRET
+  
+  // 슈퍼 관리자 이메일과 정확히 일치하고, 시크릿 키가 설정되어 있어야 함
+  return email === superAdminEmail && superAdminSecret === 'obdoc-super-admin-2024'
+}
+
 export const auth = {
   async signIn(email: string, password: string) {
     try {
@@ -93,7 +105,7 @@ export const auth = {
         let role: 'doctor' | 'customer' | 'admin' = 'customer'
         if (email.includes('doctor') || email.includes('의사')) {
           role = 'doctor'
-        } else if (email.includes('admin') || email.includes('관리자')) {
+        } else if (email.includes('admin') || email.includes('관리자') || isSuperAdmin(email)) {
           role = 'admin'
         } else if (email.includes('customer')) {
           role = 'customer'
@@ -125,6 +137,7 @@ export const auth = {
         }
       }
 
+      // 실제 Supabase 인증
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -133,6 +146,25 @@ export const auth = {
       if (error) {
         console.error('Login error:', error)
         return { data: null, error }
+      }
+
+      // 슈퍼 관리자 검증 (실제 환경)
+      if (data.user?.email && !isSuperAdmin(data.user.email)) {
+        // 슈퍼 관리자가 아닌 경우 admin 역할 접근 차단
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+        
+        if (userProfile?.role === 'admin') {
+          console.warn('🚨 무권한 관리자 접근 시도:', data.user.email)
+          await supabase.auth.signOut()
+          return { 
+            data: null, 
+            error: { message: '접근 권한이 없습니다.' } 
+          }
+        }
       }
       
       return { data, error: null }
@@ -171,30 +203,59 @@ export const auth = {
         return null
       }
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError) {
+        console.error('Auth user error:', authError)
+        return null
+      }
       
       if (!user) return null
 
-      // 사용자 프로필 정보 가져오기
-      const { data: profile, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+      // 사용자 프로필 정보 가져오기 (재시도 로직 추가)
+      let retryCount = 0
+      const maxRetries = 3
+      
+      while (retryCount < maxRetries) {
+        try {
+          const { data: profile, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single()
 
-      if (error || !profile) {
-        console.error('Profile fetch error:', error)
-        return null
+          if (error) {
+            if (error.code === 'PGRST116') {
+              // 사용자가 users 테이블에 없는 경우
+              console.warn('User not found in users table:', user.id)
+              return null
+            }
+            throw error
+          }
+
+          if (profile) {
+            return {
+              id: profile.id,
+              email: profile.email,
+              phone: profile.phone,
+              role: profile.role,
+              isActive: profile.is_active,
+              name: profile.name
+            }
+          }
+        } catch (error) {
+          console.error(`Profile fetch attempt ${retryCount + 1} failed:`, error)
+          retryCount++
+          
+          if (retryCount < maxRetries) {
+            // 재시도 전 잠시 대기
+            await new Promise(resolve => setTimeout(resolve, 1000))
+          }
+        }
       }
 
-      return {
-        id: profile.id,
-        email: profile.email,
-        phone: profile.phone,
-        role: profile.role,
-        isActive: profile.is_active,
-        name: profile.name
-      }
+      console.error('Failed to fetch profile after all retries')
+      return null
     } catch (error) {
       console.error('Get current user error:', error)
       return null
