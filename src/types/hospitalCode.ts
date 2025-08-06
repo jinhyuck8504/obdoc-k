@@ -41,6 +41,7 @@ export type CodeVerificationError =
   | 'INVALID_REQUEST'
   | 'RATE_LIMIT_EXCEEDED'
   | 'SERVER_ERROR'
+  | 'INVALID_CODE'
 
 export interface CreateCodeRequest {
   name?: string
@@ -80,5 +81,6 @@ export const ERROR_MESSAGES: Record<CodeVerificationError, string> = {
   CODE_USAGE_EXCEEDED: '사용 한도를 초과한 코드입니다. 병원에서 새로운 코드를 요청해주세요',
   INVALID_REQUEST: '잘못된 요청입니다. 요청 내용을 확인해주세요',
   RATE_LIMIT_EXCEEDED: '요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요',
-  SERVER_ERROR: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요'
+  SERVER_ERROR: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요',
+  INVALID_CODE: '유효하지 않은 코드입니다. 다시 확인해주세요'
 }
