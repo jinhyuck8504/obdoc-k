@@ -83,6 +83,15 @@ export const authRateLimiter = new RateLimiter({
   maxRequests: 5 // 15분당 5번 로그인 시도
 })
 
+// 병원 코드 전용 Rate Limiter
+export const hospitalCodeRateLimiter = new RateLimiter({
+  windowMs: 15 * 60 * 1000, // 15분
+  maxRequests: 10 // 15분당 10번 병원 코드 요청
+})
+
+// 전역 Rate Limiter (기본값과 동일)
+export const globalRateLimiter = defaultRateLimiter
+
 // IP 주소 추출 유틸리티
 export function getClientIP(request: Request): string {
   // Netlify의 경우
@@ -134,6 +143,16 @@ export function createRateLimitMiddleware(rateLimiter: RateLimiter) {
 
     return null // 제한에 걸리지 않음
   }
+}
+
+// 정리 작업을 위한 인터벌 설정 (선택사항)
+if (typeof window === 'undefined') { // 서버 사이드에서만 실행
+  setInterval(() => {
+    defaultRateLimiter.cleanup()
+    strictRateLimiter.cleanup()
+    authRateLimiter.cleanup()
+    hospitalCodeRateLimiter.cleanup()
+  }, 60 * 1000) // 1분마다 정리
 }
 
 export { RateLimiter }
