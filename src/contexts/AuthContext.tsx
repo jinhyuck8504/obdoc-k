@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { auth, User } from '@/lib/auth'
@@ -19,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
   const router = useRouter()
 
   // 자동 로그아웃 타이머 (30분)
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       setLoading(true)
       const currentUser = await auth.getCurrentUser()
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -118,12 +119,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // 활동 시간 업데이트
-  const updateLastActivity = () => {
+  const updateLastActivity = useCallback(() => {
     localStorage.setItem('lastActivity', Date.now().toString())
-  }
+  }, [])
 
   // 자동 로그아웃 체크
-  const checkAutoLogout = () => {
+  const checkAutoLogout = useCallback(() => {
     if (!user) return
 
     const lastActivity = localStorage.getItem('lastActivity')
@@ -134,12 +135,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut()
       }
     }
-  }
+  }, [user])
 
+  // 리다이렉트 함수 (중복 제거 및 최적화)
+  const redirectToDashboard = useCallback((role: string) => {
+    console.log('Redirecting user with role:', role)
+
+    switch (role) {
+      case 'doctor':
+        router.push('/dashboard/doctor')
+        break
+      case 'customer':
+        router.push('/dashboard/customer')
+        break
+      case 'admin':
+        router.push('/dashboard/admin')
+        break
+      default:
+        console.warn('Unknown role:', role)
+        router.push('/login')
+    }
+  }, [router])
+
+  // 초기화 useEffect
   useEffect(() => {
     let mounted = true
 
-    // 초기 사용자 상태 확인
     const initializeAuth = async () => {
       try {
         // 개발 환경에서 더미 사용자 복원
@@ -152,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           if (mounted) {
             setLoading(false)
+            setInitialized(true)
           }
           return
         }
@@ -173,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } finally {
         if (mounted) {
           setLoading(false)
+          setInitialized(true)
         }
       }
     }
@@ -221,7 +244,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         subscription.unsubscribe()
       }
     }
-  }, [])
+  }, [isDevelopment, isDummySupabase])
+
+  // 자동 리다이렉트 로직 (초기화 완료 후에만 실행)
+  useEffect(() => {
+    if (!initialized || loading) return
+
+    if (user) {
+      const currentPath = window.location.pathname
+
+      // 로그인/회원가입 페이지에 있으면 대시보드로 리다이렉트
+      if (currentPath === '/login' || currentPath === '/signup') {
+        redirectToDashboard(user.role)
+      }
+      // 루트 경로에서도 대시보드로 리다이렉트 (로그인된 사용자의 경우)
+      else if (currentPath === '/') {
+        redirectToDashboard(user.role)
+      }
+    }
+  }, [user, loading, initialized, redirectToDashboard])
 
   // 자동 로그아웃 및 활동 감지
   useEffect(() => {
@@ -251,45 +292,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       clearInterval(interval)
     }
-  }, [user])
-
-  // 자동 리다이렉트 로직
-  useEffect(() => {
-    if (!loading && user) {
-      const currentPath = window.location.pathname
-
-      // 로그인/회원가입 페이지에 있으면 대시보드로 리다이렉트
-      if (currentPath === '/login' || currentPath === '/signup') {
-        redirectToDashboard(user.role)
-      }
-      // 루트 경로에서도 대시보드로 리다이렉트 (로그인된 사용자의 경우)
-      else if (currentPath === '/') {
-        redirectToDashboard(user.role)
-      }
-    }
-  }, [user, loading, router])
-
-  const redirectToDashboard = (role: string) => {
-    console.log('Redirecting user with role:', role)
-
-    switch (role) {
-      case 'doctor':
-        router.push('/dashboard/doctor')
-        break
-      case 'customer':
-        router.push('/dashboard/customer')
-        break
-      case 'customer':
-        router.push('/dashboard/customer')
-        break
-      case 'admin':
-        router.push('/dashboard/admin')
-        break
-      default:
-        console.warn('Unknown role:', role)
-        router.push('/login')
-    }
-  }
+  }, [user, updateLastActivity, checkAutoLogout])
 
   const value = {
     user,
