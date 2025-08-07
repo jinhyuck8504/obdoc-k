@@ -54,7 +54,7 @@ export default function CustomerDashboard() {
     role: 'customer' as const
   } : user
 
-  const customerId = 'customer-1' // 개발 모드에서는 더미 고객 ID 사용
+  const customerId = user?.id || 'customer-1' // 실제 사용자 ID 사용
 
 
 
@@ -90,9 +90,9 @@ export default function CustomerDashboard() {
         setHealthMetrics(metrics)
       }
 
-      // 고객의 예약 정보 로드
-      const appointmentData = await appointmentService.getAppointments('doctor1')
-      const customerAppointments = appointmentData.filter(apt => apt.customerId === customerId)
+      // 고객의 예약 정보 로드 (실제 사용자 ID 사용)
+      const appointmentData = await appointmentService.getCustomerAppointments(customerId)
+      const customerAppointments = appointmentData
       setAppointments(customerAppointments)
       
     } catch (error) {
