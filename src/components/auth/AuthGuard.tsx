@@ -17,33 +17,51 @@ export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const router = useRouter()
   const [redirecting, setRedirecting] = useState(false)
   
-  // 개발 환경에서 임시로 인증 우회 (Supabase 설정이 더미일 때)
+  // 개발 환경 체크 (auth.ts와 동일한 로직)
   const isDevelopment = process.env.NODE_ENV === 'development'
-  const isDummySupabase = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('dummy-project')
+  const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url') ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
+  
+  console.log('🔍 AuthGuard Debug:', {
+    isDevelopment,
+    isDummySupabase,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    user: user ? { id: user.id, role: user.role } : null,
+    loading,
+    requiredRole
+  })
   
   useEffect(() => {
     // 개발 환경이고 더미 Supabase를 사용하는 경우 인증 우회
     if (isDevelopment && isDummySupabase) {
+      console.log('🔧 AuthGuard: 개발 모드에서 인증 우회')
       return // 인증 체크를 건너뜀
     }
     
     if (!loading) {
       if (!user) {
+        console.log('🚨 AuthGuard: 사용자 없음, 로그인 페이지로 리다이렉트')
         setRedirecting(true)
         router.push('/login')
         return
       }
       
       if (requiredRole && user.role !== requiredRole) {
+        console.log('🚨 AuthGuard: 권한 부족, 권한 없음 페이지로 리다이렉트')
         setRedirecting(true)
         router.push('/unauthorized')
         return
       }
+      
+      console.log('✅ AuthGuard: 인증 성공')
     }
   }, [user, loading, requiredRole, router, isDevelopment, isDummySupabase])
   
   // 개발 환경에서 더미 Supabase 사용 시 인증 우회
   if (isDevelopment && isDummySupabase) {
+    console.log('🔧 AuthGuard: 개발 모드 렌더링')
     return (
       <HydrationBoundary
         fallback={
@@ -68,6 +86,7 @@ export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   }
 
   if (loading) {
+    console.log('🔄 AuthGuard: 로딩 중')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-slate-100">
         <div className="text-center">
@@ -81,6 +100,7 @@ export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   }
 
   if (!user || redirecting) {
+    console.log('🚨 AuthGuard: 사용자 없음 또는 리다이렉트 중')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-slate-100">
         <div className="text-center">
@@ -94,6 +114,7 @@ export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   }
 
   if (requiredRole && user.role !== requiredRole) {
+    console.log('🚨 AuthGuard: 권한 부족')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
         <div className="text-center max-w-md mx-auto p-8">
@@ -110,6 +131,7 @@ export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     )
   }
 
+  console.log('✅ AuthGuard: 정상 렌더링')
   return (
     <HydrationBoundary
       fallback={
