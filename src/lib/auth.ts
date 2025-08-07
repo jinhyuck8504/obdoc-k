@@ -17,9 +17,9 @@ export interface User {
 }
 
 // 프로덕션 환경 체크 (더 엄격한 조건)
-const isDevelopment = process.env.NODE_ENV === 'development' && 
-  (process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') || 
-   process.env.NEXT_PUBLIC_APP_URL?.includes('127.0.0.1'))
+const isDevelopment = process.env.NODE_ENV === 'development' &&
+  (process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') ||
+    process.env.NEXT_PUBLIC_APP_URL?.includes('127.0.0.1'))
 const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
   process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url') ||
@@ -265,7 +265,7 @@ export const auth = {
 
           // 🚨 임시 해결책: 406 오류 방지를 위한 service_role 사용
           console.log('🔍 Attempting to fetch doctor profile for user:', user.id)
-          
+
           // 먼저 doctors 테이블에서 찾기 (service_role 사용)
           const { data: doctorProfile, error: doctorError } = await supabase
             .from('doctors')
@@ -310,8 +310,24 @@ export const auth = {
 
           // 🚨 임시 해결책: 테이블에서 찾지 못한 경우 이메일 기반으로 역할 추정
           console.warn('⚠️ User not found in doctors or customers table, using email-based role detection:', user.id)
-          
-          if (user.email?.includes('doctor') || user.email?.includes('의사')) {
+          console.log('🔍 Email analysis:', {
+            email: user.email,
+            includesDoctor: user.email?.includes('doctor'),
+            includesNaver: user.email?.includes('naver'),
+            includesJinhyuck: user.email?.includes('jinhyuck')
+          })
+
+          // 특정 이메일 패턴에 따른 역할 결정
+          if (user.email === 'jinhyuck8504@naver.com') {
+            console.log('🔧 Specific doctor email detected')
+            return {
+              id: user.id,
+              email: user.email,
+              role: 'doctor' as const,
+              isActive: true,
+              name: '진혁의사'
+            }
+          } else if (user.email?.includes('doctor') || user.email?.includes('의사')) {
             console.log('🔧 Email suggests doctor role')
             return {
               id: user.id,
@@ -331,9 +347,6 @@ export const auth = {
             }
           }
 
-          // 어느 테이블에서도 찾지 못한 경우
-          console.warn('User not found in doctors or customers table:', user.id)
-          return null
         } catch (error) {
           console.error(`Profile fetch attempt ${retryCount + 1} failed:`, error)
           retryCount++
