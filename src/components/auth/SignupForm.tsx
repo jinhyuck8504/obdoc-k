@@ -171,20 +171,47 @@ export default function SignupForm() {
         } else {
           // 실제 환경에서만 프로필 생성
           if (data.role === 'doctor') {
-            const { error: doctorError } = await supabase
-              .from('doctors')
-              .insert({
-                user_id: authData.user.id,
-                hospital_name: data.hospitalName || '',
-                hospital_type: data.hospitalType || 'clinic',
-                subscription_status: 'pending',
-                subscription_plan: data.subscriptionPlan || '1month',
-                is_approved: false
-              })
+            try {
+              // 먼저 현재 세션 확인
+              const { data: sessionData } = await supabase.auth.getSession()
+              console.log('Current session for doctor profile creation:', sessionData?.session?.user?.id)
 
-            if (doctorError) {
-              console.error('Doctor profile creation error:', doctorError)
-              setSignupError('의사 프로필 생성에 실패했습니다.')
+              const { data: doctorData, error: doctorError } = await supabase
+                .from('doctors')
+                .insert({
+                  user_id: authData.user.id,
+                  hospital_name: data.hospitalName || '',
+                  hospital_type: data.hospitalType || 'clinic',
+                  subscription_status: 'pending',
+                  subscription_plan: data.subscriptionPlan || '1month',
+                  is_approved: false
+                })
+                .select()
+
+              if (doctorError) {
+                console.error('Doctor profile creation error:', doctorError)
+                console.error('Error details:', {
+                  code: doctorError.code,
+                  message: doctorError.message,
+                  details: doctorError.details,
+                  hint: doctorError.hint
+                })
+                
+                // 더 구체적인 오류 메시지
+                if (doctorError.code === '42501') {
+                  setSignupError('권한이 없습니다. 데이터베이스 정책을 확인해주세요.')
+                } else if (doctorError.code === '23505') {
+                  setSignupError('이미 등록된 의사입니다.')
+                } else {
+                  setSignupError(`의사 프로필 생성에 실패했습니다: ${doctorError.message}`)
+                }
+                return
+              }
+
+              console.log('Doctor profile created successfully:', doctorData)
+            } catch (error) {
+              console.error('Unexpected error during doctor profile creation:', error)
+              setSignupError('의사 프로필 생성 중 예상치 못한 오류가 발생했습니다.')
               return
             }
           } else if (data.role === 'customer') {
