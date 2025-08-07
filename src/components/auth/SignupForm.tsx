@@ -69,7 +69,6 @@ export default function SignupForm() {
   })
 
   const selectedRole = watch('role')
-  const selectedPlan = watch('subscriptionPlan')
 
   // URL 파라미터에서 플랜 정보 읽기
   useEffect(() => {
@@ -78,16 +77,6 @@ export default function SignupForm() {
       setValue('subscriptionPlan', planParam as '1month' | '6months' | '12months')
     }
   }, [searchParams, setValue])
-
-  // 플랜 정보 가져오기
-  const getPlanInfo = (planId: string) => {
-    const plans = {
-      '1month': { name: '1개월 플랜', price: 199000, duration: '1개월', originalPrice: 199000, discount: 0 },
-      '6months': { name: '6개월 플랜', price: 1015000, duration: '6개월', originalPrice: 1194000, discount: 15 },
-      '12months': { name: '12개월 플랜', price: 1791000, duration: '12개월', originalPrice: 2388000, discount: 25 }
-    }
-    return plans[planId as keyof typeof plans]
-  }
 
   const onSubmit = async (data: SignupFormData) => {
     try {
@@ -172,7 +161,7 @@ export default function SignupForm() {
           // 실제 환경에서만 프로필 생성
           if (data.role === 'doctor') {
             try {
-              // 회원가입 후 자동 로그인을 먼저 시도
+              // 회원가입 후 자동 로그인 (이메일 확인 없이)
               const { error: loginError } = await supabase.auth.signInWithPassword({
                 email: data.email,
                 password: data.password,
@@ -322,7 +311,7 @@ export default function SignupForm() {
           <p className="text-sm text-gray-600 mb-4">
             Obdoc에 오신 것을 환영합니다!
             <br />
-            로그인 페이지로 이동합니다...
+            대시보드로 이동합니다...
           </p>
           <div className="animate-pulse">
             <div className="h-2 bg-blue-200 rounded-full">
@@ -578,8 +567,6 @@ export default function SignupForm() {
                   </div>
                 </div>
               </div>
-
-
             </div>
           )}
         </div>
