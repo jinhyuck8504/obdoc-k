@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
-import Button from '@/components/ui/Button'
+// import Button from '@/components/ui/Button' // 임시 제거
 
 interface BackButtonProps {
   label?: string
@@ -26,13 +26,12 @@ export default function BackButton({
   }
 
   return (
-    <Button
-      variant="ghost"
+    <button
       onClick={handleBack}
-      className={`flex items-center gap-2 text-gray-600 hover:text-gray-800 ${className}`}
+      className={`flex items-center gap-2 text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors ${className}`}
     >
       <ArrowLeft className="w-4 h-4" />
       {label}
-    </Button>
+    </button>
   )
 }
