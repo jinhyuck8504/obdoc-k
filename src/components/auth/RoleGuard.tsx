@@ -11,6 +11,24 @@ interface RoleGuardProps {
   fallbackPath?: string
 }
 
+// 슈퍼 관리자 검증 함수 (정식 서비스용)
+const isSuperAdmin = (email?: string): boolean => {
+  if (!email) return false
+  
+  const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL
+  const superAdminSecret = process.env.NEXT_PUBLIC_SUPER_ADMIN_SECRET
+  
+  console.log('🔍 슈퍼 관리자 검증:', { 
+    email, 
+    superAdminEmail, 
+    hasSecret: !!superAdminSecret,
+    isMatch: email === superAdminEmail,
+    secretMatch: superAdminSecret === 'obdoc-super-admin-2024'
+  })
+  
+  return email === superAdminEmail && superAdminSecret === 'obdoc-super-admin-2024'
+}
+
 export default function RoleGuard({ 
   children, 
   allowedRoles,
@@ -20,59 +38,14 @@ export default function RoleGuard({
   const router = useRouter()
   const pathname = usePathname()
 
-  // 개발 환경 체크 (AuthGuard와 동일한 로직)
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url') ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
-
   console.log('🔍 RoleGuard Debug:', {
-    isDevelopment,
-    isDummySupabase,
     pathname,
     user: user ? { id: user.id, role: user.role, email: user.email } : null,
     loading,
     allowedRoles
   })
 
-  // 슈퍼 관리자 검증 함수 (개발 환경에서 완화된 검증)
-  const isSuperAdmin = (email?: string): boolean => {
-    if (!email) return false
-    
-    if (isDevelopment && isDummySupabase) {
-      // 개발 환경에서는 특정 이메일들을 슈퍼 관리자로 인정
-      const devSuperAdmins = [
-        'jinhyucks@gmail.com',
-        'admin@obdoc.co.kr',
-        'test@admin.com'
-      ]
-      
-      const isDevSuperAdmin = devSuperAdmins.includes(email.toLowerCase())
-      console.log('🔧 개발 환경 슈퍼 관리자 검증:', { email, isDevSuperAdmin })
-      return isDevSuperAdmin
-    }
-    
-    // 프로덕션 환경에서는 환경 변수 검증
-    const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL
-    const superAdminSecret = process.env.NEXT_PUBLIC_SUPER_ADMIN_SECRET
-    
-    console.log('🔍 프로덕션 슈퍼 관리자 검증:', { 
-      email, 
-      superAdminEmail, 
-      hasSecret: !!superAdminSecret 
-    })
-    
-    return email === superAdminEmail && superAdminSecret === 'obdoc-super-admin-2024'
-  }
-
   useEffect(() => {
-    // 개발 환경이고 더미 Supabase를 사용하는 경우 권한 체크 우회
-    if (isDevelopment && isDummySupabase) {
-      console.log('🔧 RoleGuard: 개발 모드에서 권한 체크 우회')
-      return // 권한 체크를 건너뜀
-    }
-
     if (loading) return
 
     // 사용자가 로그인하지 않은 경우
@@ -90,8 +63,7 @@ export default function RoleGuard({
       console.log('🔍 관리자 페이지 접근 검증:', {
         email: user.email,
         isSuper,
-        pathname,
-        isDev: isDevelopment && isDummySupabase
+        pathname
       })
       
       if (!isSuper) {
@@ -121,25 +93,7 @@ export default function RoleGuard({
     }
 
     console.log('✅ RoleGuard: 권한 체크 통과')
-  }, [user, loading, pathname, router, allowedRoles, fallbackPath, isDevelopment, isDummySupabase])
-
-  // 개발 환경에서 더미 Supabase 사용 시 권한 체크 우회
-  if (isDevelopment && isDummySupabase) {
-    console.log('🔧 RoleGuard: 개발 모드 렌더링')
-    return (
-      <div className="min-h-screen bg-green-50 border-t-4 border-green-400">
-        <div className="bg-green-100 border-b border-green-200 p-3">
-          <div className="flex items-center justify-center">
-            <div className="h-5 w-5 text-green-600 mr-2">🔧</div>
-            <p className="text-sm text-green-800 font-medium">
-              개발 모드: 역할 권한 체크가 우회되었습니다 (더미 Supabase 사용 중)
-            </p>
-          </div>
-        </div>
-        {children}
-      </div>
-    )
-  }
+  }, [user, loading, pathname, router, allowedRoles, fallbackPath])
 
   // 로딩 중
   if (loading) {
