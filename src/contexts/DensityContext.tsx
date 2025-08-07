@@ -160,19 +160,38 @@ interface DensityProviderProps {
 
 export function DensityProvider({ children, defaultDensity = 'comfortable' }: DensityProviderProps) {
   const [density, setDensityState] = useState<DensityLevel>(defaultDensity)
+  const [isClient, setIsClient] = useState(false)
 
-  // 로컬 스토리지에서 설정 로드
+  // 클라이언트 사이드에서만 실행
   useEffect(() => {
-    const saved = localStorage.getItem('ui-density')
-    if (saved && (saved === 'compact' || saved === 'comfortable' || saved === 'spacious')) {
-      setDensityState(saved)
-    }
+    setIsClient(true)
   }, [])
+
+  // 로컬 스토리지에서 설정 로드 (클라이언트 사이드에서만)
+  useEffect(() => {
+    if (!isClient) return
+    
+    try {
+      const saved = localStorage.getItem('ui-density')
+      if (saved && (saved === 'compact' || saved === 'comfortable' || saved === 'spacious')) {
+        setDensityState(saved)
+      }
+    } catch (error) {
+      console.warn('Failed to load density setting from localStorage:', error)
+    }
+  }, [isClient])
 
   // 설정 변경 시 로컬 스토리지에 저장
   const setDensity = (newDensity: DensityLevel) => {
     setDensityState(newDensity)
-    localStorage.setItem('ui-density', newDensity)
+    
+    if (isClient) {
+      try {
+        localStorage.setItem('ui-density', newDensity)
+      } catch (error) {
+        console.warn('Failed to save density setting to localStorage:', error)
+      }
+    }
     
     // CSS 변수 업데이트
     const config = DENSITY_CONFIGS[newDensity]
@@ -216,10 +235,12 @@ export function DensityProvider({ children, defaultDensity = 'comfortable' }: De
 
   const config = DENSITY_CONFIGS[density]
 
-  // 초기 CSS 변수 설정
+  // 초기 CSS 변수 설정 (클라이언트 사이드에서만)
   useEffect(() => {
-    setDensity(density)
-  }, [])
+    if (isClient) {
+      setDensity(density)
+    }
+  }, [isClient, density])
 
   const value: DensityContextType = {
     density,
