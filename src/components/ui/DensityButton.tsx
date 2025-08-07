@@ -1,6 +1,5 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
-// useDensity 제거 - 더 이상 사용하지 않음
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const buttonVariants = cva(
