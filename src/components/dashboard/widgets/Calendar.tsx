@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Clock, User, MapPin } from 'lucide-react'
-import { useDensity } from '@/contexts/DensityContext'
 
 interface Appointment {
   id: number
@@ -16,47 +15,48 @@ interface Appointment {
 }
 
 export default function Calendar() {
-  const { density, getDensityClass } = useDensity()
+  // useDensity 임시 제거 (DensityProvider 오류 방지)
+  // const { density, getDensityClass } = useDensity()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month')
-  
+
   // TODO: Fetch real appointments from API
   const appointments: Appointment[] = [
-    { 
-      id: 1, 
-      date: '2024-01-15', 
-      time: '10:00', 
-      patient: '김철수', 
+    {
+      id: 1,
+      date: '2024-01-15',
+      time: '10:00',
+      patient: '김철수',
       type: '상담',
       status: 'scheduled',
       location: '1층 상담실',
       notes: '초기 상담'
     },
-    { 
-      id: 2, 
-      date: '2024-01-15', 
-      time: '14:00', 
-      patient: '이영희', 
+    {
+      id: 2,
+      date: '2024-01-15',
+      time: '14:00',
+      patient: '이영희',
       type: '체중측정',
       status: 'completed',
       location: '2층 측정실'
     },
-    { 
-      id: 3, 
-      date: '2024-01-16', 
-      time: '11:00', 
-      patient: '박민수', 
+    {
+      id: 3,
+      date: '2024-01-16',
+      time: '11:00',
+      patient: '박민수',
       type: '식단상담',
       status: 'scheduled',
       location: '1층 상담실',
       notes: '식단 조정 필요'
     },
-    { 
-      id: 4, 
-      date: '2024-01-16', 
-      time: '15:30', 
-      patient: '정수진', 
+    {
+      id: 4,
+      date: '2024-01-16',
+      time: '15:30',
+      patient: '정수진',
       type: '진료',
       status: 'scheduled',
       location: '진료실'
@@ -72,17 +72,17 @@ export default function Calendar() {
     const startingDayOfWeek = firstDay.getDay()
 
     const days: (number | null)[] = []
-    
+
     // Previous month's days
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null)
     }
-    
+
     // Current month's days
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(i)
     }
-    
+
     return days
   }
 
@@ -148,14 +148,14 @@ export default function Calendar() {
   const todayAppointments = getTodayAppointments()
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${getDensityClass('widget')} widget-${density}`}>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900 flex items-center">
           <CalendarIcon className="w-5 h-5 mr-2" />
           일정
         </h2>
-        
+
         <div className="flex items-center space-x-2">
           <button
             onClick={() => navigateMonth('prev')}
@@ -163,11 +163,11 @@ export default function Calendar() {
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          
+
           <span className="font-medium text-gray-900 text-sm min-w-[100px] text-center">
             {formatDate(currentDate)}
           </span>
-          
+
           <button
             onClick={() => navigateMonth('next')}
             className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
@@ -205,7 +205,7 @@ export default function Calendar() {
             const dayAppointments = day ? getAppointmentsForDay(day) : []
             const isSelected = selectedDate === day
             const isTodayDate = day ? isToday(day) : false
-            
+
             return (
               <div
                 key={index}
@@ -236,7 +236,7 @@ export default function Calendar() {
             {todayAppointments.length}건
           </span>
         </div>
-        
+
         {todayAppointments.length === 0 ? (
           <div className="text-center py-3">
             <p className="text-xs text-gray-500">예약이 없습니다</p>
@@ -244,13 +244,12 @@ export default function Calendar() {
         ) : (
           <div className="space-y-1.5 max-h-32 overflow-y-auto">
             {todayAppointments.slice(0, 3).map(apt => (
-              <div key={apt.id} className={`flex items-center justify-between bg-gray-50 rounded-md hover:bg-gray-100 transition-colors ${getDensityClass('list-item')} list-item-${density}`}>
+              <div key={apt.id} className="flex items-center justify-between bg-gray-50 rounded-md hover:bg-gray-100 transition-colors p-2">
                 <div className="flex items-center space-x-2 min-w-0 flex-1">
                   <div className="flex-shrink-0">
-                    <div className={`w-2 h-2 rounded-full ${
-                      apt.status === 'completed' ? 'bg-green-500' :
-                      apt.status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
-                    }`}></div>
+                    <div className={`w-2 h-2 rounded-full ${apt.status === 'completed' ? 'bg-green-500' :
+                        apt.status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
+                      }`}></div>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center space-x-1">
@@ -264,7 +263,7 @@ export default function Calendar() {
             ))}
             {todayAppointments.length > 3 && (
               <div className="text-center">
-                <button 
+                <button
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
