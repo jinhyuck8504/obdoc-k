@@ -4,6 +4,7 @@ export interface Appointment {
   doctorId: string
   customerName: string
   customerPhone: string
+  doctorName?: string
   date: string // YYYY-MM-DD
   time: string // HH:MM
   duration: number // minutes
