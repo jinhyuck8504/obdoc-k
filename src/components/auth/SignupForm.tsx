@@ -111,7 +111,7 @@ export default function SignupForm() {
               }
               return
             }
-            
+
             // 기타 에러 처리
             setSignupError(result.message || '유효하지 않은 병원 가입 코드입니다.')
             return
@@ -161,36 +161,16 @@ export default function SignupForm() {
           // 실제 환경에서만 프로필 생성
           if (data.role === 'doctor') {
             try {
-              // 회원가입 후 자동 로그인 (이메일 확인 없이)
-              const { error: loginError } = await supabase.auth.signInWithPassword({
-                email: data.email,
-                password: data.password,
-              })
+              console.log('🔧 의사 회원가입 완료, 프로필 생성 시작')
 
-              if (loginError) {
-                console.error('Auto login failed:', loginError)
-                setSignupError('회원가입은 완료되었지만 자동 로그인에 실패했습니다. 로그인 페이지에서 다시 시도해주세요.')
-                setTimeout(() => router.push('/login'), 2000)
-                return
-              }
-
-              // 세션이 설정될 때까지 잠시 대기
-              await new Promise(resolve => setTimeout(resolve, 1000))
-
-              // 현재 세션 다시 확인
-              const { data: sessionData } = await supabase.auth.getSession()
-              console.log('Session after login:', sessionData?.session?.user?.id)
-
-              if (!sessionData?.session?.user) {
-                setSignupError('세션 설정에 실패했습니다. 로그인 페이지에서 다시 시도해주세요.')
-                setTimeout(() => router.push('/login'), 2000)
-                return
-              }
+              // authData.user를 직접 사용 (이미 회원가입으로 생성된 사용자)
+              const userId = authData.user.id
+              console.log('👤 사용자 ID:', userId)
 
               const { data: doctorData, error: doctorError } = await supabase
                 .from('doctors')
                 .insert({
-                  user_id: sessionData.session.user.id,
+                  user_id: userId,
                   hospital_name: data.hospitalName || '',
                   hospital_type: data.hospitalType || 'clinic',
                   subscription_status: 'pending',
@@ -207,7 +187,7 @@ export default function SignupForm() {
                   details: doctorError.details,
                   hint: doctorError.hint
                 })
-                
+
                 // 더 구체적인 오류 메시지
                 if (doctorError.code === '42501') {
                   setSignupError('권한이 없습니다. 데이터베이스 정책을 확인해주세요.')
@@ -219,7 +199,22 @@ export default function SignupForm() {
                 return
               }
 
-              console.log('Doctor profile created successfully:', doctorData)
+              console.log('✅ 의사 프로필 생성 완료:', doctorData)
+
+              // 프로필 생성 후 즉시 로그인 시도
+              console.log('🔐 자동 로그인 시도 중...')
+              const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: data.password,
+              })
+
+              if (loginError) {
+                console.error('❌ 자동 로그인 실패:', loginError)
+                // 로그인 실패해도 회원가입은 성공했으므로 성공 처리
+                console.log('⚠️ 자동 로그인 실패했지만 회원가입은 완료됨')
+              } else {
+                console.log('✅ 자동 로그인 성공:', loginData?.user?.id)
+              }
             } catch (error) {
               console.error('Unexpected error during doctor profile creation:', error)
               setSignupError('의사 프로필 생성 중 예상치 못한 오류가 발생했습니다.')
