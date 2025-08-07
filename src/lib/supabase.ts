@@ -65,6 +65,18 @@ const validateProductionEnvironment = () => {
   }
 }
 
+// 슈퍼 관리자 검증 함수
+const isSuperAdmin = (email?: string): boolean => {
+  if (!email) return false
+  
+  // 환경 변수에서 슈퍼 관리자 이메일 확인
+  const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL
+  const superAdminSecret = process.env.NEXT_PUBLIC_SUPER_ADMIN_SECRET
+  
+  // 슈퍼 관리자 이메일과 정확히 일치하고, 시크릿 키가 설정되어 있어야 함
+  return email === superAdminEmail && superAdminSecret === 'obdoc-super-admin-2024'
+}
+
 // 유효한 환경 변수인지 확인하는 함수
 const isValidSupabaseConfig = (url?: string, key?: string): boolean => {
   if (!url || !key) return false
@@ -148,8 +160,10 @@ const getSupabaseClient = () => {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          storageKey: 'obdoc-auth-token-v3', // 버전 업데이트
-          storage: typeof window !== 'undefined' ? window.localStorage : undefined
+          storageKey: 'obdoc-auth-token-v4', // 버전 업데이트로 기존 세션 클리어
+          storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+          // 이메일 확인 없이 즉시 로그인 허용
+          flowType: 'pkce'
         }
       })
     }
