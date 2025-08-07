@@ -1,109 +1,64 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { useDensity } from '@/contexts/DensityContext'
 
-export interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
-  density?: 'compact' | 'comfortable' | 'spacious'
-}
+export interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {}
 
 const DensityForm = React.forwardRef<HTMLFormElement, FormProps>(
-  ({ className, density, ...props }, ref) => {
-    const { density: contextDensity, getDensityClass } = useDensity()
-    const activeDensity = density || contextDensity
-
-    return (
-      <form
-        ref={ref}
-        className={cn(
-          'flex flex-col',
-          getDensityClass('form'),
-          `form-${activeDensity}`,
-          className
-        )}
-        {...props}
-      />
-    )
-  }
+  ({ className, ...props }, ref) => (
+    <form
+      ref={ref}
+      className={cn("space-y-6", className)}
+      {...props}
+    />
+  )
 )
-DensityForm.displayName = 'DensityForm'
+DensityForm.displayName = "DensityForm"
 
 const DensityFormGroup = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
-    const { getDensityClass } = useDensity()
-    
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'flex flex-col',
-          getDensityClass('form-group'),
-          'form-group',
-          className
-        )}
-        {...props}
-      />
-    )
-  }
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("space-y-2", className)}
+      {...props}
+    />
+  )
 )
-DensityFormGroup.displayName = 'DensityFormGroup'
+DensityFormGroup.displayName = "DensityFormGroup"
 
 const DensityFormLabel = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>(
-  ({ className, ...props }, ref) => {
-    const { getDensityClass, config } = useDensity()
-    
-    return (
-      <label
-        ref={ref}
-        className={cn(
-          'font-medium text-gray-700',
-          getDensityClass('form-label'),
-          'form-label',
-          className
-        )}
-        style={{ fontSize: config.fontSize.sm }}
-        {...props}
-      />
-    )
-  }
+  ({ className, ...props }, ref) => (
+    <label
+      ref={ref}
+      className={cn(
+        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+        className
+      )}
+      {...props}
+    />
+  )
 )
-DensityFormLabel.displayName = 'DensityFormLabel'
+DensityFormLabel.displayName = "DensityFormLabel"
 
 const DensityFormError = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => {
-    const { config } = useDensity()
-    
-    return (
-      <p
-        ref={ref}
-        className={cn('text-red-600', className)}
-        style={{ fontSize: config.fontSize.xs }}
-        {...props}
-      />
-    )
-  }
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn("text-sm font-medium text-destructive", className)}
+      {...props}
+    />
+  )
 )
-DensityFormError.displayName = 'DensityFormError'
+DensityFormError.displayName = "DensityFormError"
 
 const DensityFormHelperText = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => {
-    const { config } = useDensity()
-    
-    return (
-      <p
-        ref={ref}
-        className={cn('text-gray-500', className)}
-        style={{ fontSize: config.fontSize.xs }}
-        {...props}
-      />
-    )
-  }
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn("text-sm text-muted-foreground", className)}
+      {...props}
+    />
+  )
 )
-DensityFormHelperText.displayName = 'DensityFormHelperText'
+DensityFormHelperText.displayName = "DensityFormHelperText"
 
-export {
-  DensityForm,
-  DensityFormGroup,
-  DensityFormLabel,
-  DensityFormError,
-  DensityFormHelperText,
-}
+export { DensityForm, DensityFormGroup, DensityFormLabel, DensityFormError, DensityFormHelperText }
