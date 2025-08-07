@@ -39,7 +39,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, updateProfile } = useAuth()
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [profile, setProfile] = useState<UserProfile>({
@@ -70,8 +70,15 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setLoading(true)
     try {
-      // 실제로는 API 호출
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // AuthContext의 updateProfile 호출하여 헤더 업데이트
+      await updateProfile({
+        name: profile.name,
+        phone: profile.phone,
+        address: profile.address,
+        birthDate: profile.birthDate,
+        bio: profile.bio
+      })
+      
       setEditing(false)
       alert('프로필이 업데이트되었습니다.')
     } catch (error) {
