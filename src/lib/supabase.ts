@@ -4,9 +4,38 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// 싱글톤 인스턴스 저장소 (모듈 레벨)
-let supabaseInstance: any = null
-let supabaseAdminInstance: any = null
+// 싱글톤 인스턴스 저장소 (글로벌 레벨)
+declare global {
+  var __supabase: any
+  var __supabaseAdmin: any
+}
+
+// 글로벌 변수로 싱글톤 보장
+const getGlobalSupabase = () => {
+  if (typeof globalThis !== 'undefined') {
+    return globalThis.__supabase
+  }
+  return null
+}
+
+const setGlobalSupabase = (instance: any) => {
+  if (typeof globalThis !== 'undefined') {
+    globalThis.__supabase = instance
+  }
+}
+
+const getGlobalSupabaseAdmin = () => {
+  if (typeof globalThis !== 'undefined') {
+    return globalThis.__supabaseAdmin
+  }
+  return null
+}
+
+const setGlobalSupabaseAdmin = (instance: any) => {
+  if (typeof globalThis !== 'undefined') {
+    globalThis.__supabaseAdmin = instance
+  }
+}
 
 // 프로덕션 환경 변수 검증
 const validateProductionEnvironment = () => {
@@ -97,60 +126,67 @@ const createDummySupabaseClient = () => {
 
 // 클라이언트 생성 함수 (강화된 싱글톤 패턴)
 const getSupabaseClient = () => {
-  // 이미 인스턴스가 있으면 재사용
-  if (supabaseInstance) {
-    return supabaseInstance
+  // 글로벌 인스턴스 확인
+  const existingInstance = getGlobalSupabase()
+  if (existingInstance) {
+    return existingInstance
   }
 
   // 프로덕션 환경 변수 검증 (브라우저에서만)
   validateProductionEnvironment()
 
+  let newInstance: any
+
   // 서버 사이드에서는 세션 비활성화
   if (typeof window === 'undefined') {
     if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
-      supabaseInstance = createDummySupabaseClient()
+      newInstance = createDummySupabaseClient()
     } else {
-      supabaseInstance = createClient(supabaseUrl!, supabaseAnonKey!, {
+      newInstance = createClient(supabaseUrl!, supabaseAnonKey!, {
         auth: {
           persistSession: false
         }
       })
     }
-    return supabaseInstance
-  }
-
-  // 브라우저에서 실제 클라이언트 생성
-  if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
-    console.warn('⚠️ 개발 모드로 실행: Supabase 환경 변수가 설정되지 않았습니다.')
-    supabaseInstance = createDummySupabaseClient()
   } else {
-    console.log('✅ 실제 Supabase 클라이언트 초기화 (싱글톤)')
-    supabaseInstance = createClient(supabaseUrl!, supabaseAnonKey!, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storageKey: 'obdoc-auth-token-v2', // 고유한 스토리지 키 사용
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined
-      }
-    })
+    // 브라우저에서 실제 클라이언트 생성
+    if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
+      console.warn('⚠️ 개발 모드로 실행: Supabase 환경 변수가 설정되지 않았습니다.')
+      newInstance = createDummySupabaseClient()
+    } else {
+      console.log('✅ 실제 Supabase 클라이언트 초기화 (싱글톤)')
+      newInstance = createClient(supabaseUrl!, supabaseAnonKey!, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          storageKey: 'obdoc-auth-token-v3', // 버전 업데이트
+          storage: typeof window !== 'undefined' ? window.localStorage : undefined
+        }
+      })
+    }
   }
 
-  return supabaseInstance
+  // 글로벌 인스턴스로 저장
+  setGlobalSupabase(newInstance)
+  return newInstance
 }
 
 const getSupabaseAdminClient = () => {
-  // 이미 인스턴스가 있으면 재사용
-  if (supabaseAdminInstance) {
-    return supabaseAdminInstance
+  // 글로벌 관리자 인스턴스 확인
+  const existingAdminInstance = getGlobalSupabaseAdmin()
+  if (existingAdminInstance) {
+    return existingAdminInstance
   }
+
+  let newAdminInstance: any
 
   // 서버 사이드에서는 세션 비활성화
   if (typeof window === 'undefined') {
     if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
-      supabaseAdminInstance = createDummySupabaseClient()
+      newAdminInstance = createDummySupabaseClient()
     } else {
-      supabaseAdminInstance = createClient(
+      newAdminInstance = createClient(
         supabaseUrl!,
         process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey!,
         {
@@ -160,26 +196,27 @@ const getSupabaseAdminClient = () => {
         }
       )
     }
-    return supabaseAdminInstance
-  }
-
-  // 브라우저에서 관리자 클라이언트 생성
-  if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
-    supabaseAdminInstance = createDummySupabaseClient()
   } else {
-    supabaseAdminInstance = createClient(
-      supabaseUrl!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey!,
-      {
-        auth: {
-          persistSession: false,
-          storageKey: 'obdoc-admin-auth-token-v2'
+    // 브라우저에서 관리자 클라이언트 생성
+    if (!isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
+      newAdminInstance = createDummySupabaseClient()
+    } else {
+      newAdminInstance = createClient(
+        supabaseUrl!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey!,
+        {
+          auth: {
+            persistSession: false,
+            storageKey: 'obdoc-admin-auth-token-v3'
+          }
         }
-      }
-    )
+      )
+    }
   }
 
-  return supabaseAdminInstance
+  // 글로벌 관리자 인스턴스로 저장
+  setGlobalSupabaseAdmin(newAdminInstance)
+  return newAdminInstance
 }
 
 export const supabase = getSupabaseClient()
