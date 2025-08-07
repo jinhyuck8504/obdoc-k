@@ -160,7 +160,7 @@ const getSupabaseClient = () => {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          storageKey: 'obdoc-auth-token-v4', // 버전 업데이트로 기존 세션 클리어
+          storageKey: `obdoc-auth-token-v5-${Date.now()}`, // 고유한 키로 중복 방지
           storage: typeof window !== 'undefined' ? window.localStorage : undefined,
           // 이메일 확인 없이 즉시 로그인 허용
           flowType: 'pkce'
