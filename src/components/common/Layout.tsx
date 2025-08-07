@@ -12,6 +12,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { useLoading } from '@/contexts/LoadingContext'
 import LoadingSpinner from './LoadingSpinner'
 import { HydrationDevProvider } from '@/components/hydration'
+import { DensityProvider } from '@/contexts/DensityContext'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -44,44 +45,46 @@ export default function Layout({
 
   return (
     <HydrationDevProvider>
-      <ErrorBoundary
-        onError={(error, errorInfo) => {
-          console.error('Layout Error:', error, errorInfo)
-        }}
-      >
-        <div className={`min-h-screen flex flex-col ${className}`}>
-          <SkipLink />
-          {shouldShowHeader && <Header />}
-          
-          <main 
-            id="main-content"
-            className={`flex-1 ${shouldShowHeader ? '' : 'pt-0'} relative`}
-            role="main"
-            aria-label="메인 콘텐츠"
-          >
-            <div className="min-h-full">
-              {children}
-            </div>
+      <DensityProvider>
+        <ErrorBoundary
+          onError={(error, errorInfo) => {
+            console.error('Layout Error:', error, errorInfo)
+          }}
+        >
+          <div className={`min-h-screen flex flex-col ${className}`}>
+            <SkipLink />
+            {shouldShowHeader && <Header />}
             
-            {/* 전역 로딩 오버레이 */}
-            {hasGlobalLoading && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 shadow-xl">
-                  <LoadingSpinner size="lg" />
-                  <p className="mt-4 text-sm text-gray-600 text-center">
-                    {Object.values(loadingStates).find(state => state.isLoading)?.message || '처리 중...'}
-                  </p>
-                </div>
+            <main 
+              id="main-content"
+              className={`flex-1 ${shouldShowHeader ? '' : 'pt-0'} relative`}
+              role="main"
+              aria-label="메인 콘텐츠"
+            >
+              <div className="min-h-full">
+                {children}
               </div>
-            )}
-          </main>
-          
-          {shouldShowFooter && <Footer />}
-          
-          {/* 토스트 알림 컨테이너 */}
-          <ToastContainer toasts={toasts} onClose={hideToast} />
-        </div>
-      </ErrorBoundary>
+              
+              {/* 전역 로딩 오버레이 */}
+              {hasGlobalLoading && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 shadow-xl">
+                    <LoadingSpinner size="lg" />
+                    <p className="mt-4 text-sm text-gray-600 text-center">
+                      {Object.values(loadingStates).find(state => state.isLoading)?.message || '처리 중...'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </main>
+            
+            {shouldShowFooter && <Footer />}
+            
+            {/* 토스트 알림 컨테이너 */}
+            <ToastContainer toasts={toasts} onClose={hideToast} />
+          </div>
+        </ErrorBoundary>
+      </DensityProvider>
     </HydrationDevProvider>
   )
 }
