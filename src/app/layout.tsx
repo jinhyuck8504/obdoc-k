@@ -5,6 +5,7 @@ import Layout from "@/components/common/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
+// DensityProvider 제거 - 더 이상 사용하지 않음
 
 const inter = Inter({
   subsets: ["latin"],
