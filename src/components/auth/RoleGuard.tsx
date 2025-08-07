@@ -12,46 +12,39 @@ interface RoleGuardProps {
 }
 
 // 슈퍼 관리자 검증 함수 (개발 환경에서 완화된 검증)
-const isSuperAdmin = (email?: string): boolean => {
+const isSuperAdmin = (email?: string, isDev: boolean = false): boolean => {
   if (!email) return false
-  
-  // 개발 환경에서는 특정 이메일들을 슈퍼 관리자로 인정
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url') ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
-  
-  if (isDevelopment && isDummySupabase) {
+
+  if (isDev) {
     // 개발 환경에서는 특정 이메일들을 슈퍼 관리자로 인정
     const devSuperAdmins = [
       'jinhyucks@gmail.com',
       'admin@obdoc.co.kr',
       'test@admin.com'
     ]
-    
+
     const isDevSuperAdmin = devSuperAdmins.includes(email.toLowerCase())
     console.log('🔧 개발 환경 슈퍼 관리자 검증:', { email, isDevSuperAdmin })
     return isDevSuperAdmin
   }
-  
+
   // 프로덕션 환경에서는 환경 변수 검증
   const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL
   const superAdminSecret = process.env.NEXT_PUBLIC_SUPER_ADMIN_SECRET
-  
-  console.log('🔍 프로덕션 슈퍼 관리자 검증:', { 
-    email, 
-    superAdminEmail, 
-    hasSecret: !!superAdminSecret 
+
+  console.log('🔍 프로덕션 슈퍼 관리자 검증:', {
+    email,
+    superAdminEmail,
+    hasSecret: !!superAdminSecret
   })
-  
+
   return email === superAdminEmail && superAdminSecret === 'obdoc-super-admin-2024'
 }
 
-export default function RoleGuard({ 
-  children, 
+export default function RoleGuard({
+  children,
   allowedRoles,
-  fallbackPath = '/unauthorized' 
+  fallbackPath = '/unauthorized'
 }: RoleGuardProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -93,13 +86,14 @@ export default function RoleGuard({
 
     // 관리자 페이지 접근 시 슈퍼 관리자 검증
     if (pathname.includes('/dashboard/admin') && userRole === 'admin') {
-      const isSuper = isSuperAdmin(user.email)
+      const isSuper = isSuperAdmin(user.email, isDevelopment && isDummySupabase)
       console.log('🔍 관리자 페이지 접근 검증:', {
         email: user.email,
         isSuper,
-        pathname
+        pathname,
+        isDev: isDevelopment && isDummySupabase
       })
-      
+
       if (!isSuper) {
         console.warn('🚨 무권한 관리자 페이지 접근 시도:', user.email)
         router.push('/unauthorized')
@@ -167,7 +161,7 @@ export default function RoleGuard({
 
   // 관리자 페이지 접근 시 슈퍼 관리자 검증 (렌더링 단계)
   if (pathname.includes('/dashboard/admin') && userRole === 'admin') {
-    const isSuper = isSuperAdmin(user.email)
+    const isSuper = isSuperAdmin(user.email, isDevelopment && isDummySupabase)
     if (!isSuper) {
       console.log('🚨 RoleGuard: 슈퍼 관리자 권한 없음 (렌더링 단계)')
       return null
