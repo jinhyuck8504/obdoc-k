@@ -172,14 +172,36 @@ export default function SignupForm() {
           // 실제 환경에서만 프로필 생성
           if (data.role === 'doctor') {
             try {
-              // 먼저 현재 세션 확인
+              // 회원가입 후 자동 로그인을 먼저 시도
+              const { error: loginError } = await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: data.password,
+              })
+
+              if (loginError) {
+                console.error('Auto login failed:', loginError)
+                setSignupError('회원가입은 완료되었지만 자동 로그인에 실패했습니다. 로그인 페이지에서 다시 시도해주세요.')
+                setTimeout(() => router.push('/login'), 2000)
+                return
+              }
+
+              // 세션이 설정될 때까지 잠시 대기
+              await new Promise(resolve => setTimeout(resolve, 1000))
+
+              // 현재 세션 다시 확인
               const { data: sessionData } = await supabase.auth.getSession()
-              console.log('Current session for doctor profile creation:', sessionData?.session?.user?.id)
+              console.log('Session after login:', sessionData?.session?.user?.id)
+
+              if (!sessionData?.session?.user) {
+                setSignupError('세션 설정에 실패했습니다. 로그인 페이지에서 다시 시도해주세요.')
+                setTimeout(() => router.push('/login'), 2000)
+                return
+              }
 
               const { data: doctorData, error: doctorError } = await supabase
                 .from('doctors')
                 .insert({
-                  user_id: authData.user.id,
+                  user_id: sessionData.session.user.id,
                   hospital_name: data.hospitalName || '',
                   hospital_type: data.hospitalType || 'clinic',
                   subscription_status: 'pending',
@@ -262,44 +284,26 @@ export default function SignupForm() {
 
         setSignupSuccess(true)
 
-        // 회원가입 후 자동 로그인 시도
-        try {
-          if (isDevelopment && isDummySupabase) {
-            // 개발 모드에서는 바로 성공 처리
-            setTimeout(() => {
-              if (data.role === 'doctor') {
-                router.push('/subscription')
-              } else {
-                router.push('/dashboard/customer')
-              }
-            }, 2000)
-            return
-          } else {
-            const { error: loginError } = await supabase.auth.signInWithPassword({
-              email: data.email,
-              password: data.password,
-            })
-
-            if (!loginError) {
-              // 자동 로그인 성공 시 역할에 따라 리디렉트
-              setTimeout(() => {
-                if (data.role === 'doctor') {
-                  router.push('/subscription')
-                } else {
-                  router.push('/dashboard/customer')
-                }
-              }, 2000)
-              return
+        // 회원가입 후 리디렉트
+        if (isDevelopment && isDummySupabase) {
+          // 개발 모드에서는 바로 성공 처리
+          setTimeout(() => {
+            if (data.role === 'doctor') {
+              router.push('/subscription')
+            } else {
+              router.push('/dashboard/customer')
             }
-          }
-        } catch (error) {
-          console.error('Auto login failed:', error)
+          }, 2000)
+        } else {
+          // 실제 환경에서는 역할에 따라 리디렉트
+          setTimeout(() => {
+            if (data.role === 'doctor') {
+              router.push('/subscription')
+            } else {
+              router.push('/dashboard/customer')
+            }
+          }, 2000)
         }
-
-        // 자동 로그인 실패 시 로그인 페이지로 이동
-        setTimeout(() => {
-          router.push('/login')
-        }, 2000)
       }
     } catch (error) {
       console.error('Signup error:', error)
