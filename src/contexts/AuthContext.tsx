@@ -21,22 +21,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const redirectedRef = useRef(false) // 리다이렉트 중복 방지
+  const initializingRef = useRef(false) // 초기화 중복 방지
 
   // 자동 로그아웃 타이머 (30분)
   const AUTO_LOGOUT_TIME = 30 * 60 * 1000 // 30분
 
-  // 프로덕션 환경 체크 (더 엄격한 조건)
-  const isDevelopment = process.env.NODE_ENV === 'development' && 
-    (process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') || 
-     process.env.NEXT_PUBLIC_APP_URL?.includes('127.0.0.1'))
+  // 개발 환경 체크 (auth.ts와 동일한 로직)
+  const isDevelopment = process.env.NODE_ENV === 'development'
   const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
+
+  console.log('🔍 AuthContext Debug:', {
+    isDevelopment,
+    isDummySupabase,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
+  })
 
   const refreshUser = async () => {
     try {
       setLoading(true)
       const currentUser = await auth.getCurrentUser()
+      console.log('🔄 AuthContext: refreshUser result:', currentUser)
       setUser(currentUser)
     } catch (error) {
       console.error('Error refreshing user:', error)
@@ -51,11 +58,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       redirectedRef.current = false // 리다이렉트 플래그 초기화
       
+      console.log('🔐 AuthContext: signIn 시작', { email })
       const { data, error } = await auth.signIn(email, password)
 
       if (error) {
+        console.error('🚨 AuthContext: signIn 오류', error)
         return { error }
       }
+
+      console.log('✅ AuthContext: signIn 성공', data)
 
       // 사용자 정보 새로고침
       await refreshUser()
@@ -65,19 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('supabase.auth.token', JSON.stringify(data.session))
       }
 
-      // 로그인 성공 후 즉시 리다이렉트 (타임아웃으로 무한로딩 방지)
-      setTimeout(() => {
-        if (!redirectedRef.current) {
-          const currentUser = data?.user || user
-          if (currentUser?.role) {
-            redirectToDashboard(currentUser.role)
-            redirectedRef.current = true
-          }
-        }
-      }, 100)
-
       return { error: null }
     } catch (error) {
+      console.error('🚨 AuthContext: signIn 예외', error)
       return { error: { message: '로그인 중 오류가 발생했습니다.' } }
     } finally {
       setLoading(false)
@@ -88,6 +89,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       redirectedRef.current = false
+      console.log('🚪 AuthContext: signOut 시작')
+      
       await auth.signOut()
       setUser(null)
 
@@ -95,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('lastActivity')
       localStorage.removeItem('supabase.auth.token')
       localStorage.removeItem('token_expiry')
+      localStorage.removeItem('dummy_user')
 
       // 모든 Supabase 관련 로컬 스토리지 정리
       Object.keys(localStorage).forEach(key => {
@@ -103,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
 
+      console.log('✅ AuthContext: signOut 완료')
       router.push('/login')
     } catch (error) {
       console.error('Sign out error:', error)
@@ -158,13 +163,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 초기 사용자 상태 확인
     const initializeAuth = async () => {
+      if (initializingRef.current) {
+        console.log('🔄 AuthContext: 이미 초기화 중, 건너뜀')
+        return
+      }
+      
+      initializingRef.current = true
+      console.log('🚀 AuthContext: 인증 초기화 시작')
+
       try {
         // 개발 환경에서 더미 사용자 복원
         if (isDevelopment && isDummySupabase) {
+          console.log('🔧 AuthContext: 개발 모드 - 더미 사용자 복원 시도')
           const dummyUser = localStorage.getItem('dummy_user')
           if (dummyUser && mounted) {
-            setUser(JSON.parse(dummyUser))
+            const parsedUser = JSON.parse(dummyUser)
+            console.log('✅ AuthContext: 더미 사용자 복원됨', parsedUser)
+            setUser(parsedUser)
           } else if (mounted) {
+            console.log('❌ AuthContext: 더미 사용자 없음')
             setUser(null)
           }
           if (mounted) {
@@ -174,12 +191,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // 실제 Supabase 세션 복원 시도
+        console.log('🔧 AuthContext: 실제 Supabase 세션 복원 시도')
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session?.user && mounted) {
+          console.log('✅ AuthContext: Supabase 세션 발견, 사용자 정보 가져오기')
           const currentUser = await auth.getCurrentUser()
+          console.log('✅ AuthContext: 사용자 정보 가져옴', currentUser)
           setUser(currentUser)
         } else if (mounted) {
+          console.log('❌ AuthContext: Supabase 세션 없음')
           setUser(null)
         }
       } catch (error) {
@@ -190,6 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } finally {
         if (mounted) {
           setLoading(false)
+          initializingRef.current = false
         }
       }
     }
@@ -234,6 +256,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false
+      initializingRef.current = false
       if (subscription) {
         subscription.unsubscribe()
       }
@@ -270,18 +293,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user])
 
-  // 자동 리다이렉트 로직 (무한 루프 방지)
+  // 자동 리다이렉트 로직 (무한 루프 방지 강화)
   useEffect(() => {
     if (!loading && user && !redirectedRef.current) {
       const currentPath = window.location.pathname
+      console.log('🔄 AuthContext: 리다이렉트 체크', { currentPath, userRole: user.role })
 
       // 로그인/회원가입 페이지에 있으면 대시보드로 리다이렉트
       if (currentPath === '/login' || currentPath === '/signup') {
+        console.log('🔄 AuthContext: 로그인/회원가입 페이지에서 대시보드로 리다이렉트')
         redirectToDashboard(user.role)
         redirectedRef.current = true
       }
       // 루트 경로에서도 대시보드로 리다이렉트 (로그인된 사용자의 경우)
       else if (currentPath === '/') {
+        console.log('🔄 AuthContext: 루트 경로에서 대시보드로 리다이렉트')
         redirectToDashboard(user.role)
         redirectedRef.current = true
       }
@@ -289,32 +315,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, loading, router])
 
   const redirectToDashboard = (role: string) => {
-    console.log('Redirecting user with role:', role)
+    console.log('🔄 AuthContext: redirectToDashboard 호출', { role, alreadyRedirected: redirectedRef.current })
 
     // 이미 리다이렉트 중이면 중단
     if (redirectedRef.current) {
+      console.log('🚫 AuthContext: 이미 리다이렉트 중, 중단')
       return
     }
 
     redirectedRef.current = true
 
-    switch (role) {
-      case 'doctor':
-        router.push('/dashboard/doctor')
-        break
-      case 'customer':
-        router.push('/dashboard/customer')
-        break
-      case 'patient':
-        router.push('/dashboard/customer')
-        break
-      case 'admin':
-        router.push('/dashboard/admin')
-        break
-      default:
-        console.warn('Unknown role:', role)
-        router.push('/login')
-    }
+    // 타임아웃으로 무한 루프 방지
+    setTimeout(() => {
+      switch (role) {
+        case 'doctor':
+          console.log('🔄 AuthContext: 의사 대시보드로 이동')
+          router.push('/dashboard/doctor')
+          break
+        case 'customer':
+          console.log('🔄 AuthContext: 고객 대시보드로 이동')
+          router.push('/dashboard/customer')
+          break
+        case 'patient':
+          console.log('🔄 AuthContext: 환자 대시보드로 이동 (고객으로 처리)')
+          router.push('/dashboard/customer')
+          break
+        case 'admin':
+          console.log('🔄 AuthContext: 관리자 대시보드로 이동')
+          router.push('/dashboard/admin')
+          break
+        default:
+          console.warn('Unknown role:', role)
+          router.push('/login')
+      }
+    }, 100)
   }
 
   const value = {
@@ -325,6 +359,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser,
     updateProfile
   }
+
+  console.log('🔍 AuthContext: 현재 상태', {
+    user: user ? { id: user.id, role: user.role } : null,
+    loading,
+    redirected: redirectedRef.current
+  })
 
   return (
     <AuthContext.Provider value={value}>
