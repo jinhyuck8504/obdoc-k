@@ -21,17 +21,8 @@ WHERE
   OR amount IN (199000, 999000, 1599000);  -- 샘플 금액
 
 -- ========================================
--- 2️⃣ 테스트 신고/예약/커뮤니티 데이터 삭제
+-- 2️⃣ 테스트 예약/커뮤니티 데이터 삭제
 -- ========================================
-DELETE FROM reports 
-WHERE 
-  reason LIKE '%테스트%'
-  OR reason LIKE '%더미%'
-  OR reason LIKE '%샘플%'
-  OR description LIKE '%테스트%'
-  OR description LIKE '%더미%'
-  OR description LIKE '%샘플%';
-
 DELETE FROM appointments 
 WHERE 
   notes LIKE '%테스트%'
@@ -54,22 +45,21 @@ WHERE
   OR content LIKE '%샘플%';
 
 -- ========================================
--- 3️⃣ 테스트 사용자 계정 삭제 (관리자 제외)
+-- 3️⃣ 테스트 고객 계정 삭제 (이름 기준)
 -- ========================================
--- 테스트 고객 계정 삭제
+-- 테스트 고객 계정 삭제 (customers 테이블의 name 컬럼 사용)
 DELETE FROM customers 
-WHERE user_id IN (
-  SELECT id FROM users 
-  WHERE 
-    (email LIKE '%test%'
-    OR email LIKE '%dummy%'
-    OR email LIKE '%sample%'
-    OR name LIKE '%테스트%'
-    OR name LIKE '%더미%'
-    OR name LIKE '%샘플%')
-    AND email != 'jinhyucks@gmail.com'
-);
+WHERE 
+  name LIKE '%테스트%'
+  OR name LIKE '%더미%'
+  OR name LIKE '%샘플%'
+  OR name LIKE '%test%'
+  OR name LIKE '%sample%'
+  OR name LIKE '%dummy%';
 
+-- ========================================
+-- 4️⃣ 테스트 사용자 계정 삭제 (이메일 기준)
+-- ========================================
 -- 테스트 의사 계정 삭제
 DELETE FROM doctors 
 WHERE user_id IN (
@@ -77,10 +67,7 @@ WHERE user_id IN (
   WHERE 
     (email LIKE '%test%'
     OR email LIKE '%dummy%'
-    OR email LIKE '%sample%'
-    OR name LIKE '%테스트%'
-    OR name LIKE '%더미%'
-    OR name LIKE '%샘플%')
+    OR email LIKE '%sample%')
     AND email != 'jinhyucks@gmail.com'
 );
 
@@ -89,32 +76,28 @@ DELETE FROM users
 WHERE 
   (email LIKE '%test%'
   OR email LIKE '%dummy%'
-  OR email LIKE '%sample%'
-  OR name LIKE '%테스트%'
-  OR name LIKE '%더미%'
-  OR name LIKE '%샘플%')
+  OR email LIKE '%sample%')
   AND email != 'jinhyucks@gmail.com'
   AND role != 'admin';
 
 -- ========================================
--- 4️⃣ 관리자 계정 설정 확인
+-- 5️⃣ 관리자 계정 설정 확인
 -- ========================================
 UPDATE users 
 SET 
   is_active = true,
-  email_verified = true,
   role = 'admin',
   updated_at = NOW()
 WHERE email = 'jinhyucks@gmail.com';
 
 -- ========================================
--- 5️⃣ 병원 코드 테스트 데이터 정리
+-- 6️⃣ 병원 가입 코드 테스트 데이터 정리
 -- ========================================
-DELETE FROM hospital_codes 
+DELETE FROM hospital_signup_codes 
 WHERE 
-  hospital_name LIKE '%테스트%'
-  OR hospital_name LIKE '%더미%'
-  OR hospital_name LIKE '%샘플%';
+  name LIKE '%테스트%'
+  OR name LIKE '%더미%'
+  OR name LIKE '%샘플%';
 
 -- ========================================
 -- 📊 정리 결과 확인
@@ -138,11 +121,11 @@ SELECT 'appointments', COUNT(*), 0, 0, 0 FROM appointments
 UNION ALL
 SELECT 'community_posts', COUNT(*), 0, 0, 0 FROM community_posts
 UNION ALL
-SELECT 'hospital_codes', COUNT(*), 0, 0, 0 FROM hospital_codes;
+SELECT 'hospital_signup_codes', COUNT(*), 0, 0, 0 FROM hospital_signup_codes;
 
 -- 관리자 계정 확인
 SELECT 
-  id, email, name, role, is_active, email_verified, created_at
+  id, email, role, is_active, created_at
 FROM users 
 WHERE role = 'admin' OR email = 'jinhyucks@gmail.com';
 
