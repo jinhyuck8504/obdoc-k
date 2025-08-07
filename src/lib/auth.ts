@@ -251,9 +251,10 @@ export const auth = {
 
       while (retryCount < maxRetries) {
         try {
-          // 🚨 임시 해결책: 슈퍼 관리자 먼저 체크
-          if (isSuperAdmin(user.email)) {
-            console.log('🔧 슈퍼 관리자로 인식됨:', user.email)
+                  // 🚨 임시 해결책: 슈퍼 관리자 먼저 체크 (강화된 로직)
+          console.log('🔍 Checking super admin for:', user.email)
+          if (user.email === 'jinhyucks@gmail.com') {
+            console.log('🔧 슈퍼 관리자로 강제 인식됨:', user.email)
             return {
               id: user.id,
               email: user.email,
@@ -308,8 +309,8 @@ export const auth = {
             }
           }
 
-          // 🚨 임시 해결책: 테이블에서 찾지 못한 경우 이메일 기반으로 역할 추정
-          console.warn('⚠️ User not found in doctors or customers table, using email-based role detection:', user.id)
+          // 🚨 프로필이 없는 경우 자동 생성
+          console.warn('⚠️ User not found in doctors or customers table, creating profile automatically:', user.id)
           console.log('🔍 Email analysis:', {
             email: user.email,
             includesDoctor: user.email?.includes('doctor'),
@@ -317,33 +318,88 @@ export const auth = {
             includesJinhyuck: user.email?.includes('jinhyuck')
           })
 
-          // 특정 이메일 패턴에 따른 역할 결정
+          // 이메일 패턴에 따른 역할 결정 및 프로필 자동 생성
+          let roleToCreate: 'doctor' | 'customer' = 'customer'
+          let profileData: any = {}
+
           if (user.email === 'jinhyuck8504@naver.com') {
-            console.log('🔧 Specific doctor email detected')
-            return {
-              id: user.id,
-              email: user.email,
-              role: 'doctor' as const,
-              isActive: true,
-              name: '진혁의사'
+            console.log('🔧 Creating doctor profile for specific email')
+            roleToCreate = 'doctor'
+            profileData = {
+              user_id: user.id,
+              hospital_name: '진혁병원',
+              specialization: '내과',
+              license_number: 'DOC-' + Math.random().toString(36).substring(2, 11).toUpperCase(),
+              phone: '010-1234-5678',
+              created_at: new Date().toISOString()
             }
           } else if (user.email?.includes('doctor') || user.email?.includes('의사')) {
-            console.log('🔧 Email suggests doctor role')
-            return {
-              id: user.id,
-              email: user.email,
-              role: 'doctor' as const,
-              isActive: true,
-              name: user.email?.split('@')[0] || '의사'
+            console.log('🔧 Creating doctor profile based on email pattern')
+            roleToCreate = 'doctor'
+            profileData = {
+              user_id: user.id,
+              hospital_name: user.email?.split('@')[0] + '병원',
+              specialization: '내과',
+              license_number: 'DOC-' + Math.random().toString(36).substring(2, 11).toUpperCase(),
+              phone: '010-0000-0000',
+              created_at: new Date().toISOString()
             }
           } else {
-            console.log('🔧 Defaulting to customer role')
+            console.log('🔧 Creating customer profile')
+            roleToCreate = 'customer'
+            profileData = {
+              user_id: user.id,
+              name: user.email?.split('@')[0] || '고객',
+              phone: '010-0000-0000',
+              birth_date: '1990-01-01',
+              height: 170,
+              created_at: new Date().toISOString()
+            }
+          }
+
+          // 프로필 자동 생성 시도
+          try {
+            const tableName = roleToCreate === 'doctor' ? 'doctors' : 'customers'
+            console.log(`🔧 Attempting to create ${roleToCreate} profile in ${tableName} table`)
+            
+            const { data: newProfile, error: createError } = await supabase
+              .from(tableName)
+              .insert(profileData)
+              .select()
+              .single()
+
+            if (createError) {
+              console.error('❌ Failed to create profile:', createError)
+              // 생성 실패 시 기본 사용자 정보 반환
+              return {
+                id: user.id,
+                email: user.email,
+                role: roleToCreate,
+                isActive: true,
+                name: user.email?.split('@')[0] || (roleToCreate === 'doctor' ? '의사' : '고객')
+              }
+            }
+
+            console.log('✅ Profile created successfully:', newProfile)
             return {
               id: user.id,
               email: user.email,
-              role: 'customer' as const,
+              role: roleToCreate,
               isActive: true,
-              name: user.email?.split('@')[0] || '고객'
+              name: roleToCreate === 'doctor' 
+                ? (newProfile.hospital_name || '의사')
+                : (newProfile.name || '고객')
+            }
+
+          } catch (createError) {
+            console.error('❌ Exception during profile creation:', createError)
+            // 예외 발생 시 기본 사용자 정보 반환
+            return {
+              id: user.id,
+              email: user.email,
+              role: roleToCreate,
+              isActive: true,
+              name: user.email?.split('@')[0] || (roleToCreate === 'doctor' ? '의사' : '고객')
             }
           }
 
