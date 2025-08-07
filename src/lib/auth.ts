@@ -245,57 +245,60 @@ export const auth = {
 
       if (!user) return null
 
-      // 사용자 프로필 정보 가져오기 (재시도 로직 추가)
+      // 사용자 프로필 정보 가져오기 (doctors 또는 customers 테이블에서)
       let retryCount = 0
       const maxRetries = 3
 
       while (retryCount < maxRetries) {
         try {
-          const { data: profile, error } = await supabase
-            .from('users')
+          // 먼저 doctors 테이블에서 찾기
+          const { data: doctorProfile, error: doctorError } = await supabase
+            .from('doctors')
             .select('*')
-            .eq('id', user.id)
+            .eq('user_id', user.id)
             .single()
 
-          if (error) {
-            if (error.code === 'PGRST116') {
-              // 사용자가 users 테이블에 없는 경우
-              console.warn('User not found in users table:', user.id)
-              return null
-            }
-            throw error
-          }
-
-          if (profile) {
-            // 🔒 보안 검증: 인증된 이메일과 프로필 이메일이 일치하는지 확인
-            if (user.email !== profile.email) {
-              console.warn('🚨 이메일 불일치 감지:', {
-                authEmail: user.email,
-                profileEmail: profile.email,
-                userId: user.id
-              })
-
-              // 관리자 역할인 경우 특히 엄격하게 검증
-              if (profile.role === 'admin') {
-                console.error('🚨 관리자 계정 이메일 불일치 - 접근 차단')
-                await supabase.auth.signOut()
-                return null
-              }
-
-              // 일반 사용자도 이메일 불일치 시 접근 차단
-              console.error('🚨 사용자 계정 이메일 불일치 - 접근 차단')
-              await supabase.auth.signOut()
-              return null
-            }
-
+          if (doctorProfile && !doctorError) {
             return {
-              id: profile.id,
-              email: profile.email,
-              phone: profile.phone,
-              role: profile.role,
-              isActive: profile.is_active
+              id: user.id,
+              email: user.email,
+              role: 'doctor' as const,
+              isActive: true,
+              name: doctorProfile.hospital_name || user.email?.split('@')[0] || '의사'
             }
           }
+
+          // doctors에서 찾지 못했으면 customers 테이블에서 찾기
+          const { data: customerProfile, error: customerError } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('user_id', user.id)
+            .single()
+
+          if (customerProfile && !customerError) {
+            return {
+              id: user.id,
+              email: user.email,
+              role: 'customer' as const,
+              isActive: true,
+              name: customerProfile.name || user.email?.split('@')[0] || '고객'
+            }
+          }
+
+          // 슈퍼 관리자인 경우 admin 역할 부여
+          if (isSuperAdmin(user.email)) {
+            return {
+              id: user.id,
+              email: user.email,
+              role: 'admin' as const,
+              isActive: true,
+              name: '관리자'
+            }
+          }
+
+          // 어느 테이블에서도 찾지 못한 경우
+          console.warn('User not found in doctors or customers table:', user.id)
+          return null
         } catch (error) {
           console.error(`Profile fetch attempt ${retryCount + 1} failed:`, error)
           retryCount++
