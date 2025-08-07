@@ -328,10 +328,10 @@ export const auth = {
             profileData = {
               user_id: user.id,
               hospital_name: '진혁병원',
-              specialization: '내과',
-              license_number: 'DOC-' + Math.random().toString(36).substring(2, 11).toUpperCase(),
-              phone: '010-1234-5678',
-              created_at: new Date().toISOString()
+              hospital_type: 'clinic',
+              subscription_plan: '1month',
+              subscription_status: 'active',
+              is_approved: true
             }
           } else if (user.email?.includes('doctor') || user.email?.includes('의사')) {
             console.log('🔧 Creating doctor profile based on email pattern')
@@ -339,10 +339,10 @@ export const auth = {
             profileData = {
               user_id: user.id,
               hospital_name: user.email?.split('@')[0] + '병원',
-              specialization: '내과',
-              license_number: 'DOC-' + Math.random().toString(36).substring(2, 11).toUpperCase(),
-              phone: '010-0000-0000',
-              created_at: new Date().toISOString()
+              hospital_type: 'clinic',
+              subscription_plan: '1month',
+              subscription_status: 'active',
+              is_approved: true
             }
           } else {
             console.log('🔧 Creating customer profile')
@@ -350,15 +350,30 @@ export const auth = {
             profileData = {
               user_id: user.id,
               name: user.email?.split('@')[0] || '고객',
-              phone: '010-0000-0000',
               birth_date: '1990-01-01',
               height: 170,
-              created_at: new Date().toISOString()
+              initial_weight: 70,
+              target_weight: 60
             }
           }
 
           // 프로필 자동 생성 시도
           try {
+            // 먼저 users 테이블에 사용자 정보 추가
+            console.log('🔧 Creating user record first')
+            const { error: userError } = await supabase
+              .from('users')
+              .upsert({
+                id: user.id,
+                email: user.email,
+                role: roleToCreate,
+                is_active: true
+              })
+
+            if (userError) {
+              console.warn('⚠️ User record creation failed, continuing with profile creation:', userError)
+            }
+
             const tableName = roleToCreate === 'doctor' ? 'doctors' : 'customers'
             console.log(`🔧 Attempting to create ${roleToCreate} profile in ${tableName} table`)
             
