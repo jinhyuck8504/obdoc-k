@@ -162,6 +162,61 @@ export const appointmentService = {
     }
   },
 
+  // 고객별 예약 조회
+  async getCustomerAppointments(customerId: string): Promise<Appointment[]> {
+    if (isDevelopment && isDummySupabase) {
+      console.log('개발 모드: 고객별 더미 예약 데이터 사용', customerId)
+      return dummyAppointments
+        .filter(apt => apt.customerId === customerId)
+        .sort((a, b) => {
+          const dateCompare = a.date.localeCompare(b.date)
+          if (dateCompare !== 0) return dateCompare
+          return a.time.localeCompare(b.time)
+        })
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          doctors!inner(hospital_name)
+        `)
+        .eq('customer_id', customerId)
+        .order('date', { ascending: true })
+        .order('time', { ascending: true })
+
+      if (error) {
+        console.error('고객 예약 조회 실패:', error)
+        return [] // 오류 시 빈 배열 반환
+      }
+
+      return data?.map((apt: any) => ({
+        id: apt.id,
+        customerId: apt.customer_id,
+        doctorId: apt.doctor_id,
+        customerName: '나', // 고객 본인이므로
+        customerPhone: '',
+        doctorName: apt.doctors?.hospital_name || '병원',
+        date: apt.date,
+        time: apt.time,
+        duration: apt.duration,
+        type: apt.type,
+        status: apt.status,
+        notes: apt.notes,
+        symptoms: apt.symptoms,
+        diagnosis: apt.diagnosis,
+        treatment: apt.treatment,
+        nextAppointment: apt.next_appointment,
+        createdAt: apt.created_at,
+        updatedAt: apt.updated_at
+      })) || []
+    } catch (error) {
+      console.error('고객 예약 조회 예외:', error)
+      return [] // 예외 시 빈 배열 반환
+    }
+  },
+
   // 특정 예약 조회
   async getAppointment(id: string): Promise<Appointment | null> {
     if (isDevelopment && isDummySupabase) {
