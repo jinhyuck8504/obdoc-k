@@ -45,7 +45,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>({
     name: user?.name || '사용자',
     email: user?.email || '',
-    phone: '010-1234-5678',
+    phone: user?.phone || '010-1234-5678',
     address: '서울시 강남구 테헤란로 123',
     birthDate: '1990-01-01',
     bio: '안녕하세요. OBDOC을 이용해주셔서 감사합니다.',
@@ -70,13 +70,10 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setLoading(true)
     try {
-      // AuthContext의 updateProfile 호출하여 헤더 업데이트
+      // AuthContext의 updateProfile 호출 (User 타입에 있는 필드만)
       await updateProfile({
         name: profile.name,
-        phone: profile.phone,
-        address: profile.address,
-        birthDate: profile.birthDate,
-        bio: profile.bio
+        phone: profile.phone
       })
       
       setEditing(false)
@@ -116,7 +113,7 @@ export default function ProfilePage() {
   const getRoleDisplayName = (role: string) => {
     switch (role) {
       case 'doctor': return '의사(한의사)'
-      case 'patient': return '환자'
+      case 'customer': return '고객'
       case 'admin': return '관리자'
       default: return '사용자'
     }
@@ -199,6 +196,7 @@ export default function ProfilePage() {
                   disabled={!editing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
+                <p className="text-xs text-gray-500 mt-1">로컬 저장만 됩니다</p>
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">주소</label>
@@ -209,6 +207,7 @@ export default function ProfilePage() {
                   disabled={!editing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
+                <p className="text-xs text-gray-500 mt-1">로컬 저장만 됩니다</p>
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">자기소개</label>
@@ -219,6 +218,7 @@ export default function ProfilePage() {
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
+                <p className="text-xs text-gray-500 mt-1">로컬 저장만 됩니다</p>
               </div>
             </div>
           </div>
