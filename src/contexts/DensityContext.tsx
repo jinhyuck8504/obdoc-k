@@ -193,7 +193,9 @@ export function DensityProvider({ children, defaultDensity = 'comfortable' }: De
       }
     }
     
-    // CSS 변수 업데이트
+    // CSS 변수 업데이트 (클라이언트 사이드에서만)
+    if (typeof document === 'undefined') return
+    
     const config = DENSITY_CONFIGS[newDensity]
     const root = document.documentElement
     
