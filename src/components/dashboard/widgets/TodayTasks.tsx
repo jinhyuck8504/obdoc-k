@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { CheckCircle, Clock, AlertCircle, Plus, MoreVertical, X, Save, Edit2, Check } from 'lucide-react'
-import { useDensity } from '@/contexts/DensityContext'
 
 interface Task {
   id: number
@@ -27,7 +26,8 @@ interface EditingTask extends Task {
 }
 
 export default function TodayTasks() {
-  const { density, getDensityClass } = useDensity()
+  // useDensity 임시 제거 (DensityProvider 오류 방지)
+  // const { density, getDensityClass } = useDensity()
   // TODO: Fetch real data from API
   const [tasks, setTasks] = useState<Task[]>([
     { id: 1, title: '김철수 고객 상담', time: '10:00', status: 'completed', patient: '김철수', type: '상담' },
@@ -142,7 +142,7 @@ export default function TodayTasks() {
   const totalTasks = tasks.length
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${getDensityClass('widget')} widget-${density}`}>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">오늘 할 일</h2>
@@ -183,7 +183,7 @@ export default function TodayTasks() {
           {tasks.map((task) => (
             <div
               key={task.id}
-              className={`${getDensityClass('list-item')} list-item-${density} rounded-lg border transition-all duration-200 hover:shadow-sm ${getStatusColor(task.status)}`}
+              className={`p-3 rounded-lg border transition-all duration-200 hover:shadow-sm ${getStatusColor(task.status)}`}
             >
               {editingTaskId === task.id ? (
                 <EditTaskForm 
