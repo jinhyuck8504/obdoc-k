@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { auth, User } from '@/lib/auth'
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const redirectedRef = useRef(false) // 리다이렉트 중복 방지
 
   // 자동 로그아웃 타이머 (30분)
   const AUTO_LOGOUT_TIME = 30 * 60 * 1000 // 30분
@@ -48,6 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true)
+      redirectedRef.current = false // 리다이렉트 플래그 초기화
+      
       const { data, error } = await auth.signIn(email, password)
 
       if (error) {
@@ -62,6 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('supabase.auth.token', JSON.stringify(data.session))
       }
 
+      // 로그인 성공 후 즉시 리다이렉트 (타임아웃으로 무한로딩 방지)
+      setTimeout(() => {
+        if (!redirectedRef.current) {
+          const currentUser = data?.user || user
+          if (currentUser?.role) {
+            redirectToDashboard(currentUser.role)
+            redirectedRef.current = true
+          }
+        }
+      }, 100)
+
       return { error: null }
     } catch (error) {
       return { error: { message: '로그인 중 오류가 발생했습니다.' } }
@@ -73,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       setLoading(true)
+      redirectedRef.current = false
       await auth.signOut()
       setUser(null)
 
@@ -255,24 +270,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user])
 
-  // 자동 리다이렉트 로직
+  // 자동 리다이렉트 로직 (무한 루프 방지)
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !redirectedRef.current) {
       const currentPath = window.location.pathname
 
       // 로그인/회원가입 페이지에 있으면 대시보드로 리다이렉트
       if (currentPath === '/login' || currentPath === '/signup') {
         redirectToDashboard(user.role)
+        redirectedRef.current = true
       }
       // 루트 경로에서도 대시보드로 리다이렉트 (로그인된 사용자의 경우)
       else if (currentPath === '/') {
         redirectToDashboard(user.role)
+        redirectedRef.current = true
       }
     }
   }, [user, loading, router])
 
   const redirectToDashboard = (role: string) => {
     console.log('Redirecting user with role:', role)
+
+    // 이미 리다이렉트 중이면 중단
+    if (redirectedRef.current) {
+      return
+    }
+
+    redirectedRef.current = true
 
     switch (role) {
       case 'doctor':
@@ -281,7 +305,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       case 'customer':
         router.push('/dashboard/customer')
         break
-      case 'customer':
+      case 'patient':
         router.push('/dashboard/customer')
         break
       case 'admin':
