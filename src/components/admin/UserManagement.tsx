@@ -38,54 +38,8 @@ export default function UserManagement() {
   const loadUsers = async () => {
     try {
       setLoading(true)
-      // 더미 데이터
-      const dummyUsers: User[] = [
-        {
-          id: '1',
-          email: 'doctor@test.com',
-          name: '김의사',
-          role: 'doctor',
-          status: 'active',
-          createdAt: '2024-01-15',
-          lastLoginAt: '2024-01-20'
-        },
-        {
-          id: '2',
-          email: 'patient@test.com',
-          name: '이환자',
-          role: 'patient',
-          status: 'active',
-          createdAt: '2024-01-16',
-          lastLoginAt: '2024-01-19'
-        },
-        {
-          id: '3',
-          email: 'admin@test.com',
-          name: '관리자',
-          role: 'admin',
-          status: 'active',
-          createdAt: '2024-01-10',
-          lastLoginAt: '2024-01-20'
-        },
-        {
-          id: '4',
-          email: 'doctor2@hospital.com',
-          name: '박원장',
-          role: 'doctor',
-          status: 'inactive',
-          createdAt: '2024-01-12',
-          lastLoginAt: '2024-01-18'
-        },
-        {
-          id: '5',
-          email: 'patient2@gmail.com',
-          name: '최환자',
-          role: 'patient',
-          status: 'suspended',
-          createdAt: '2024-01-14'
-        }
-      ]
-      setUsers(dummyUsers)
+      // TODO: 실제 API 연동 시 여기서 사용자 데이터를 가져옵니다
+      setUsers([])
     } catch (error) {
       console.error('사용자 목록 로드 실패:', error)
     } finally {
@@ -305,53 +259,72 @@ export default function UserManagement() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getRoleBadge(user.role)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(user.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString('ko-KR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString('ko-KR') : '없음'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleViewDetail(user)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="상세보기"
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-500">
+                      <div className="text-6xl mb-4">👥</div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">사용자가 없습니다</h3>
+                      <p className="text-sm text-gray-500 mb-4">새로운 사용자를 추가해보세요.</p>
+                      <button 
+                        onClick={handleAddUser}
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                       >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        className="text-green-600 hover:text-green-900"
-                        title="수정"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user)}
-                        className="text-red-600 hover:text-red-900"
-                        title="삭제"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                        <UserPlus className="w-4 h-4" />
+                        <span>사용자 추가</span>
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getRoleBadge(user.role)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(user.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.createdAt).toLocaleDateString('ko-KR')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString('ko-KR') : '없음'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleViewDetail(user)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="상세보기"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="text-green-600 hover:text-green-900"
+                          title="수정"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-red-600 hover:text-red-900"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
