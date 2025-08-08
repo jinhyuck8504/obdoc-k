@@ -1,39 +1,26 @@
-// 병원 가입 코드 개별 관리 API
-
 import { NextRequest, NextResponse } from 'next/server'
-import { toggleHospitalCodeStatus } from '@/lib/hospitalCodeService'
-import { supabase } from '@/lib/supabase'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { toggleHospitalCodeStatus, deleteHospitalCode } from '@/lib/hospitalCodeService'
 
-// PUT /api/hospital-codes/[id] - 코드 상태 토글
+// PUT: 병원 코드 수정 (활성화/비활성화)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: codeId } = await params
-
-    // 인증 확인
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다.' },
-        { status: 401 }
-      )
-    }
-
-    // 사용자 정보 조회
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
-
+    const supabase = createRouteHandlerClient({ cookies })
+    
+    // 사용자 인증 확인
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json(
-        { error: '유효하지 않은 토큰입니다.' },
+        { error: 'Unauthorized' }, 
         { status: 401 }
       )
     }
 
-    // 의사 정보 조회
+    // 의사 권한 확인
     const { data: doctor, error: doctorError } = await supabase
       .from('doctors')
       .select('id')
@@ -42,27 +29,88 @@ export async function PUT(
 
     if (doctorError || !doctor) {
       return NextResponse.json(
-        { error: '의사 권한이 필요합니다.' },
+        { error: 'Doctor access required' }, 
         { status: 403 }
       )
     }
 
-    // 코드 상태 토글
-    const updatedCode = await toggleHospitalCodeStatus(codeId, doctor.id)
+    // 요청 데이터 파싱
+    const body = await request.json()
+    const { is_active } = body
 
-    return NextResponse.json(updatedCode)
-  } catch (error) {
-    console.error('PUT /api/hospital-codes/[id] error:', error)
-    
-    if (error instanceof Error) {
+    if (typeof is_active !== 'boolean') {
       return NextResponse.json(
-        { error: error.message },
+        { error: 'is_active must be a boolean' }, 
         { status: 400 }
       )
     }
 
+    // 코드 상태 변경
+    const success = await toggleHospitalCodeStatus(params.id, is_active, user.id)
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Failed to update code status' }, 
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('PUT /api/hospital-codes/[id] error:', error)
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE: 병원 코드 삭제
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = createRouteHandlerClient({ cookies })
+    
+    // 사용자 인증 확인
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      )
+    }
+
+    // 의사 권한 확인
+    const { data: doctor, error: doctorError } = await supabase
+      .from('doctors')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (doctorError || !doctor) {
+      return NextResponse.json(
+        { error: 'Doctor access required' }, 
+        { status: 403 }
+      )
+    }
+
+    // 코드 삭제
+    const success = await deleteHospitalCode(params.id, user.id)
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Failed to delete code' }, 
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('DELETE /api/hospital-codes/[id] error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
       { status: 500 }
     )
   }
