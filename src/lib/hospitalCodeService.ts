@@ -109,6 +109,22 @@ export async function toggleHospitalCodeStatus(
   }
 }
 
+// 병원 코드 삭제
+export async function deleteHospitalCode(
+  codeId: string,
+  doctorId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('hospital_signup_codes')
+    .delete()
+    .eq('id', codeId)
+    .eq('doctor_id', doctorId)
+
+  if (error) {
+    throw new Error(`코드 삭제 실패: ${error.message}`)
+  }
+}
+
 // 코드별 고객 목록 조회
 export async function getCodeCustomers(codeId: string, doctorId: string) {
   // 먼저 해당 코드가 의사의 것인지 확인
@@ -202,7 +218,7 @@ export async function verifyHospitalCode(code: string) {
   }
 }
 
-// 병원 코드 사용 기록
+// 병원 코드 사용 기록 (recordHospitalCodeUsage 별칭)
 export async function useHospitalCode(codeId: string, customerId: string) {
   // 트랜잭션으로 처리
   const { error: usageError } = await supabase
@@ -224,3 +240,6 @@ export async function useHospitalCode(codeId: string, customerId: string) {
     throw new Error(`사용 횟수 업데이트 실패: ${incrementError.message}`)
   }
 }
+
+// recordHospitalCodeUsage 별칭 함수 (SignupForm에서 사용)
+export const recordHospitalCodeUsage = useHospitalCode
