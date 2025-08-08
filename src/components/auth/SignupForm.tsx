@@ -9,6 +9,7 @@ import { Eye, EyeOff, Mail, Lock, User, Building, Stethoscope, CheckCircle, Aler
 import { auth } from '@/lib/auth'
 import Button from '@/components/ui/Button'
 import { supabase } from '@/lib/supabase'
+import { recordHospitalCodeUsage } from '@/lib/hospitalCodeService'
 
 // Window 객체 확장
 declare global {
@@ -17,7 +18,7 @@ declare global {
       id: string
       code: string
       name?: string
-      isActive: boolean
+      is_active: boolean
     }
   }
 }
@@ -54,12 +55,16 @@ export default function SignupForm() {
   const [signupSuccess, setSignupSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [codeVerifying, setCodeVerifying] = useState(false)
+  const [codeVerified, setCodeVerified] = useState(false)
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -69,6 +74,7 @@ export default function SignupForm() {
   })
 
   const selectedRole = watch('role')
+  const hospitalCode = watch('hospitalCode')
 
   // URL 파라미터에서 플랜 정보 읽기
   useEffect(() => {
@@ -78,64 +84,83 @@ export default function SignupForm() {
     }
   }, [searchParams, setValue])
 
+  // 병원 코드 실시간 검증
+  useEffect(() => {
+    if (selectedRole === 'customer' && hospitalCode && hospitalCode.length === 8) {
+      verifyHospitalCodeRealtime(hospitalCode)
+    } else {
+      setCodeVerified(false)
+      clearErrors('hospitalCode')
+      if (window.verifiedHospitalCode) {
+        delete window.verifiedHospitalCode
+      }
+    }
+  }, [hospitalCode, selectedRole, clearErrors])
+
+  // 실시간 코드 검증
+  const verifyHospitalCodeRealtime = async (code: string) => {
+    try {
+      setCodeVerifying(true)
+      clearErrors('hospitalCode')
+
+      const response = await fetch('/api/hospital-codes/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: code.toUpperCase() })
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.isValid) {
+        setCodeVerified(true)
+        window.verifiedHospitalCode = result.code
+      } else {
+        setCodeVerified(false)
+        if (window.verifiedHospitalCode) {
+          delete window.verifiedHospitalCode
+        }
+        
+        // 에러 메시지 설정 (사용자에게 즉시 표시하지 않음)
+        if (result.error) {
+          const errorMessages: Record<string, string> = {
+            'INVALID_CODE_FORMAT': '코드는 영문 3자리 + 숫자 5자리 형식이어야 합니다',
+            'CODE_NOT_FOUND': '존재하지 않는 코드입니다',
+            'CODE_INACTIVE': '비활성화된 코드입니다',
+            'CODE_EXPIRED': '만료된 코드입니다',
+            'CODE_USAGE_EXCEEDED': '사용 한도를 초과한 코드입니다'
+          }
+          // 실시간 검증에서는 에러를 표시하지 않고, 제출 시에만 표시
+        }
+      }
+    } catch (error) {
+      console.error('Real-time code verification error:', error)
+      setCodeVerified(false)
+      if (window.verifiedHospitalCode) {
+        delete window.verifiedHospitalCode
+      }
+    } finally {
+      setCodeVerifying(false)
+    }
+  }
+
   const onSubmit = async (data: SignupFormData) => {
     try {
       setSignupError(null)
 
-      // 고객인 경우 병원 코드 검증
+      // 고객인 경우 병원 코드 최종 검증
       if (data.role === 'customer' && data.hospitalCode) {
-        try {
-          const response = await fetch('/api/hospital-codes/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ code: data.hospitalCode })
+        if (!window.verifiedHospitalCode) {
+          setError('hospitalCode', { 
+            type: 'manual', 
+            message: '유효하지 않은 병원 가입 코드입니다' 
           })
-
-          const result = await response.json()
-
-          if (!response.ok) {
-            // Rate Limiting 에러 처리
-            if (response.status === 429) {
-              if (result.error === 'HOSPITAL_CODE_RATE_LIMIT_EXCEEDED') {
-                if (result.blocked) {
-                  setSignupError('병원 코드 검증 시도가 너무 많습니다. 30분 후 다시 시도해주세요.')
-                } else {
-                  const retryMinutes = Math.ceil(result.retryAfter / 60)
-                  setSignupError(`병원 코드 검증 시도가 너무 많습니다. ${retryMinutes}분 후 다시 시도해주세요.`)
-                }
-              } else {
-                const retrySeconds = result.retryAfter || 60
-                setSignupError(`요청이 너무 많습니다. ${retrySeconds}초 후 다시 시도해주세요.`)
-              }
-              return
-            }
-
-            // 기타 에러 처리
-            setSignupError(result.message || '유효하지 않은 병원 가입 코드입니다.')
-            return
-          }
-
-          if (!result.isValid) {
-            setSignupError(result.message || '유효하지 않은 병원 가입 코드입니다.')
-            return
-          }
-
-          // 검증 성공 시 코드 정보 저장 (나중에 사용 기록용)
-          window.verifiedHospitalCode = result.code
-        } catch (error) {
-          console.error('Hospital code verification error:', error)
-          if (error instanceof TypeError && error.message.includes('fetch')) {
-            setSignupError('네트워크 연결을 확인해주세요.')
-          } else {
-            setSignupError('코드 검증 중 오류가 발생했습니다. 다시 시도해주세요.')
-          }
           return
         }
       }
 
-      // auth.signUp 사용 (개발 모드 지원)
+      // auth.signUp 사용
       const { data: authData, error: authError } = await auth.signUp(
         data.email,
         data.password,
@@ -154,18 +179,22 @@ export default function SignupForm() {
       }
 
       if (authData?.user) {
-        // 개발 모드에서는 더미 데이터로 처리
+        // 개발 모드 체크
+        const isDevelopment = process.env.NODE_ENV === 'development'
+        const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+          process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
+          process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
+
         if (isDevelopment && isDummySupabase) {
           console.log('개발 모드: 더미 회원가입 완료')
         } else {
           // 실제 환경에서만 프로필 생성
           if (data.role === 'doctor') {
             try {
-              console.log('🔧 의사 회원가입 완료, 프로필 생성 시작')
+              console.log('의사 회원가입 완료, 프로필 생성 시작')
 
-              // authData.user를 직접 사용 (이미 회원가입으로 생성된 사용자)
               const userId = authData.user.id
-              console.log('👤 사용자 ID:', userId)
+              console.log('사용자 ID:', userId)
 
               const { data: doctorData, error: doctorError } = await supabase
                 .from('doctors')
@@ -181,39 +210,20 @@ export default function SignupForm() {
 
               if (doctorError) {
                 console.error('Doctor profile creation error:', doctorError)
-                console.error('Error details:', {
-                  code: doctorError.code,
-                  message: doctorError.message,
-                  details: doctorError.details,
-                  hint: doctorError.hint
-                })
-
-                // 더 구체적인 오류 메시지
-                if (doctorError.code === '42501') {
-                  setSignupError('권한이 없습니다. 데이터베이스 정책을 확인해주세요.')
-                } else if (doctorError.code === '23505') {
-                  setSignupError('이미 등록된 의사입니다.')
-                } else {
-                  setSignupError(`의사 프로필 생성에 실패했습니다: ${doctorError.message}`)
-                }
+                setSignupError(`의사 프로필 생성에 실패했습니다: ${doctorError.message}`)
                 return
               }
 
-              console.log('✅ 의사 프로필 생성 완료:', doctorData)
+              console.log('의사 프로필 생성 완료:', doctorData)
 
-              // 프로필 생성 후 즉시 로그인 시도
-              console.log('🔐 자동 로그인 시도 중...')
-              const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+              // 자동 로그인 시도
+              const { error: loginError } = await supabase.auth.signInWithPassword({
                 email: data.email,
                 password: data.password,
               })
 
               if (loginError) {
-                console.error('❌ 자동 로그인 실패:', loginError)
-                // 로그인 실패해도 회원가입은 성공했으므로 성공 처리
-                console.log('⚠️ 자동 로그인 실패했지만 회원가입은 완료됨')
-              } else {
-                console.log('✅ 자동 로그인 성공:', loginData?.user?.id)
+                console.error('자동 로그인 실패:', loginError)
               }
             } catch (error) {
               console.error('Unexpected error during doctor profile creation:', error)
@@ -221,47 +231,53 @@ export default function SignupForm() {
               return
             }
           } else if (data.role === 'customer') {
-            // 고객 프로필 생성
-            const { error: customerError } = await supabase
-              .from('customers')
-              .insert({
-                user_id: authData.user.id,
-                hospital_code: data.hospitalCode,
-                name: '', // 나중에 프로필에서 입력
+            try {
+              // 고객 프로필 생성
+              const { data: customerData, error: customerError } = await supabase
+                .from('customers')
+                .insert({
+                  user_id: authData.user.id,
+                  hospital_code: data.hospitalCode,
+                  name: '', // 나중에 프로필에서 입력
+                })
+                .select()
+
+              if (customerError) {
+                console.error('Customer profile creation error:', customerError)
+                setSignupError('고객 프로필 생성에 실패했습니다.')
+                return
+              }
+
+              // 병원 코드 사용 기록 (검증된 코드가 있는 경우)
+              if (window.verifiedHospitalCode && customerData?.[0]) {
+                try {
+                  const success = await recordHospitalCodeUsage(
+                    authData.user.id,
+                    window.verifiedHospitalCode.id
+                  )
+                  
+                  if (!success) {
+                    console.error('Failed to record hospital code usage')
+                  }
+                } catch (error) {
+                  console.error('Code usage recording error:', error)
+                  // 에러가 발생해도 회원가입은 계속 진행
+                }
+              }
+
+              // 자동 로그인 시도
+              const { error: loginError } = await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: data.password,
               })
 
-            if (customerError) {
-              console.error('Customer profile creation error:', customerError)
-              setSignupError('고객 프로필 생성에 실패했습니다.')
-              return
-            }
-
-            // 병원 코드 사용 기록 (검증된 코드가 있는 경우)
-            if (window.verifiedHospitalCode) {
-              try {
-                const { data: customer } = await supabase
-                  .from('customers')
-                  .select('id')
-                  .eq('user_id', authData.user.id)
-                  .single()
-
-                if (customer) {
-                  await supabase
-                    .from('hospital_signup_code_usage')
-                    .insert({
-                      code_id: window.verifiedHospitalCode.id,
-                      customer_id: customer.id
-                    })
-
-                  // 사용 횟수 증가
-                  await supabase.rpc('increment_code_usage', {
-                    code_id: window.verifiedHospitalCode.id
-                  })
-                }
-              } catch (error) {
-                console.error('Code usage recording error:', error)
-                // 에러가 발생해도 회원가입은 계속 진행
+              if (loginError) {
+                console.error('자동 로그인 실패:', loginError)
               }
+            } catch (error) {
+              console.error('Unexpected error during customer profile creation:', error)
+              setSignupError('고객 프로필 생성 중 예상치 못한 오류가 발생했습니다.')
+              return
             }
           }
         }
@@ -269,25 +285,13 @@ export default function SignupForm() {
         setSignupSuccess(true)
 
         // 회원가입 후 리디렉트
-        if (isDevelopment && isDummySupabase) {
-          // 개발 모드에서는 바로 성공 처리
-          setTimeout(() => {
-            if (data.role === 'doctor') {
-              router.push('/subscription')
-            } else {
-              router.push('/dashboard/customer')
-            }
-          }, 2000)
-        } else {
-          // 실제 환경에서는 역할에 따라 리디렉트
-          setTimeout(() => {
-            if (data.role === 'doctor') {
-              router.push('/subscription')
-            } else {
-              router.push('/dashboard/customer')
-            }
-          }, 2000)
-        }
+        setTimeout(() => {
+          if (data.role === 'doctor') {
+            router.push('/subscription')
+          } else {
+            router.push('/dashboard/customer')
+          }
+        }, 2000)
       }
     } catch (error) {
       console.error('Signup error:', error)
@@ -506,9 +510,22 @@ export default function SignupForm() {
                   {...register('hospitalCode')}
                   type="text"
                   id="hospitalCode"
-                  placeholder="병원에서 제공받은 가입 코드를 입력하세요"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="예: ABC12345"
+                  maxLength={8}
+                  className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors uppercase"
+                  style={{ textTransform: 'uppercase' }}
                 />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  {codeVerifying && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  )}
+                  {!codeVerifying && codeVerified && (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  )}
+                  {!codeVerifying && hospitalCode && hospitalCode.length === 8 && !codeVerified && (
+                    <AlertCircle className="h-5 w-5 text-red-500" />
+                  )}
+                </div>
               </div>
               {errors.hospitalCode && (
                 <p className="mt-2 text-sm text-red-600 flex items-center">
@@ -517,7 +534,7 @@ export default function SignupForm() {
                 </p>
               )}
               <p className="mt-2 text-sm text-gray-500">
-                💡 병원에서 제공받은 가입 코드가 필요합니다. 코드가 없으시면 담당 의료진에게 문의하세요.
+                💡 병원에서 제공받은 8자리 가입 코드를 입력하세요 (영문 3자리 + 숫자 5자리)
               </p>
             </div>
           )}
@@ -568,7 +585,7 @@ export default function SignupForm() {
 
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || (selectedRole === 'customer' && hospitalCode && hospitalCode.length === 8 && !codeVerified)}
           className="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isSubmitting ? (
