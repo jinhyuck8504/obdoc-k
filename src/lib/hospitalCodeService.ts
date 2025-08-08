@@ -1,326 +1,226 @@
 import { supabase } from './supabase'
-import { generateUniqueCode, validateCodeFormat, isCodeExpired, canUseCode } from './codeGenerator'
-import { 
-  HospitalCode, 
-  HospitalCodeUsage, 
-  CodeVerificationResult, 
-  CreateHospitalCodeRequest,
-  CreateHospitalCodeResponse,
-  HospitalCodeError,
-  ERROR_MESSAGES 
-} from '@/types/hospitalCode'
+import { generateHospitalCode } from './codeGenerator'
+import type { HospitalCode, CreateCodeRequest } from '@/types/hospitalCode'
 
-/**
- * 병원 코드 생성
- * @param doctorId 의사 ID
- * @param request 코드 생성 요청 데이터
- * @returns 생성된 코드 정보
- */
+// 병원 코드 생성
 export async function createHospitalCode(
-  doctorId: string, 
-  request: CreateHospitalCodeRequest
-): Promise<CreateHospitalCodeResponse> {
-  try {
-    // 고유한 코드 생성
-    const code = await generateUniqueCode()
-    if (!code) {
-      return {
-        success: false,
-        message: ERROR_MESSAGES.DUPLICATE_CODE
-      }
-    }
+  doctorId: string,
+  data: CreateCodeRequest
+): Promise<HospitalCode> {
+  const code = generateHospitalCode()
+  
+  const { data: newCode, error } = await supabase
+    .from('hospital_signup_codes')
+    .insert({
+      doctor_id: doctorId,
+      code,
+      name: data.name || '기본 코드',
+      max_uses: data.maxUses || null,
+      expires_at: data.expiresAt || null
+    })
+    .select()
+    .single()
 
-    // 만료일 검증
-    let expiresAt = null
-    if (request.expires_at) {
-      const expireDate = new Date(request.expires_at)
-      if (expireDate <= new Date()) {
-        return {
-          success: false,
-          message: '만료일은 현재 시간보다 이후여야 합니다'
-        }
-      }
-      expiresAt = expireDate.toISOString()
-    }
+  if (error) {
+    throw new Error(`코드 생성 실패: ${error.message}`)
+  }
 
-    // 데이터베이스에 저장
-    const { data, error } = await supabase
-      .from('hospital_codes')
-      .insert({
-        code,
-        doctor_id: doctorId,
-        name: request.name,
-        max_usage: request.max_usage || null,
-        expires_at: expiresAt
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Hospital code creation error:', error)
-      return {
-        success: false,
-        message: '코드 생성 중 오류가 발생했습니다'
-      }
-    }
-
-    return {
-      success: true,
-      code: data
-    }
-  } catch (error) {
-    console.error('Unexpected error in createHospitalCode:', error)
-    return {
-      success: false,
-      message: '예상치 못한 오류가 발생했습니다'
-    }
+  return {
+    id: newCode.id,
+    code: newCode.code,
+    name: newCode.name,
+    doctorId: newCode.doctor_id,
+    maxUses: newCode.max_uses,
+    currentUses: newCode.current_uses,
+    isActive: newCode.is_active,
+    expiresAt: newCode.expires_at,
+    createdAt: newCode.created_at,
+    updatedAt: newCode.updated_at
   }
 }
 
-/**
- * 병원 코드 검증
- * @param code 검증할 코드
- * @returns 검증 결과
- */
-export async function verifyHospitalCode(code: string): Promise<CodeVerificationResult> {
-  try {
-    // 1. 형식 검증
-    if (!validateCodeFormat(code)) {
-      return {
-        isValid: false,
-        error: 'INVALID_CODE_FORMAT',
-        message: ERROR_MESSAGES.INVALID_CODE_FORMAT
-      }
-    }
-
-    // 2. 코드 존재 확인
-    const { data: hospitalCode, error } = await supabase
-      .from('hospital_codes')
-      .select('*')
-      .eq('code', code.toUpperCase())
-      .single()
-
-    if (error || !hospitalCode) {
-      return {
-        isValid: false,
-        error: 'CODE_NOT_FOUND',
-        message: ERROR_MESSAGES.CODE_NOT_FOUND
-      }
-    }
-
-    // 3. 활성화 상태 확인
-    if (!hospitalCode.is_active) {
-      return {
-        isValid: false,
-        error: 'CODE_INACTIVE',
-        message: ERROR_MESSAGES.CODE_INACTIVE
-      }
-    }
-
-    // 4. 만료일 확인
-    if (isCodeExpired(hospitalCode.expires_at)) {
-      return {
-        isValid: false,
-        error: 'CODE_EXPIRED',
-        message: ERROR_MESSAGES.CODE_EXPIRED
-      }
-    }
-
-    // 5. 사용 한도 확인
-    if (!canUseCode(hospitalCode.usage_count, hospitalCode.max_usage)) {
-      return {
-        isValid: false,
-        error: 'CODE_USAGE_EXCEEDED',
-        message: ERROR_MESSAGES.CODE_USAGE_EXCEEDED
-      }
-    }
-
-    return {
-      isValid: true,
-      code: hospitalCode
-    }
-  } catch (error) {
-    console.error('Code verification error:', error)
-    return {
-      isValid: false,
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: ERROR_MESSAGES.RATE_LIMIT_EXCEEDED
-    }
-  }
-}
-
-/**
- * 의사의 병원 코드 목록 조회
- * @param doctorId 의사 ID
- * @returns 코드 목록
- */
+// 의사의 병원 코드 목록 조회
 export async function getDoctorHospitalCodes(doctorId: string): Promise<HospitalCode[]> {
-  try {
-    const { data, error } = await supabase
-      .from('hospital_codes')
-      .select('*')
-      .eq('doctor_id', doctorId)
-      .order('created_at', { ascending: false })
+  const { data, error } = await supabase
+    .from('hospital_signup_codes')
+    .select('*')
+    .eq('doctor_id', doctorId)
+    .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error fetching doctor hospital codes:', error)
-      return []
-    }
-
-    return data || []
-  } catch (error) {
-    console.error('Unexpected error in getDoctorHospitalCodes:', error)
-    return []
+  if (error) {
+    throw new Error(`코드 목록 조회 실패: ${error.message}`)
   }
+
+  return data.map(code => ({
+    id: code.id,
+    code: code.code,
+    name: code.name,
+    doctorId: code.doctor_id,
+    maxUses: code.max_uses,
+    currentUses: code.current_uses,
+    isActive: code.is_active,
+    expiresAt: code.expires_at,
+    createdAt: code.created_at,
+    updatedAt: code.updated_at
+  }))
 }
 
-/**
- * 병원 코드 활성화/비활성화
- * @param codeId 코드 ID
- * @param isActive 활성화 상태
- * @param doctorId 의사 ID (권한 확인용)
- * @returns 성공 여부
- */
+// 병원 코드 상태 토글
 export async function toggleHospitalCodeStatus(
-  codeId: string, 
-  isActive: boolean, 
+  codeId: string,
   doctorId: string
-): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('hospital_codes')
-      .update({ 
-        is_active: isActive,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', codeId)
-      .eq('doctor_id', doctorId) // 권한 확인
+): Promise<HospitalCode> {
+  // 먼저 현재 상태 조회
+  const { data: currentCode, error: fetchError } = await supabase
+    .from('hospital_signup_codes')
+    .select('is_active')
+    .eq('id', codeId)
+    .eq('doctor_id', doctorId)
+    .single()
 
-    if (error) {
-      console.error('Error toggling hospital code status:', error)
-      return false
-    }
+  if (fetchError) {
+    throw new Error(`코드 조회 실패: ${fetchError.message}`)
+  }
 
-    return true
-  } catch (error) {
-    console.error('Unexpected error in toggleHospitalCodeStatus:', error)
-    return false
+  // 상태 토글
+  const { data: updatedCode, error: updateError } = await supabase
+    .from('hospital_signup_codes')
+    .update({ is_active: !currentCode.is_active })
+    .eq('id', codeId)
+    .eq('doctor_id', doctorId)
+    .select()
+    .single()
+
+  if (updateError) {
+    throw new Error(`코드 상태 업데이트 실패: ${updateError.message}`)
+  }
+
+  return {
+    id: updatedCode.id,
+    code: updatedCode.code,
+    name: updatedCode.name,
+    doctorId: updatedCode.doctor_id,
+    maxUses: updatedCode.max_uses,
+    currentUses: updatedCode.current_uses,
+    isActive: updatedCode.is_active,
+    expiresAt: updatedCode.expires_at,
+    createdAt: updatedCode.created_at,
+    updatedAt: updatedCode.updated_at
   }
 }
 
-/**
- * 코드 사용 기록
- * @param customerId 고객 ID
- * @param hospitalCodeId 병원 코드 ID
- * @returns 성공 여부
- */
-export async function recordHospitalCodeUsage(
-  customerId: string, 
-  hospitalCodeId: string
-): Promise<boolean> {
-  try {
-    // 사용 기록 생성
-    const { error: usageError } = await supabase
-      .from('customer_hospital_codes')
-      .insert({
-        customer_id: customerId,
-        hospital_code_id: hospitalCodeId
-      })
+// 코드별 고객 목록 조회
+export async function getCodeCustomers(codeId: string, doctorId: string) {
+  // 먼저 해당 코드가 의사의 것인지 확인
+  const { data: codeData, error: codeError } = await supabase
+    .from('hospital_signup_codes')
+    .select('id')
+    .eq('id', codeId)
+    .eq('doctor_id', doctorId)
+    .single()
 
-    if (usageError) {
-      console.error('Error recording hospital code usage:', usageError)
-      return false
+  if (codeError) {
+    throw new Error(`코드 권한 확인 실패: ${codeError.message}`)
+  }
+
+  // 해당 코드를 사용한 고객 목록 조회
+  const { data, error } = await supabase
+    .from('hospital_signup_code_usage')
+    .select(`
+      used_at,
+      customers!inner(
+        id,
+        name,
+        user_id,
+        users!inner(email)
+      )
+    `)
+    .eq('code_id', codeId)
+    .order('used_at', { ascending: false })
+
+  if (error) {
+    throw new Error(`고객 목록 조회 실패: ${error.message}`)
+  }
+
+  return data.map(item => ({
+    customerId: item.customers.id,
+    customerName: item.customers.name,
+    customerEmail: item.customers.users.email,
+    usedAt: item.used_at
+  }))
+}
+
+// 병원 코드 검증
+export async function verifyHospitalCode(code: string) {
+  const { data, error } = await supabase
+    .from('hospital_signup_codes')
+    .select(`
+      id,
+      code,
+      name,
+      doctor_id,
+      max_uses,
+      current_uses,
+      is_active,
+      expires_at,
+      doctors!inner(
+        hospital_name,
+        hospital_type
+      )
+    `)
+    .eq('code', code)
+    .eq('is_active', true)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      throw new Error('유효하지 않은 코드입니다.')
     }
+    throw new Error(`코드 검증 실패: ${error.message}`)
+  }
 
-    // 사용 횟수 증가
-    const { error: incrementError } = await supabase.rpc('increment_code_usage', {
-      code_id: hospitalCodeId
+  // 만료 확인
+  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    throw new Error('만료된 코드입니다.')
+  }
+
+  // 사용 횟수 확인
+  if (data.max_uses && data.current_uses >= data.max_uses) {
+    throw new Error('사용 횟수가 초과된 코드입니다.')
+  }
+
+  return {
+    id: data.id,
+    code: data.code,
+    name: data.name,
+    doctorId: data.doctor_id,
+    hospitalName: data.doctors.hospital_name,
+    hospitalType: data.doctors.hospital_type,
+    maxUses: data.max_uses,
+    currentUses: data.current_uses,
+    expiresAt: data.expires_at
+  }
+}
+
+// 병원 코드 사용 기록
+export async function useHospitalCode(codeId: string, customerId: string) {
+  // 트랜잭션으로 처리
+  const { error: usageError } = await supabase
+    .from('hospital_signup_code_usage')
+    .insert({
+      code_id: codeId,
+      customer_id: customerId
     })
 
-    if (incrementError) {
-      console.error('Error incrementing code usage:', incrementError)
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error('Unexpected error in recordHospitalCodeUsage:', error)
-    return false
+  if (usageError) {
+    throw new Error(`코드 사용 기록 실패: ${usageError.message}`)
   }
-}
 
-/**
- * 코드별 사용 고객 목록 조회
- * @param codeId 코드 ID
- * @param doctorId 의사 ID (권한 확인용)
- * @returns 사용 기록 목록
- */
-export async function getCodeUsageHistory(
-  codeId: string, 
-  doctorId: string
-): Promise<HospitalCodeUsage[]> {
-  try {
-    // 먼저 해당 코드가 의사의 것인지 확인
-    const { data: codeData, error: codeError } = await supabase
-      .from('hospital_codes')
-      .select('id')
-      .eq('id', codeId)
-      .eq('doctor_id', doctorId)
-      .single()
+  // 사용 횟수 증가
+  const { error: incrementError } = await supabase
+    .rpc('increment_code_usage', { code_id: codeId })
 
-    if (codeError || !codeData) {
-      console.error('Unauthorized access to code usage history')
-      return []
-    }
-
-    // 사용 기록 조회
-    const { data, error } = await supabase
-      .from('customer_hospital_codes')
-      .select(`
-        *,
-        customers!inner(
-          user_id,
-          name,
-          users!inner(email)
-        )
-      `)
-      .eq('hospital_code_id', codeId)
-      .order('used_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching code usage history:', error)
-      return []
-    }
-
-    return data || []
-  } catch (error) {
-    console.error('Unexpected error in getCodeUsageHistory:', error)
-    return []
-  }
-}
-
-/**
- * 병원 코드 삭제
- * @param codeId 코드 ID
- * @param doctorId 의사 ID (권한 확인용)
- * @returns 성공 여부
- */
-export async function deleteHospitalCode(codeId: string, doctorId: string): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('hospital_codes')
-      .delete()
-      .eq('id', codeId)
-      .eq('doctor_id', doctorId) // 권한 확인
-
-    if (error) {
-      console.error('Error deleting hospital code:', error)
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error('Unexpected error in deleteHospitalCode:', error)
-    return false
+  if (incrementError) {
+    throw new Error(`사용 횟수 업데이트 실패: ${incrementError.message}`)
   }
 }
