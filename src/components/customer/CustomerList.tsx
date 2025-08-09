@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Edit, Trash2, Eye, Phone, Mail, Calendar, TrendingDown, User } from 'lucide-react'
+// Removed lucide-react dependency - using emoji icons instead
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EmptyState from '@/components/common/EmptyState'
 import { Customer } from '@/types/customer'
@@ -69,7 +69,7 @@ export default function CustomerList({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
         <EmptyState
-          icon={<User className="h-20 w-20 text-gray-300" />}
+          icon={<span className="text-6xl">👥</span>}
           title="등록된 고객이 없습니다"
           description="새 고객을 등록하여 관리를 시작하세요"
         />
@@ -118,12 +118,12 @@ export default function CustomerList({
                 <div className="col-span-2">
                   <div className="space-y-1">
                     <div className="flex items-center text-sm text-gray-600">
-                      <Phone className="w-3 h-3 mr-1" />
+                      <span className="mr-1">📞</span>
                       {customer.phone}
                     </div>
                     {customer.email && (
                       <div className="flex items-center text-sm text-gray-600">
-                        <Mail className="w-3 h-3 mr-1" />
+                        <span className="mr-1">📧</span>
                         {customer.email}
                       </div>
                     )}
@@ -141,7 +141,7 @@ export default function CustomerList({
                     </p>
                     {weightLoss > 0 && (
                       <div className="flex items-center text-xs text-green-600">
-                        <TrendingDown className="w-3 h-3 mr-1" />
+                        <span className="mr-1">📉</span>
                         -{weightLoss.toFixed(1)}kg
                       </div>
                     )}
@@ -175,7 +175,7 @@ export default function CustomerList({
                       {getStatusText(customer.status)}
                     </span>
                     <div className="flex items-center text-xs text-gray-600">
-                      <Calendar className="w-3 h-3 mr-1" />
+                      <span className="mr-1">📅</span>
                       {customer.lastVisit ? formatDate(customer.lastVisit) : '방문 기록 없음'}
                     </div>
                   </div>
@@ -192,7 +192,7 @@ export default function CustomerList({
                       className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                       title="상세 보기"
                     >
-                      <Eye className="w-4 h-4" />
+                      👁️
                     </button>
                     <button
                       onClick={(e) => {
@@ -202,7 +202,7 @@ export default function CustomerList({
                       className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                       title="수정"
                     >
-                      <Edit className="w-4 h-4" />
+                      ✏️
                     </button>
                     <button
                       onClick={(e) => {
@@ -212,7 +212,7 @@ export default function CustomerList({
                       className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="삭제"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      🗑️
                     </button>
                   </div>
                 </div>
