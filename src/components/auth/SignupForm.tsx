@@ -54,7 +54,6 @@ export default function SignupForm() {
   const [signupSuccess, setSignupSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [codeVerified, setCodeVerified] = useState(false)
 
   const {
     register,
@@ -70,7 +69,6 @@ export default function SignupForm() {
   })
 
   const selectedRole = watch('role')
-  const hospitalCode = watch('hospitalCode')
 
   // URL 파라미터에서 플랜 정보 읽기
   useEffect(() => {
@@ -326,9 +324,6 @@ export default function SignupForm() {
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
-  // disabled 조건을 명확한 boolean으로 계산
-  const isButtonDisabled = isSubmitting || (selectedRole === 'customer' && hospitalCode && hospitalCode.length >= 8 && !codeVerified)
-
   return (
     <div className="w-full max-w-md mx-auto">
       {/* 개발 모드 안내 */}
@@ -573,7 +568,7 @@ export default function SignupForm() {
 
         <Button
           type="submit"
-          disabled={isButtonDisabled}
+          disabled={isSubmitting}
           className="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isSubmitting ? (
