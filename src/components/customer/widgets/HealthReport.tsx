@@ -1,138 +1,12 @@
 'use client'
+
 import React, { useState, useEffect } from 'react'
-import { TrendingDown, TrendingUp, Target, Weight, Calendar, Award, Plus, Edit, Trash2, BarChart3, Activity } from 'lucide-react'
-
-// 임시 타입 정의 (healthService가 없으므로)
-interface WeightRecord {
-  id: string
-  weight: number
-  date: string
-  note?: string
-}
-
-interface HealthMetrics {
-  currentWeight: number
-  targetWeight: number
-  initialWeight: number
-  weightLoss: number
-  progress: number
-  remainingWeight: number
-  bmi: number
-  targetBMI: number
-  height: number
-}
-
-interface WeightFormData {
-  weight: number
-  date: string
-  note?: string
-}
-
-interface GoalFormData {
-  targetWeight: number
-  targetDate?: string
-}
-
-// 임시 서비스 함수들 (healthService가 없으므로)
-const getWeightRecords = async (customerId: string): Promise<WeightRecord[]> => {
-  // 임시 더미 데이터
-  return [
-    { id: '1', weight: 70, date: new Date().toISOString(), note: '시작 체중' },
-    { id: '2', weight: 69.5, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), note: '1주차' },
-    { id: '3', weight: 69, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), note: '2주차' }
-  ]
-}
-
-const getWeightChange = (records: WeightRecord[], days: number) => {
-  if (records.length < 2) return { change: 0, trend: 'stable' as const }
-  
-  const recent = records[records.length - 1]
-  const previous = records[records.length - 2]
-  const change = recent.weight - previous.weight
-  
-  return {
-    change: Math.abs(change),
-    trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'stable' as const
-  }
-}
-
-const addWeightRecord = async (customerId: string, data: WeightFormData): Promise<void> => {
-  console.log('체중 기록 추가:', customerId, data)
-}
-
-const updateWeightRecord = async (recordId: string, data: WeightFormData): Promise<void> => {
-  console.log('체중 기록 수정:', recordId, data)
-}
-
-const deleteWeightRecord = async (recordId: string): Promise<void> => {
-  console.log('체중 기록 삭제:', recordId)
-}
-
-const updateWeightGoal = async (customerId: string, data: GoalFormData): Promise<void> => {
-  console.log('목표 체중 수정:', customerId, data)
-}
-
-// 임시 컴포넌트들
-const WeightInputModal = ({ isOpen, onClose, onSave, initialData }: any) => {
-  if (!isOpen) return null
-  
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-96">
-        <h3 className="text-lg font-semibold mb-4">체중 기록</h3>
-        <p className="text-gray-600 mb-4">체중 입력 기능은 준비 중입니다.</p>
-        <button
-          onClick={onClose}
-          className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
-        >
-          닫기
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const GoalSettingModal = ({ isOpen, onClose, onSave, currentMetrics }: any) => {
-  if (!isOpen) return null
-  
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-96">
-        <h3 className="text-lg font-semibold mb-4">목표 설정</h3>
-        <p className="text-gray-600 mb-4">목표 설정 기능은 준비 중입니다.</p>
-        <button
-          onClick={onClose}
-          className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
-        >
-          닫기
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const WeightChart = ({ records, targetWeight, initialWeight, height }: any) => {
-  return (
-    <div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg">
-      <div className="text-center">
-        <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600">체중 차트 기능은 준비 중입니다.</p>
-      </div>
-    </div>
-  )
-}
-
-const BMIIndicator = ({ currentBMI, targetBMI, height, currentWeight, targetWeight }: any) => {
-  return (
-    <div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg">
-      <div className="text-center">
-        <Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600">BMI 지표 기능은 준비 중입니다.</p>
-        <p className="text-sm text-gray-500 mt-2">현재 BMI: {currentBMI?.toFixed(1) || 'N/A'}</p>
-      </div>
-    </div>
-  )
-}
+import { WeightRecord, HealthMetrics, WeightFormData, GoalFormData } from '@/types/health'
+import { getWeightRecords, getWeightChange, addWeightRecord, updateWeightRecord, deleteWeightRecord, updateWeightGoal } from '@/lib/healthService'
+import WeightInputModal from '../WeightInputModal'
+import GoalSettingModal from '../GoalSettingModal'
+import WeightChart from '../charts/WeightChart'
+import BMIIndicator from '../charts/BMIIndicator'
 
 interface HealthReportProps {
   customerId: string
@@ -238,11 +112,11 @@ export default function HealthReport({
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
       case 'down':
-        return <TrendingDown className="w-4 h-4 text-green-600" />
+        return <span className="text-green-600">📉</span>
       case 'up':
-        return <TrendingUp className="w-4 h-4 text-red-600" />
+        return <span className="text-red-600">📈</span>
       default:
-        return <div className="w-4 h-4 bg-gray-400 rounded-full" />
+        return <span className="text-gray-400">➖</span>
     }
   }
 
@@ -307,7 +181,7 @@ export default function HealthReport({
               onClick={() => setShowWeightModal(true)}
               className="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              <Plus className="w-4 h-4 mr-1" />
+              <span className="mr-1">➕</span>
               체중 기록
             </button>
           </div>
@@ -323,7 +197,7 @@ export default function HealthReport({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Award className="w-4 h-4" />
+            <span>🏆</span>
             <span>개요</span>
           </button>
           <button
@@ -334,7 +208,7 @@ export default function HealthReport({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <BarChart3 className="w-4 h-4" />
+            <span>📊</span>
             <span>차트</span>
           </button>
           <button
@@ -345,7 +219,7 @@ export default function HealthReport({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Activity className="w-4 h-4" />
+            <span>📏</span>
             <span>BMI</span>
           </button>
           <button
@@ -356,7 +230,7 @@ export default function HealthReport({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Calendar className="w-4 h-4" />
+            <span>📅</span>
             <span>기록</span>
           </button>
         </div>
@@ -367,21 +241,21 @@ export default function HealthReport({
             {/* 현재 상태 요약 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                <Weight className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                <span className="text-2xl mb-2 block">⚖️</span>
                 <p className="text-2xl font-bold text-blue-600">{metrics.currentWeight}kg</p>
                 <p className="text-sm text-blue-700">현재 체중</p>
               </div>
 
               <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 cursor-pointer hover:shadow-md transition-shadow"
                    onClick={() => setShowGoalModal(true)}>
-                <Target className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                <span className="text-2xl mb-2 block">🎯</span>
                 <p className="text-2xl font-bold text-green-600">{metrics.targetWeight}kg</p>
                 <p className="text-sm text-green-700">목표 체중</p>
                 <p className="text-xs text-green-600 mt-1">클릭하여 수정</p>
               </div>
 
               <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-                <Award className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                <span className="text-2xl mb-2 block">🏆</span>
                 <p className="text-2xl font-bold text-purple-600">{metrics.progress.toFixed(0)}%</p>
                 <p className="text-sm text-purple-700">목표 달성률</p>
               </div>
@@ -432,7 +306,7 @@ export default function HealthReport({
                   <div>
                     <p className="text-sm text-gray-600">목표까지 남은 체중</p>
                     <div className="flex items-center space-x-2 mt-1">
-                      <Target className="w-4 h-4 text-orange-600" />
+                      <span className="text-orange-600">🎯</span>
                       <span className="font-medium text-orange-600">
                         {metrics.remainingWeight > 0 ? `${metrics.remainingWeight.toFixed(1)}kg` : '목표 달성!'}
                       </span>
@@ -446,7 +320,7 @@ export default function HealthReport({
             {metrics.progress > 0 && (
               <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
                 <div className="flex items-center space-x-2">
-                  <Award className="w-5 h-5 text-green-600" />
+                  <span className="text-green-600">🏆</span>
                   <div>
                     <p className="text-sm font-medium text-green-800">
                       {metrics.progress >= 100 ? '🎉 목표를 달성했습니다!' :
@@ -490,13 +364,13 @@ export default function HealthReport({
               <h3 className="text-md font-medium text-gray-900 mb-3">최근 체중 기록</h3>
               {filteredHistory.length === 0 ? (
                 <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <span className="text-4xl mb-3 block">📅</span>
                   <p className="text-gray-500">선택한 기간에 기록이 없습니다</p>
                   <button
                     onClick={() => setShowWeightModal(true)}
                     className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
+                    <span className="mr-2">➕</span>
                     첫 번째 기록 추가
                   </button>
                 </div>
@@ -525,14 +399,14 @@ export default function HealthReport({
                             className="p-1 text-gray-400 hover:text-blue-600 rounded"
                             title="수정"
                           >
-                            <Edit className="w-4 h-4" />
+                            ✏️
                           </button>
                           <button
                             onClick={() => handleDeleteRecord(record.id)}
                             className="p-1 text-gray-400 hover:text-red-600 rounded"
                             title="삭제"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            🗑️
                           </button>
                         </div>
                       </div>
