@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { ArrowLeft, Save, X, User, Phone, Mail, Calendar, Ruler, Weight, Target, MapPin, FileText, AlertTriangle, Pill, UserPlus } from 'lucide-react'
 import { Customer, CustomerFormData } from '@/types/customer'
 import { customerService } from '@/lib/customerService'
 
@@ -9,25 +8,6 @@ interface CustomerFormProps {
   customer?: Customer | null
   onSave: (data: CustomerFormData) => void
   onCancel: () => void
-}
-
-interface FormErrors {
-  name?: string
-  email?: string
-  phone?: string
-  birthDate?: string
-  gender?: string
-  height?: string
-  initialWeight?: string
-  currentWeight?: string
-  targetWeight?: string
-  address?: string
-  medicalHistory?: string
-  allergies?: string
-  medications?: string
-  emergencyContactName?: string
-  emergencyContactPhone?: string
-  emergencyContactRelationship?: string
 }
 
 export default function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) {
@@ -50,7 +30,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
     emergencyContactRelationship: ''
   })
 
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 수정 모드일 때 기존 데이터 로드
@@ -78,7 +58,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
   }, [customer])
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
+    const newErrors: Record<string, string> = {}
 
     // 필수 필드 검증
     if (!formData.name.trim()) {
@@ -154,8 +134,12 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // 에러 메시지 제거
-    if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
     }
   }
 
@@ -199,7 +183,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
             onClick={onCancel}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            ←
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -216,7 +200,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
         {/* 기본 정보 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <User className="w-5 h-5 text-blue-600" />
+            <span className="text-blue-600">👤</span>
             <h2 className="text-lg font-semibold text-gray-900">기본 정보</h2>
           </div>
 
@@ -296,7 +280,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 키 (cm) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Ruler className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📏</span>
                 <input
                   type="number"
                   value={formData.height || ''}
@@ -319,7 +303,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
         {/* 연락처 정보 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <Phone className="w-5 h-5 text-green-600" />
+            <span className="text-green-600">📞</span>
             <h2 className="text-lg font-semibold text-gray-900">연락처 정보</h2>
           </div>
 
@@ -330,7 +314,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 전화번호 <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📞</span>
                 <input
                   type="tel"
                   value={formData.phone}
@@ -352,7 +336,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 이메일
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📧</span>
                 <input
                   type="email"
                   value={formData.email}
@@ -374,7 +358,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 주소
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-3 text-gray-400">📍</span>
                 <textarea
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
@@ -390,7 +374,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
         {/* 체중 정보 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <Weight className="w-5 h-5 text-purple-600" />
+            <span className="text-purple-600">⚖️</span>
             <h2 className="text-lg font-semibold text-gray-900">체중 정보</h2>
           </div>
 
@@ -401,7 +385,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 초기 체중 (kg) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Weight className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">⚖️</span>
                 <input
                   type="number"
                   value={formData.initialWeight || ''}
@@ -426,7 +410,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 현재 체중 (kg) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Weight className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">⚖️</span>
                 <input
                   type="number"
                   value={formData.currentWeight || ''}
@@ -456,7 +440,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 목표 체중 (kg) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🎯</span>
                 <input
                   type="number"
                   value={formData.targetWeight || ''}
@@ -499,7 +483,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
         {/* 의료 정보 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <FileText className="w-5 h-5 text-red-600" />
+            <span className="text-red-600">📋</span>
             <h2 className="text-lg font-semibold text-gray-900">의료 정보</h2>
           </div>
 
@@ -524,7 +508,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 알레르기
               </label>
               <div className="relative">
-                <AlertTriangle className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-3 text-gray-400">⚠️</span>
                 <textarea
                   value={formData.allergies}
                   onChange={(e) => handleInputChange('allergies', e.target.value)}
@@ -541,7 +525,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
                 복용 약물
               </label>
               <div className="relative">
-                <Pill className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                <span className="absolute left-3 top-3 text-gray-400">💊</span>
                 <textarea
                   value={formData.medications}
                   onChange={(e) => handleInputChange('medications', e.target.value)}
@@ -557,7 +541,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
         {/* 비상 연락처 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <UserPlus className="w-5 h-5 text-orange-600" />
+            <span className="text-orange-600">👥</span>
             <h2 className="text-lg font-semibold text-gray-900">비상 연락처</h2>
           </div>
 
@@ -619,7 +603,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
             onClick={onCancel}
             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <X className="w-4 h-4 inline mr-2" />
+            <span className="inline mr-2">✕</span>
             취소
           </button>
           <button
@@ -627,7 +611,7 @@ export default function CustomerForm({ customer, onSave, onCancel }: CustomerFor
             disabled={isSubmitting}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors flex items-center"
           >
-            <Save className="w-4 h-4 mr-2" />
+            <span className="mr-2">💾</span>
             {isSubmitting ? '저장 중...' : (customer ? '수정하기' : '등록하기')}
           </button>
         </div>
