@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ArrowLeft, Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Weight, TrendingDown, FileText, AlertTriangle, Pill, UserPlus, Activity } from 'lucide-react'
 import { Customer } from '@/types/customer'
 
 interface CustomerDetailProps {
@@ -101,7 +100,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
               onClick={onBack}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              ←
             </button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{customer.name}</h1>
@@ -121,14 +120,14 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
               onClick={onEdit}
               className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
             >
-              <Edit className="w-4 h-4 mr-2" />
+              <span className="mr-2">✏️</span>
               수정
             </button>
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
             >
-              <Trash2 className="w-4 h-4 mr-2" />
+              <span className="mr-2">🗑️</span>
               삭제
             </button>
           </div>
@@ -148,7 +147,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
             <div className="flex items-center justify-center mt-1">
               {weightLoss > 0 && (
                 <div className="flex items-center text-green-200">
-                  <TrendingDown className="w-4 h-4 mr-1" />
+                  <span className="mr-1">📉</span>
                   -{weightLoss.toFixed(1)}kg
                 </div>
               )}
@@ -180,7 +179,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
           {/* 개인 정보 */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-6">
-              <User className="w-5 h-5 text-blue-600" />
+              <span className="text-blue-600">👤</span>
               <h2 className="text-lg font-semibold text-gray-900">개인 정보</h2>
             </div>
 
@@ -188,7 +187,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">생년월일</label>
                 <div className="flex items-center text-gray-900">
-                  <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                  <span className="mr-2 text-gray-400">📅</span>
                   {formatDate(customer.birthDate)} (만 {age}세)
                 </div>
               </div>
@@ -220,7 +219,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
           {/* 연락처 정보 */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-6">
-              <Phone className="w-5 h-5 text-green-600" />
+              <span className="text-green-600">📞</span>
               <h2 className="text-lg font-semibold text-gray-900">연락처 정보</h2>
             </div>
 
@@ -228,7 +227,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
                 <div className="flex items-center text-gray-900">
-                  <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                  <span className="mr-2 text-gray-400">📞</span>
                   <a href={`tel:${customer.phone}`} className="hover:text-blue-600 transition-colors">
                     {customer.phone}
                   </a>
@@ -239,7 +238,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
                   <div className="flex items-center text-gray-900">
-                    <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                    <span className="mr-2 text-gray-400">📧</span>
                     <a href={`mailto:${customer.email}`} className="hover:text-blue-600 transition-colors">
                       {customer.email}
                     </a>
@@ -251,7 +250,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">주소</label>
                   <div className="flex items-start text-gray-900">
-                    <MapPin className="w-4 h-4 mr-2 text-gray-400 mt-0.5" />
+                    <span className="mr-2 text-gray-400 mt-0.5">📍</span>
                     <p>{customer.address}</p>
                   </div>
                 </div>
@@ -262,7 +261,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
           {/* 의료 정보 */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-6">
-              <FileText className="w-5 h-5 text-red-600" />
+              <span className="text-red-600">📋</span>
               <h2 className="text-lg font-semibold text-gray-900">의료 정보</h2>
             </div>
 
@@ -280,7 +279,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">알레르기</label>
                   <div className="flex items-start p-3 bg-red-50 rounded-lg">
-                    <AlertTriangle className="w-4 h-4 mr-2 text-red-500 mt-0.5" />
+                    <span className="mr-2 text-red-500 mt-0.5">⚠️</span>
                     <p className="text-red-800 whitespace-pre-wrap">{customer.allergies}</p>
                   </div>
                 </div>
@@ -290,7 +289,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">복용 약물</label>
                   <div className="flex items-start p-3 bg-blue-50 rounded-lg">
-                    <Pill className="w-4 h-4 mr-2 text-blue-500 mt-0.5" />
+                    <span className="mr-2 text-blue-500 mt-0.5">💊</span>
                     <p className="text-blue-800 whitespace-pre-wrap">{customer.medications}</p>
                   </div>
                 </div>
@@ -306,7 +305,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
           {customer.emergencyContact && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center space-x-2 mb-6">
-                <UserPlus className="w-5 h-5 text-orange-600" />
+                <span className="text-orange-600">👥</span>
                 <h2 className="text-lg font-semibold text-gray-900">비상 연락처</h2>
               </div>
 
@@ -318,7 +317,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
                   <div className="flex items-center text-gray-900">
-                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                    <span className="mr-2 text-gray-400">📞</span>
                     <a href={`tel:${customer.emergencyContact.phone}`} className="hover:text-blue-600 transition-colors">
                       {customer.emergencyContact.phone}
                     </a>
@@ -338,7 +337,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
           {/* 체중 정보 */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-6">
-              <Weight className="w-5 h-5 text-purple-600" />
+              <span className="text-purple-600">⚖️</span>
               <h2 className="text-lg font-semibold text-gray-900">체중 정보</h2>
             </div>
 
@@ -381,7 +380,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
           {/* 활동 요약 */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-6">
-              <Activity className="w-5 h-5 text-blue-600" />
+              <span className="text-blue-600">📊</span>
               <h2 className="text-lg font-semibold text-gray-900">활동 요약</h2>
             </div>
 
@@ -417,7 +416,7 @@ export default function CustomerDetail({ customer, onBack, onEdit, onDelete }: C
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-red-600" />
+                <span className="text-red-600">🗑️</span>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">고객 삭제</h3>
