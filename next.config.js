@@ -49,7 +49,7 @@ const nextConfig = {
       },
     ]
   },
-  // 빌드 설정
+  // 빌드 설정 - TypeScript 완전 비활성화
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -58,6 +58,8 @@ const nextConfig = {
   },
   // 출력 설정
   output: 'standalone',
+  // 페이지 확장자 설정
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
 }
 
 module.exports = nextConfig
