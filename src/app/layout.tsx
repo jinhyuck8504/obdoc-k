@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-// import './globals.css' // CSS import 제거
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 import { LoadingProvider } from '@/contexts/LoadingContext'
@@ -27,7 +26,6 @@ export default function RootLayout({
               padding: 0;
               margin: 0;
             }
-            
             html, body {
               max-width: 100vw;
               overflow-x: hidden;
@@ -36,32 +34,27 @@ export default function RootLayout({
               color: #333;
               background: #fff;
             }
-            
             a {
               color: inherit;
               text-decoration: none;
             }
-            
             button {
               cursor: pointer;
               border: none;
               background: none;
               font-family: inherit;
             }
-            
             input, textarea, select {
               font-family: inherit;
               border: 1px solid #ddd;
               padding: 8px 12px;
               border-radius: 4px;
             }
-            
             .container {
               max-width: 1200px;
               margin: 0 auto;
               padding: 0 16px;
             }
-            
             .flex { display: flex; }
             .flex-col { flex-direction: column; }
             .items-center { align-items: center; }
