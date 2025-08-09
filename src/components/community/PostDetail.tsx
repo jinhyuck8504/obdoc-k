@@ -1,6 +1,5 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { X, Heart, MessageCircle, Clock, Tag, Edit, Trash2, MoreHorizontal, Share2 } from 'lucide-react'
 import { CommunityPost, POST_CATEGORIES } from '@/types/community'
 import { getPost, togglePostLike, deletePost } from '@/lib/communityService'
 import { useAuth } from '@/contexts/AuthContext'
@@ -194,13 +193,13 @@ export default function PostDetail({ postId, isOpen, onClose, onEdit, onDelete }
               className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
               title="공유"
             >
-              <Share2 className="w-5 h-5" />
+              📤
             </button>
             <button
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <X className="w-5 h-5" />
+              ✕
             </button>
           </div>
         </div>
@@ -248,7 +247,7 @@ export default function PostDetail({ postId, isOpen, onClose, onEdit, onDelete }
                       )}
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
-                      <Clock className="w-3 h-3 mr-1" />
+                      <span className="mr-1">🕐</span>
                       {formatTimeAgo(post.createdAt)}
                     </div>
                   </div>
@@ -264,7 +263,7 @@ export default function PostDetail({ postId, isOpen, onClose, onEdit, onDelete }
                       }}
                       className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <MoreHorizontal className="w-5 h-5" />
+                      ⋯
                     </button>
                     
                     {showMenu && (
@@ -273,14 +272,14 @@ export default function PostDetail({ postId, isOpen, onClose, onEdit, onDelete }
                           onClick={handleEdit}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                         >
-                          <Edit className="w-4 h-4 mr-2" />
+                          <span className="mr-2">✏️</span>
                           수정
                         </button>
                         <button
                           onClick={handleDelete}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                         >
-                          <Trash2 className="w-4 h-4 mr-2" />
+                          <span className="mr-2">🗑️</span>
                           삭제
                         </button>
                       </div>
@@ -318,7 +317,7 @@ export default function PostDetail({ postId, isOpen, onClose, onEdit, onDelete }
                       key={tag}
                       className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
                     >
-                      <Tag className="w-3 h-3 mr-1" />
+                      <span className="mr-1">🏷️</span>
                       {tag}
                     </span>
                   ))}
@@ -335,12 +334,12 @@ export default function PostDetail({ postId, isOpen, onClose, onEdit, onDelete }
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
+                  <span className={post.isLiked ? '❤️' : '🤍'}></span>
                   <span className="font-medium">{post.likes}</span>
                   <span className="text-sm">좋아요</span>
                 </button>
                 <div className="flex items-center space-x-2 text-gray-600">
-                  <MessageCircle className="w-5 h-5" />
+                  <span>💬</span>
                   <span className="font-medium">{post.commentCount}</span>
                   <span className="text-sm">댓글</span>
                 </div>
