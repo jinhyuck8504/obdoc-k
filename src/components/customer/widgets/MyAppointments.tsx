@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Calendar, Clock, User, CheckCircle, AlertCircle, XCircle, Plus } from 'lucide-react'
 import { Appointment } from '@/types/appointment'
 
 interface MyAppointmentsProps {
@@ -56,13 +55,13 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-600" />
+        return <span className="text-green-600">✅</span>
       case 'cancelled':
-        return <XCircle className="w-4 h-4 text-red-600" />
+        return <span className="text-red-600">❌</span>
       case 'confirmed':
-        return <CheckCircle className="w-4 h-4 text-blue-600" />
+        return <span className="text-blue-600">✅</span>
       default:
-        return <AlertCircle className="w-4 h-4 text-yellow-600" />
+        return <span className="text-yellow-600">⚠️</span>
     }
   }
 
@@ -102,12 +101,12 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
   const getTimeUntilAppointment = (date: string, time: string) => {
     const appointmentDateTime = new Date(`${date}T${time}`)
     const diffMs = appointmentDateTime.getTime() - now.getTime()
-    
+
     if (diffMs < 0) return null
-    
+
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-    
+
     if (diffHours < 1) {
       return `${diffMinutes}분 후`
     } else if (diffHours < 24) {
@@ -129,7 +128,7 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
             onClick={onRequestAppointment}
             className="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <span className="mr-1">➕</span>
             예약 요청
           </button>
         )}
@@ -139,21 +138,19 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
       <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
         <button
           onClick={() => setSelectedTab('upcoming')}
-          className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            selectedTab === 'upcoming'
+          className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${selectedTab === 'upcoming'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
-          }`}
+            }`}
         >
           예정된 예약 ({upcomingAppointments.length})
         </button>
         <button
           onClick={() => setSelectedTab('past')}
-          className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            selectedTab === 'past'
+          className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${selectedTab === 'past'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
-          }`}
+            }`}
         >
           지난 예약 ({pastAppointments.length})
         </button>
@@ -162,13 +159,13 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
       {/* 예약 목록 */}
       {displayAppointments.length === 0 ? (
         <div className="text-center py-12">
-          <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <span className="text-6xl mb-4 block">📅</span>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             {selectedTab === 'upcoming' ? '예정된 예약이 없습니다' : '지난 예약이 없습니다'}
           </h3>
           <p className="text-gray-600 mb-6">
-            {selectedTab === 'upcoming' 
-              ? '새로운 예약을 요청해보세요' 
+            {selectedTab === 'upcoming'
+              ? '새로운 예약을 요청해보세요'
               : '아직 완료된 예약이 없습니다'
             }
           </p>
@@ -177,7 +174,7 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
               onClick={onRequestAppointment}
               className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <span className="mr-2">➕</span>
               예약 요청하기
             </button>
           )}
@@ -191,21 +188,20 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
             return (
               <div
                 key={appointment.id}
-                className={`p-4 rounded-lg border transition-all hover:shadow-sm ${
-                  appointmentToday ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
-                }`}
+                className={`p-4 rounded-lg border transition-all hover:shadow-sm ${appointmentToday ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
+                  }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-500">📅</span>
                         <span className={`font-medium ${appointmentToday ? 'text-blue-700' : 'text-gray-900'}`}>
                           {formatDate(appointment.date)}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-500">🕐</span>
                         <span className="text-gray-700">
                           {formatTime(appointment.time)} ({appointment.duration}분)
                         </span>
@@ -216,14 +212,12 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
                       <span className="inline-flex px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
                         {getTypeText(appointment.type)}
                       </span>
-                      
+
                       <div className={`inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(appointment.status)}`}>
                         {getStatusIcon(appointment.status)}
                         <span>{getStatusText(appointment.status)}</span>
                       </div>
                     </div>
-
-
 
                     {appointment.notes && (
                       <div className="text-sm text-gray-600 bg-white p-2 rounded border mt-2">
@@ -233,7 +227,7 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
 
                     {timeUntil && (
                       <div className="mt-3 inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-                        <Clock className="w-3 h-3 mr-1" />
+                        <span className="mr-1">🕐</span>
                         {timeUntil}
                       </div>
                     )}
@@ -242,7 +236,7 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
                   {/* 의사 정보 (간단히) */}
                   <div className="text-right">
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <User className="w-4 h-4" />
+                      <span>👨‍⚕️</span>
                       <span>담당의</span>
                     </div>
                   </div>
@@ -291,7 +285,7 @@ export default function MyAppointments({ appointments, onRequestAppointment }: M
       {selectedTab === 'upcoming' && upcomingAppointments.length > 0 && (
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-blue-600" />
+            <span className="text-blue-600">⚠️</span>
             <div>
               <p className="text-sm font-medium text-blue-800">
                 다음 예약: {formatDate(upcomingAppointments[0].date)} {formatTime(upcomingAppointments[0].time)}
