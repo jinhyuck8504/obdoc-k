@@ -1,7 +1,7 @@
 [build]
-  command = "cd obdoc-mvp && npm install && npm run build"
-  publish = "obdoc-mvp/out"
-  base = "."
+  command = "npm install && npm run build"
+  publish = "out"
+  base = "obdoc-k"
 
 [build.environment]
   NODE_VERSION = "18"
