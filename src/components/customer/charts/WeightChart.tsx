@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { WeightRecord } from '@/types/health'
-import { TrendingDown, TrendingUp, Target } from 'lucide-react'
+// Removed lucide-react dependency - using emoji icons instead
 
 interface WeightChartProps {
   records: WeightRecord[]
@@ -24,7 +24,7 @@ export default function WeightChart({
       <div className={`flex items-center justify-center bg-gray-50 rounded-lg ${className}`} style={{ height }}>
         <div className="text-center">
           <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
-            <TrendingDown className="w-8 h-8 text-gray-400" />
+            <span className="text-2xl">📉</span>
           </div>
           <p className="text-gray-500">체중 기록이 없습니다</p>
           <p className="text-sm text-gray-400 mt-1">첫 번째 기록을 추가해보세요</p>
@@ -85,11 +85,11 @@ export default function WeightChart({
         <div className="text-right">
           <div className="flex items-center space-x-2">
             {latestTrend < -0.1 ? (
-              <TrendingDown className="w-5 h-5 text-green-600" />
+              <span className="text-green-600">📉</span>
             ) : latestTrend > 0.1 ? (
-              <TrendingUp className="w-5 h-5 text-red-600" />
+              <span className="text-red-600">📈</span>
             ) : (
-              <div className="w-5 h-5 bg-gray-400 rounded-full" />
+              <span className="text-gray-600">➖</span>
             )}
             <span className={`text-sm font-medium ${
               latestTrend < -0.1 ? 'text-green-600' : 
