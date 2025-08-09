@@ -1,6 +1,5 @@
 'use client'
 import React, { useState } from 'react'
-import { X, Save, Image, Tag, AlertCircle } from 'lucide-react'
 import { PostFormData, PostCategory, POST_CATEGORIES, POPULAR_TAGS } from '@/types/community'
 
 interface PostFormProps {
@@ -8,14 +7,6 @@ interface PostFormProps {
   onClose: () => void
   onSave: (data: PostFormData) => void
   initialData?: Partial<PostFormData>
-}
-
-interface FormErrors {
-  title?: string
-  content?: string
-  category?: string
-  tags?: string
-  image?: string
 }
 
 export default function PostForm({ isOpen, onClose, onSave, initialData }: PostFormProps) {
@@ -26,13 +17,13 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
     tags: initialData?.tags || [],
     image: initialData?.image
   })
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tagInput, setTagInput] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
+    const newErrors: Record<string, string> = {}
 
     if (!formData.title.trim()) {
       newErrors.title = '제목을 입력해주세요'
@@ -85,8 +76,12 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
   const handleInputChange = (field: keyof PostFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // 에러 메시지 제거
-    if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
     }
   }
 
@@ -154,7 +149,7 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
               onClick={onClose}
               className="p-1 text-gray-400 hover:text-gray-600 rounded"
             >
-              <X className="w-5 h-5" />
+              ✕
             </button>
           </div>
         </div>
@@ -241,7 +236,7 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                  <Image className="w-4 h-4 mr-2" />
+                  <span className="mr-2">🖼️</span>
                   이미지 선택
                   <input
                     type="file"
@@ -265,7 +260,7 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
                     onClick={removeImage}
                     className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    ✕
                   </button>
                 </div>
               )}
@@ -305,14 +300,14 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
                       key={tag}
                       className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
                     >
-                      <Tag className="w-3 h-3 mr-1" />
+                      <span className="mr-1">🏷️</span>
                       {tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
                         className="ml-2 text-blue-600 hover:text-blue-800"
                       >
-                        <X className="w-3 h-3" />
+                        ✕
                       </button>
                     </span>
                   ))}
@@ -348,7 +343,7 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
           {/* 작성 가이드 */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start space-x-2">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <span className="text-blue-600 mt-0.5 flex-shrink-0">ℹ️</span>
               <div className="text-sm text-blue-800">
                 <p className="font-medium mb-1">작성 가이드</p>
                 <ul className="space-y-1 text-blue-700">
@@ -375,7 +370,7 @@ export default function PostForm({ isOpen, onClose, onSave, initialData }: PostF
               disabled={isSubmitting}
               className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors flex items-center"
             >
-              <Save className="w-4 h-4 mr-2" />
+              <span className="mr-2">💾</span>
               {isSubmitting ? '저장 중...' : initialData ? '수정하기' : '게시하기'}
             </button>
           </div>
