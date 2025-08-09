@@ -1,6 +1,5 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Heart, MessageCircle, Eye, Clock, Tag, Search, Filter, Plus, Edit, Trash2, MoreHorizontal, Flag } from 'lucide-react'
 import { CommunityPost, PostFilters, PostCategory, POST_CATEGORIES, PostFormData } from '@/types/community'
 import { getPosts, togglePostLike, getPopularTags, deletePost, updatePost } from '@/lib/communityService'
 import { useAuth } from '@/contexts/AuthContext'
@@ -203,7 +202,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
           onClick={onCreatePost}
           className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <span className="mr-2">➕</span>
           글쓰기
         </button>
       </div>
@@ -212,7 +211,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <form onSubmit={handleSearch} className="flex gap-2 mb-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
             <input
               type="text"
               value={searchTerm}
@@ -232,7 +231,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
             onClick={() => setShowFilters(!showFilters)}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
           >
-            <Filter className="w-4 h-4 mr-2" />
+            <span className="mr-2">🔽</span>
             필터
           </button>
         </form>
@@ -307,7 +306,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    <Tag className="w-3 h-3 mr-1" />
+                    <span className="mr-1">🏷️</span>
                     {tag}
                   </button>
                 ))}
@@ -321,14 +320,14 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
       <div className="space-y-4">
         {posts.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <span className="text-4xl mb-4 block">💬</span>
             <h3 className="text-lg font-medium text-gray-900 mb-2">게시글이 없습니다</h3>
             <p className="text-gray-600 mb-4">첫 번째 게시글을 작성해보세요!</p>
             <button
               onClick={onCreatePost}
               className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <span className="mr-2">➕</span>
               글쓰기
             </button>
           </div>
@@ -359,7 +358,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
                       )}
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
-                      <Clock className="w-3 h-3 mr-1" />
+                      <span className="mr-1">🕐</span>
                       {formatTimeAgo(post.createdAt)}
                     </div>
                   </div>
@@ -373,7 +372,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
                       }}
                       className="p-1 text-gray-400 hover:text-gray-600 rounded"
                     >
-                      <MoreHorizontal className="w-4 h-4" />
+                      ⋯
                     </button>
                     
                     {showMenuPostId === post.id && (
@@ -384,14 +383,14 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
                               onClick={(e) => handleEditClick(post, e)}
                               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                             >
-                              <Edit className="w-4 h-4 mr-2" />
+                              <span className="mr-2">✏️</span>
                               수정
                             </button>
                             <button
                               onClick={(e) => handleDeletePost(post.id, e)}
                               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                             >
-                              <Trash2 className="w-4 h-4 mr-2" />
+                              <span className="mr-2">🗑️</span>
                               삭제
                             </button>
                           </>
@@ -400,7 +399,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
                             onClick={(e) => handleReportClick(post, e)}
                             className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                           >
-                            <Flag className="w-4 h-4 mr-2" />
+                            <span className="mr-2">🚩</span>
                             신고
                           </button>
                         )}
@@ -428,7 +427,7 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
                         key={tag}
                         className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
                       >
-                        <Tag className="w-3 h-3 mr-1" />
+                        <span className="mr-1">🏷️</span>
                         {tag}
                       </span>
                     ))}
@@ -449,11 +448,11 @@ export default function PostList({ onPostClick, onCreatePost, onEditPost, refres
                           : 'text-gray-500 hover:text-red-600'
                       }`}
                     >
-                      <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                      <span className={post.isLiked ? '❤️' : '🤍'}></span>
                       <span>{post.likes}</span>
                     </button>
                     <div className="flex items-center space-x-1 text-sm text-gray-500">
-                      <MessageCircle className="w-4 h-4" />
+                      <span>💬</span>
                       <span>{post.commentCount}</span>
                     </div>
                   </div>
