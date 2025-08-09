@@ -7,7 +7,6 @@ import { SafeTimeDisplay } from '@/components/hydration'
 import HealthReport from './widgets/HealthReport'
 import MyAppointments from './widgets/MyAppointments'
 import CommunityShortcut from './widgets/CommunityShortcut'
-import { User, Target, TrendingDown, Award, Bell } from 'lucide-react'
 import { Appointment } from '@/types/appointment'
 import { HealthMetrics } from '@/types/health'
 
@@ -207,7 +206,7 @@ export default function CustomerDashboard() {
               <p className="text-blue-100 text-sm font-medium">현재 체중</p>
               <p className="text-3xl font-bold">{healthMetrics.currentWeight}kg</p>
             </div>
-            <User className="h-8 w-8 text-blue-200" />
+            <span className="text-2xl">👤</span>
           </div>
         </div>
 
@@ -217,7 +216,7 @@ export default function CustomerDashboard() {
               <p className="text-green-100 text-sm font-medium">감량한 체중</p>
               <p className="text-3xl font-bold">{healthMetrics.weightLoss.toFixed(1)}kg</p>
             </div>
-            <TrendingDown className="h-8 w-8 text-green-200" />
+            <span className="text-2xl">📉</span>
           </div>
         </div>
 
@@ -227,7 +226,7 @@ export default function CustomerDashboard() {
               <p className="text-purple-100 text-sm font-medium">목표 달성률</p>
               <p className="text-3xl font-bold">{healthMetrics.progress.toFixed(0)}%</p>
             </div>
-            <Award className="h-8 w-8 text-purple-200" />
+            <span className="text-2xl">🏆</span>
           </div>
         </div>
 
@@ -239,7 +238,7 @@ export default function CustomerDashboard() {
                 {healthMetrics.remainingWeight > 0 ? `${healthMetrics.remainingWeight.toFixed(1)}kg` : '달성!'}
               </p>
             </div>
-            <Target className="h-8 w-8 text-orange-200" />
+            <span className="text-2xl">🎯</span>
           </div>
         </div>
       </div>
@@ -256,7 +255,7 @@ export default function CustomerDashboard() {
       {/* 이번 주 목표 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
         <div className="flex items-center space-x-2 mb-4">
-          <Target className="w-5 h-5 text-green-600" />
+          <span className="text-green-600">🎯</span>
           <h3 className="text-lg font-semibold text-gray-900">이번 주 목표</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -302,7 +301,7 @@ export default function CustomerDashboard() {
       {appointments.some(apt => (apt.status === 'confirmed' || apt.status === 'scheduled') && new Date(`${apt.date}T${apt.time}`) > new Date()) && (
         <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center space-x-3">
-            <Bell className="w-6 h-6 text-blue-600" />
+            <span className="text-2xl text-blue-600">🔔</span>
             <div>
               <h3 className="text-lg font-semibold text-blue-900">다가오는 예약</h3>
               <p className="text-blue-800 mt-1">
