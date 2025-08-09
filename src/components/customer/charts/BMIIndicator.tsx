@@ -1,7 +1,6 @@
 'use client'
-
 import React from 'react'
-// Removed lucide-react dependency - using emoji icons instead
+import { Activity, Target, TrendingDown, TrendingUp } from 'lucide-react'
 
 interface BMIIndicatorProps {
   currentBMI: number
@@ -9,229 +8,152 @@ interface BMIIndicatorProps {
   height: number
   currentWeight: number
   targetWeight: number
-  className?: string
 }
 
-export default function BMIIndicator({
-  currentBMI,
-  targetBMI,
-  height,
-  currentWeight,
-  targetWeight,
-  className = ''
+export default function BMIIndicator({ 
+  currentBMI, 
+  targetBMI, 
+  height, 
+  currentWeight, 
+  targetWeight 
 }: BMIIndicatorProps) {
-  
   const getBMICategory = (bmi: number) => {
     if (bmi < 18.5) return { category: '저체중', color: 'text-blue-600', bgColor: 'bg-blue-100' }
     if (bmi < 23) return { category: '정상', color: 'text-green-600', bgColor: 'bg-green-100' }
     if (bmi < 25) return { category: '과체중', color: 'text-yellow-600', bgColor: 'bg-yellow-100' }
-    if (bmi < 30) return { category: '비만', color: 'text-orange-600', bgColor: 'bg-orange-100' }
-    return { category: '고도비만', color: 'text-red-600', bgColor: 'bg-red-100' }
+    if (bmi < 30) return { category: '비만 1단계', color: 'text-orange-600', bgColor: 'bg-orange-100' }
+    return { category: '비만 2단계', color: 'text-red-600', bgColor: 'bg-red-100' }
   }
 
   const currentCategory = getBMICategory(currentBMI)
   const targetCategory = getBMICategory(targetBMI)
 
-  // BMI 스케일 (15-35 범위)
-  const minBMI = 15
-  const maxBMI = 35
-  const bmiRange = maxBMI - minBMI
-
-  // 현재 BMI와 목표 BMI의 위치 계산 (퍼센트)
-  const currentPosition = ((currentBMI - minBMI) / bmiRange) * 100
-  const targetPosition = ((targetBMI - minBMI) / bmiRange) * 100
-
-  // BMI 구간별 색상과 위치
-  const bmiRanges = [
-    { min: 15, max: 18.5, color: '#3B82F6', label: '저체중' },
-    { min: 18.5, max: 23, color: '#10B981', label: '정상' },
-    { min: 23, max: 25, color: '#F59E0B', label: '과체중' },
-    { min: 25, max: 30, color: '#F97316', label: '비만' },
-    { min: 30, max: 35, color: '#EF4444', label: '고도비만' }
-  ]
+  const bmiDifference = currentBMI - targetBMI
+  const isImproving = bmiDifference > 0
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">BMI 지수</h3>
-          <p className="text-sm text-gray-600">체질량지수 (Body Mass Index)</p>
-        </div>
-        <span className="text-2xl">📏</span>
-      </div>
-
-      {/* 현재 BMI와 목표 BMI 카드 */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className={`p-4 rounded-lg ${currentCategory.bgColor}`}>
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-700 mb-1">현재 BMI</p>
-            <p className={`text-2xl font-bold ${currentCategory.color}`}>
-              {currentBMI.toFixed(1)}
-            </p>
-            <p className={`text-sm font-medium ${currentCategory.color}`}>
-              {currentCategory.category}
-            </p>
-            <p className="text-xs text-gray-600 mt-1">
-              {currentWeight}kg / {height}cm
-            </p>
-          </div>
+    <div className="space-y-6">
+      {/* 현재 BMI vs 목표 BMI */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+          <Activity className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+          <p className="text-3xl font-bold text-blue-600 mb-2">{currentBMI.toFixed(1)}</p>
+          <p className="text-sm text-blue-700 mb-2">현재 BMI</p>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${currentCategory.bgColor} ${currentCategory.color}`}>
+            {currentCategory.category}
+          </span>
         </div>
 
-        <div className={`p-4 rounded-lg ${targetCategory.bgColor}`}>
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-700 mb-1">목표 BMI</p>
-            <p className={`text-2xl font-bold ${targetCategory.color}`}>
-              {targetBMI.toFixed(1)}
-            </p>
-            <p className={`text-sm font-medium ${targetCategory.color}`}>
-              {targetCategory.category}
-            </p>
-            <p className="text-xs text-gray-600 mt-1">
-              {targetWeight}kg / {height}cm
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* BMI 스케일 바 */}
-      <div className="mb-6">
-        <div className="flex justify-between text-xs text-gray-500 mb-2">
-          <span>저체중</span>
-          <span>정상</span>
-          <span>과체중</span>
-          <span>비만</span>
-          <span>고도비만</span>
-        </div>
-        
-        <div className="relative h-8 rounded-lg overflow-hidden">
-          {/* 배경 그라데이션 */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(to right, 
-                #3B82F6 0%, #3B82F6 ${((18.5 - minBMI) / bmiRange) * 100}%,
-                #10B981 ${((18.5 - minBMI) / bmiRange) * 100}%, #10B981 ${((23 - minBMI) / bmiRange) * 100}%,
-                #F59E0B ${((23 - minBMI) / bmiRange) * 100}%, #F59E0B ${((25 - minBMI) / bmiRange) * 100}%,
-                #F97316 ${((25 - minBMI) / bmiRange) * 100}%, #F97316 ${((30 - minBMI) / bmiRange) * 100}%,
-                #EF4444 ${((30 - minBMI) / bmiRange) * 100}%, #EF4444 100%
-              )`
-            }}
-          />
-
-          {/* 현재 BMI 마커 */}
-          <div 
-            className="absolute top-0 bottom-0 w-1 bg-gray-800 shadow-lg"
-            style={{ left: `${Math.max(0, Math.min(100, currentPosition))}%` }}
-          >
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
-              <div className="bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                현재: {currentBMI.toFixed(1)}
-              </div>
-            </div>
-          </div>
-
-          {/* 목표 BMI 마커 */}
-          <div 
-            className="absolute top-0 bottom-0 w-1 bg-green-600 shadow-lg"
-            style={{ left: `${Math.max(0, Math.min(100, targetPosition))}%` }}
-          >
-            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-              <div className="bg-green-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                목표: {targetBMI.toFixed(1)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 스케일 숫자 */}
-        <div className="flex justify-between text-xs text-gray-400 mt-2">
-          <span>15</span>
-          <span>18.5</span>
-          <span>23</span>
-          <span>25</span>
-          <span>30</span>
-          <span>35</span>
+        <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
+          <Target className="w-8 h-8 text-green-600 mx-auto mb-3" />
+          <p className="text-3xl font-bold text-green-600 mb-2">{targetBMI.toFixed(1)}</p>
+          <p className="text-sm text-green-700 mb-2">목표 BMI</p>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${targetCategory.bgColor} ${targetCategory.color}`}>
+            {targetCategory.category}
+          </span>
         </div>
       </div>
 
       {/* BMI 변화 정보 */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <span className="text-xl block mb-1">📉</span>
-          <p className="text-sm text-gray-600">BMI 변화</p>
-          <p className="font-bold text-gray-900">
-            {(currentBMI - targetBMI).toFixed(1)}
-          </p>
+      <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-sm font-medium text-gray-900">BMI 변화</h4>
+          <div className="flex items-center space-x-2">
+            {isImproving ? (
+              <TrendingDown className="w-4 h-4 text-green-600" />
+            ) : (
+              <TrendingUp className="w-4 h-4 text-red-600" />
+            )}
+            <span className={`text-sm font-medium ${isImproving ? 'text-green-600' : 'text-red-600'}`}>
+              {Math.abs(bmiDifference).toFixed(1)} {isImproving ? '감소 필요' : '증가 필요'}
+            </span>
+          </div>
         </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <span className="text-xl block mb-1">🎯</span>
-          <p className="text-sm text-gray-600">목표까지</p>
-          <p className="font-bold text-gray-900">
-            {Math.abs(currentBMI - targetBMI).toFixed(1)}
-          </p>
-        </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <span className="text-xl block mb-1">📏</span>
-          <p className="text-sm text-gray-600">건강 상태</p>
-          <p className={`font-bold ${currentCategory.color}`}>
-            {currentCategory.category}
-          </p>
+        
+        <div className="text-sm text-gray-600 space-y-1">
+          <p>현재 체중: {currentWeight}kg</p>
+          <p>목표 체중: {targetWeight}kg</p>
+          <p>키: {height}cm</p>
         </div>
       </div>
 
-      {/* BMI 가이드 */}
-      <div className="bg-blue-50 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-blue-900 mb-2">BMI 가이드</h4>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {bmiRanges.map((range, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <div 
-                className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: range.color }}
-              />
-              <span className="text-blue-800">
-                {range.label}: {range.min}-{range.max === 35 ? '35+' : range.max}
-              </span>
+      {/* BMI 범위 차트 */}
+      <div className="p-4 bg-white border border-gray-200 rounded-lg">
+        <h4 className="text-sm font-medium text-gray-900 mb-4">BMI 범위</h4>
+        
+        <div className="relative">
+          {/* BMI 범위 바 */}
+          <div className="flex h-8 rounded-lg overflow-hidden">
+            <div className="bg-blue-200 flex-1 flex items-center justify-center text-xs text-blue-800">
+              저체중<br/>~18.5
             </div>
-          ))}
+            <div className="bg-green-200 flex-1 flex items-center justify-center text-xs text-green-800">
+              정상<br/>18.5-23
+            </div>
+            <div className="bg-yellow-200 flex-1 flex items-center justify-center text-xs text-yellow-800">
+              과체중<br/>23-25
+            </div>
+            <div className="bg-orange-200 flex-1 flex items-center justify-center text-xs text-orange-800">
+              비만1<br/>25-30
+            </div>
+            <div className="bg-red-200 flex-1 flex items-center justify-center text-xs text-red-800">
+              비만2<br/>30+
+            </div>
+          </div>
+          
+          {/* 현재 BMI 위치 표시 */}
+          <div 
+            className="absolute top-0 w-1 h-8 bg-blue-600"
+            style={{ 
+              left: `${Math.min(95, Math.max(5, (currentBMI / 35) * 100))}%`,
+              transform: 'translateX(-50%)'
+            }}
+          >
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-medium text-blue-600">
+              현재
+            </div>
+          </div>
+          
+          {/* 목표 BMI 위치 표시 */}
+          <div 
+            className="absolute top-0 w-1 h-8 bg-green-600"
+            style={{ 
+              left: `${Math.min(95, Math.max(5, (targetBMI / 35) * 100))}%`,
+              transform: 'translateX(-50%)'
+            }}
+          >
+            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-medium text-green-600">
+              목표
+            </div>
+          </div>
         </div>
-        <p className="text-xs text-blue-700 mt-2">
-          * 아시아인 기준 (WHO 아시아-태평양 가이드라인)
-        </p>
       </div>
 
-      {/* 건강 팁 */}
-      {currentBMI > 23 && (
-        <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-          <div className="flex items-start space-x-2">
-            <span className="text-yellow-600 mt-0.5">🎯</span>
-            <div>
-              <h4 className="text-sm font-semibold text-yellow-800">건강 팁</h4>
-              <p className="text-xs text-yellow-700 mt-1">
-                {currentBMI > 25 
-                  ? '규칙적인 운동과 균형 잡힌 식단으로 건강한 체중 관리를 시작해보세요.'
-                  : '조금만 더 노력하면 정상 체중에 도달할 수 있어요. 꾸준히 관리해보세요!'
-                }
-              </p>
-            </div>
-          </div>
+      {/* BMI 개선 팁 */}
+      <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+        <h4 className="text-sm font-medium text-gray-900 mb-2">💡 BMI 개선 팁</h4>
+        <div className="text-sm text-gray-700 space-y-1">
+          {currentBMI > 25 ? (
+            <>
+              <p>• 규칙적인 유산소 운동을 통해 체중을 감량하세요</p>
+              <p>• 균형 잡힌 식단으로 칼로리 섭취를 조절하세요</p>
+              <p>• 충분한 수분 섭취와 양질의 수면을 유지하세요</p>
+            </>
+          ) : currentBMI < 18.5 ? (
+            <>
+              <p>• 영양가 있는 음식으로 건강한 체중 증가를 목표하세요</p>
+              <p>• 근력 운동을 통해 근육량을 늘리세요</p>
+              <p>• 전문가와 상담하여 적절한 체중 증가 계획을 세우세요</p>
+            </>
+          ) : (
+            <>
+              <p>• 현재 건강한 BMI 범위를 유지하고 계십니다</p>
+              <p>• 꾸준한 운동과 균형 잡힌 식단으로 현재 상태를 유지하세요</p>
+              <p>• 정기적인 건강 검진을 받으시기 바랍니다</p>
+            </>
+          )}
         </div>
-      )}
-
-      {currentBMI <= 23 && currentBMI >= 18.5 && (
-        <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-          <div className="flex items-start space-x-2">
-            <span className="text-green-600 mt-0.5">📏</span>
-            <div>
-              <h4 className="text-sm font-semibold text-green-800">축하합니다! 🎉</h4>
-              <p className="text-xs text-green-700 mt-1">
-                건강한 BMI 범위에 있습니다. 현재 상태를 유지하며 꾸준한 관리를 계속해보세요.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
