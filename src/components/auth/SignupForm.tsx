@@ -326,14 +326,8 @@ export default function SignupForm() {
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
-  // disabled 조건을 명확하게 boolean으로 계산
-  const isButtonDisabled = Boolean(
-    isSubmitting || 
-    (selectedRole === 'customer' && 
-     hospitalCode && 
-     hospitalCode.length >= 8 && 
-     !codeVerified)
-  )
+  // disabled 조건을 명확한 boolean으로 계산
+  const isButtonDisabled = isSubmitting || (selectedRole === 'customer' && hospitalCode && hospitalCode.length >= 8 && !codeVerified)
 
   return (
     <div className="w-full max-w-md mx-auto">
