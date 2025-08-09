@@ -1,22 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Netlify 배포를 위한 설정
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
+
   // 성능 최적화 설정
   experimental: {
     // 메모리 사용량 최적화
     optimizePackageImports: ['lucide-react', 'date-fns'],
-  },
-
-  // 서버 외부 패키지 설정 (experimental에서 이동)
-  serverExternalPackages: ['@supabase/supabase-js'],
-
-  // 이미지 최적화
-  images: {
-    formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30일
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // 압축 설정
@@ -59,17 +53,6 @@ const nextConfig = {
       config.optimization.sideEffects = false
     }
 
-    // 번들 크기 분석 (개발 환경에서만)
-    if (dev && process.env.ANALYZE === 'true') {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-      config.plugins.push(
-        new BundleAnalyzerPlugin({
-          analyzerMode: 'server',
-          openAnalyzer: true,
-        })
-      )
-    }
-
     return config
   },
 
@@ -90,15 +73,6 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
-          },
-        ],
-      },
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=300, s-maxage=300',
           },
         ],
       },
@@ -147,21 +121,11 @@ const nextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
-
-  // 출력 설정
-  output: 'standalone',
   
   // 환경 변수
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
-
-  // PWA 설정 (필요시)
-  // pwa: {
-  //   dest: 'public',
-  //   register: true,
-  //   skipWaiting: true,
-  // },
 }
 
 module.exports = nextConfig
