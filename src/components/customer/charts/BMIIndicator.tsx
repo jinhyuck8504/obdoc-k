@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Activity, Target, TrendingDown } from 'lucide-react'
+// Removed lucide-react dependency - using emoji icons instead
 
 interface BMIIndicatorProps {
   currentBMI: number
@@ -58,7 +58,7 @@ export default function BMIIndicator({
           <h3 className="text-lg font-semibold text-gray-900">BMI 지수</h3>
           <p className="text-sm text-gray-600">체질량지수 (Body Mass Index)</p>
         </div>
-        <Activity className="w-6 h-6 text-blue-600" />
+        <span className="text-2xl">📏</span>
       </div>
 
       {/* 현재 BMI와 목표 BMI 카드 */}
@@ -158,21 +158,21 @@ export default function BMIIndicator({
       {/* BMI 변화 정보 */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <TrendingDown className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+          <span className="text-xl block mb-1">📉</span>
           <p className="text-sm text-gray-600">BMI 변화</p>
           <p className="font-bold text-gray-900">
             {(currentBMI - targetBMI).toFixed(1)}
           </p>
         </div>
         <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <Target className="w-5 h-5 text-green-600 mx-auto mb-1" />
+          <span className="text-xl block mb-1">🎯</span>
           <p className="text-sm text-gray-600">목표까지</p>
           <p className="font-bold text-gray-900">
             {Math.abs(currentBMI - targetBMI).toFixed(1)}
           </p>
         </div>
         <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <Activity className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+          <span className="text-xl block mb-1">📏</span>
           <p className="text-sm text-gray-600">건강 상태</p>
           <p className={`font-bold ${currentCategory.color}`}>
             {currentCategory.category}
@@ -205,7 +205,7 @@ export default function BMIIndicator({
       {currentBMI > 23 && (
         <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
           <div className="flex items-start space-x-2">
-            <Target className="w-5 h-5 text-yellow-600 mt-0.5" />
+            <span className="text-yellow-600 mt-0.5">🎯</span>
             <div>
               <h4 className="text-sm font-semibold text-yellow-800">건강 팁</h4>
               <p className="text-xs text-yellow-700 mt-1">
@@ -222,7 +222,7 @@ export default function BMIIndicator({
       {currentBMI <= 23 && currentBMI >= 18.5 && (
         <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
           <div className="flex items-start space-x-2">
-            <Activity className="w-5 h-5 text-green-600 mt-0.5" />
+            <span className="text-green-600 mt-0.5">📏</span>
             <div>
               <h4 className="text-sm font-semibold text-green-800">축하합니다! 🎉</h4>
               <p className="text-xs text-green-700 mt-1">
