@@ -1,6 +1,5 @@
 'use client'
 import React, { useState } from 'react'
-import { X, AlertTriangle, Flag, MessageSquare, Shield, Info } from 'lucide-react'
 import { ReportFormData } from '@/types/moderation'
 import { moderationService } from '@/lib/moderationService'
 import ClientOnly from '@/components/hydration/ClientOnly'
@@ -33,11 +32,11 @@ export default function ReportModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const reasonOptions = [
-    { value: 'spam', label: '스팸/광고', icon: Flag, description: '광고성 내용이나 반복적인 스팸' },
-    { value: 'inappropriate', label: '부적절한 내용', icon: AlertTriangle, description: '건강과 관련 없거나 부적절한 내용' },
-    { value: 'harassment', label: '괴롭힘/욕설', icon: MessageSquare, description: '다른 사용자에 대한 괴롭힘이나 욕설' },
-    { value: 'misinformation', label: '허위 정보', icon: Info, description: '의학적으로 검증되지 않은 잘못된 정보' },
-    { value: 'other', label: '기타', icon: Shield, description: '위에 해당하지 않는 기타 사유' }
+    { value: 'spam', label: '스팸/광고', icon: '🚩', description: '광고성 내용이나 반복적인 스팸' },
+    { value: 'inappropriate', label: '부적절한 내용', icon: '⚠️', description: '건강과 관련 없거나 부적절한 내용' },
+    { value: 'harassment', label: '괴롭힘/욕설', icon: '💬', description: '다른 사용자에 대한 괴롭힘이나 욕설' },
+    { value: 'misinformation', label: '허위 정보', icon: 'ℹ️', description: '의학적으로 검증되지 않은 잘못된 정보' },
+    { value: 'other', label: '기타', icon: '🛡️', description: '위에 해당하지 않는 기타 사유' }
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,7 +69,7 @@ export default function ReportModal({
         {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <span className="text-red-600">⚠️</span>
             <h2 className="text-lg font-semibold text-gray-900">
               {targetType === 'post' ? '게시글' : '댓글'} 신고
             </h2>
@@ -79,7 +78,7 @@ export default function ReportModal({
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <X className="w-5 h-5" />
+            ✕
           </button>
         </div>
 
@@ -98,35 +97,32 @@ export default function ReportModal({
           <div className="mb-6">
             <h3 className="text-sm font-medium text-gray-700 mb-3">신고 사유</h3>
             <div className="space-y-2">
-              {reasonOptions.map((option) => {
-                const IconComponent = option.icon
-                return (
-                  <label
-                    key={option.value}
-                    className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      formData.reason === option.value
-                        ? 'border-red-300 bg-red-50'
-                        : 'border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="reason"
-                      value={option.value}
-                      checked={formData.reason === option.value}
-                      onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value as any }))}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <IconComponent className="w-4 h-4 text-gray-600" />
-                        <span className="font-medium text-gray-900">{option.label}</span>
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">{option.description}</p>
+              {reasonOptions.map((option) => (
+                <label
+                  key={option.value}
+                  className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    formData.reason === option.value
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="reason"
+                    value={option.value}
+                    checked={formData.reason === option.value}
+                    onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value as any }))}
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-gray-600">{option.icon}</span>
+                      <span className="font-medium text-gray-900">{option.label}</span>
                     </div>
-                  </label>
-                )
-              })}
+                    <p className="text-xs text-gray-600 mt-1">{option.description}</p>
+                  </div>
+                </label>
+              ))}
             </div>
           </div>
 
@@ -147,7 +143,7 @@ export default function ReportModal({
           {/* 안내 메시지 */}
           <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-start space-x-2">
-              <Info className="w-4 h-4 text-blue-600 mt-0.5" />
+              <span className="text-blue-600 mt-0.5">ℹ️</span>
               <div className="text-sm text-blue-800">
                 <p className="font-medium mb-1">신고 처리 안내</p>
                 <ul className="text-xs space-y-1">
@@ -181,7 +177,7 @@ export default function ReportModal({
                 </>
               ) : (
                 <>
-                  <Flag className="w-4 h-4" />
+                  <span>🚩</span>
                   <span>신고하기</span>
                 </>
               )}
