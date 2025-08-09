@@ -14,25 +14,16 @@ const dummyCustomers: Customer[] = [
     name: '김고객',
     email: 'patient1@example.com',
     phone: '010-1234-5678',
-    birthDate: '1990-05-15',
+    dateOfBirth: '1990-05-15',
     gender: 'female',
     height: 165,
     initialWeight: 70,
     currentWeight: 65,
     targetWeight: 60,
     address: '서울시 강남구 테헤란로 123',
-    medicalHistory: '고혈압 가족력',
-    allergies: '견과류',
-    medications: '없음',
-    emergencyContact: {
-      name: '김가족',
-      phone: '010-9999-1111',
-      relationship: '배우자'
-    },
     status: 'active',
     startDate: '2024-01-15',
     lastVisit: '2024-01-20',
-    doctorId: 'doctor1',
     createdAt: '2024-01-15T09:00:00Z',
     updatedAt: '2024-01-20T14:30:00Z'
   },
@@ -41,25 +32,16 @@ const dummyCustomers: Customer[] = [
     name: '이고객',
     email: 'patient2@example.com',
     phone: '010-9876-5432',
-    birthDate: '1985-08-22',
+    dateOfBirth: '1985-08-22',
     gender: 'male',
     height: 175,
     initialWeight: 85,
     currentWeight: 78,
     targetWeight: 70,
     address: '서울시 서초구 강남대로 456',
-    medicalHistory: '당뇨병 초기',
-    allergies: '없음',
-    medications: '메트포르민',
-    emergencyContact: {
-      name: '이부모',
-      phone: '010-8888-2222',
-      relationship: '부모'
-    },
     status: 'active',
     startDate: '2024-01-10',
     lastVisit: '2024-01-19',
-    doctorId: 'doctor1',
     createdAt: '2024-01-10T10:00:00Z',
     updatedAt: '2024-01-19T16:45:00Z'
   },
@@ -68,51 +50,34 @@ const dummyCustomers: Customer[] = [
     name: '박회원',
     email: 'patient3@example.com',
     phone: '010-5555-7777',
-    birthDate: '1992-12-03',
+    dateOfBirth: '1992-12-03',
     gender: 'female',
     height: 160,
     initialWeight: 60,
     currentWeight: 50,
     targetWeight: 50,
     address: '서울시 송파구 올림픽로 789',
-    medicalHistory: '없음',
-    allergies: '없음',
-    medications: '없음',
-    emergencyContact: {
-      name: '박형제',
-      phone: '010-7777-3333',
-      relationship: '형제자매'
-    },
     status: 'completed',
     startDate: '2024-01-05',
     lastVisit: '2024-01-18',
-    doctorId: 'doctor1',
     createdAt: '2024-01-05T11:00:00Z',
     updatedAt: '2024-01-18T12:00:00Z'
   },
   {
     id: 'customer-4',
     name: '최사용자',
+    email: 'customer4@example.com',
     phone: '010-3333-4444',
-    birthDate: '1988-03-18',
+    dateOfBirth: '1988-03-18',
     gender: 'male',
     height: 180,
     initialWeight: 90,
     currentWeight: 90,
     targetWeight: 75,
     address: '서울시 마포구 홍대입구로 321',
-    medicalHistory: '없음',
-    allergies: '없음',
-    medications: '없음',
-    emergencyContact: {
-      name: '최친구',
-      phone: '010-6666-4444',
-      relationship: '친구'
-    },
     status: 'inactive',
     startDate: '2024-01-20',
     lastVisit: '2024-01-20',
-    doctorId: 'doctor1',
     createdAt: '2024-01-20T13:00:00Z',
     updatedAt: '2024-01-20T13:00:00Z'
   }
@@ -299,9 +264,7 @@ export const customerService = {
     )
 
     const updates = {
-      currentWeight: weight,
-      lastWeightUpdate: new Date().toISOString(),
-      progress: Math.round(progress * 10) / 10
+      currentWeight: weight
     }
 
     return this.updateCustomer(id, updates)
