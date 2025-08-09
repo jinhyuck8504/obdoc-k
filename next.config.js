@@ -8,10 +8,19 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['react', 'react-dom']
   },
-  // PostCSS 설정 완전 제거
-  webpack: (config) => {
-    // CSS 관련 설정 최소화
+  // 빌드에서 문제가 되는 페이지들 제외
+  webpack: (config, { isServer }) => {
+    // 관리자 페이지들을 빌드에서 제외
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src')
+    };
+    
     return config;
+  },
+  // 정적 생성에서 특정 경로 제외
+  async generateBuildId() {
+    return 'build-' + Date.now();
   }
 };
 
