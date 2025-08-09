@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Search, Filter, Users, TrendingDown, Target, Activity } from 'lucide-react'
+// Removed lucide-react dependency - using emoji icons instead
 import CustomerList from './CustomerList'
 import CustomerForm from './CustomerForm'
 import CustomerDetail from './CustomerDetail'
@@ -204,7 +204,7 @@ export default function CustomerManagement() {
             onClick={handleAddCustomer}
             className="mt-3 sm:mt-0 inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <span className="mr-2">➕</span>
             새 고객 등록
           </button>
         </div>
@@ -218,7 +218,7 @@ export default function CustomerManagement() {
               <p className="text-blue-100 text-xs font-medium">전체 고객</p>
               <p className="text-2xl font-bold">{stats.total}</p>
             </div>
-            <Users className="h-6 w-6 text-blue-200" />
+            <span className="text-2xl text-blue-200">👥</span>
           </div>
         </div>
 
@@ -228,7 +228,7 @@ export default function CustomerManagement() {
               <p className="text-green-100 text-xs font-medium">활성 고객</p>
               <p className="text-2xl font-bold">{stats.active}</p>
             </div>
-            <Activity className="h-6 w-6 text-green-200" />
+            <span className="text-2xl text-green-200">📈</span>
           </div>
         </div>
 
@@ -238,7 +238,7 @@ export default function CustomerManagement() {
               <p className="text-purple-100 text-xs font-medium">목표 달성</p>
               <p className="text-2xl font-bold">{stats.completed}</p>
             </div>
-            <Target className="h-6 w-6 text-purple-200" />
+            <span className="text-2xl text-purple-200">🎯</span>
           </div>
         </div>
 
@@ -248,7 +248,7 @@ export default function CustomerManagement() {
               <p className="text-orange-100 text-xs font-medium">평균 진행률</p>
               <p className="text-2xl font-bold">{stats.averageProgress}%</p>
             </div>
-            <TrendingDown className="h-6 w-6 text-orange-200" />
+            <span className="text-2xl text-orange-200">📉</span>
           </div>
         </div>
       </div>
@@ -258,7 +258,7 @@ export default function CustomerManagement() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0 lg:space-x-4">
           {/* 검색 */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
             <input
               type="text"
               placeholder="고객명, 전화번호, 이메일로 검색"
@@ -271,7 +271,7 @@ export default function CustomerManagement() {
           {/* 필터 */}
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-500">🔽</span>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value as any }))}
