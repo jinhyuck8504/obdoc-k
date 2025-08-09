@@ -212,6 +212,29 @@ export async function toggleHospitalCodeStatus(
 }
 
 /**
+ * 병원 코드 삭제
+ */
+export async function deleteHospitalCode(
+  codeId: string,
+  doctorId: string
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('hospital_signup_codes')
+      .delete()
+      .eq('id', codeId)
+      .eq('doctor_id', doctorId)
+
+    if (error) {
+      throw new Error(`코드 삭제 실패: ${error.message}`)
+    }
+  } catch (error) {
+    console.error('Delete hospital code error:', error)
+    throw error
+  }
+}
+
+/**
  * 코드 사용 기록
  */
 export async function recordCodeUsage(
@@ -244,6 +267,11 @@ export async function recordCodeUsage(
     throw error
   }
 }
+
+/**
+ * 병원 코드 사용 기록 (별칭)
+ */
+export const recordHospitalCodeUsage = recordCodeUsage
 
 /**
  * 코드별 고객 목록 조회
