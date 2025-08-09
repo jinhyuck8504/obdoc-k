@@ -5,6 +5,17 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'date-fns'],
   },
 
+  // CSS 처리 비활성화
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // CSS 파일을 일반 파일로 처리
+    config.module.rules.push({
+      test: /\.css$/,
+      use: ['style-loader', 'css-loader'],
+    })
+
+    return config
+  },
+
   // 서버 외부 패키지 설정
   serverExternalPackages: ['@supabase/supabase-js'],
 
