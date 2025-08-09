@@ -1,10 +1,10 @@
 [build]
-  command = "npm run build"
-  publish = "out"
+  command = "cd obdoc-mvp && npm install && npm run build"
+  publish = "obdoc-mvp/out"
+  base = "."
 
 [build.environment]
   NODE_VERSION = "18"
-  NODE_ENV = "production"
 
 [[redirects]]
   from = "/*"
@@ -15,9 +15,6 @@
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-
-[functions]
-  directory = "netlify/functions"
