@@ -1,5 +1,5 @@
 {
-  "name": "obdoc-mvp",
+  "name": "obdoc-k",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -32,7 +32,6 @@
     "@hookform/resolvers": "^5.1.1",
     "@netlify/functions": "^4.2.1",
     "@sentry/nextjs": "^10.0.0",
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.52.1",
     "@types/crypto-js": "^4.2.2",
