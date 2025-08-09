@@ -1,77 +1,17 @@
-'use client';
-
-import AuthGuard from '@/components/auth/AuthGuard';
-
 export default function AdminPage() {
   return (
-    <AuthGuard requiredRole="admin">
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto py-8">
-          <div className="card">
-            <div className="card-header">
-              <h1 className="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
-            </div>
-            
-            <div className="card-body">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="card">
-                  <div className="card-body">
-                    <h3 className="text-lg font-semibold mb-2">사용자 관리</h3>
-                    <p className="text-gray-600 mb-4">시스템 사용자를 관리합니다.</p>
-                    <a href="/admin/users" className="btn btn-primary">
-                      사용자 관리
-                    </a>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-body">
-                    <h3 className="text-lg font-semibold mb-2">시스템 설정</h3>
-                    <p className="text-gray-600 mb-4">시스템 전반적인 설정을 관리합니다.</p>
-                    <a href="/admin/settings" className="btn btn-primary">
-                      설정 관리
-                    </a>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-body">
-                    <h3 className="text-lg font-semibold mb-2">통계</h3>
-                    <p className="text-gray-600 mb-4">시스템 사용 통계를 확인합니다.</p>
-                    <button className="btn btn-primary">
-                      통계 보기
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <div className="card">
-                  <div className="card-header">
-                    <h2 className="text-xl font-semibold">최근 활동</h2>
-                  </div>
-                  <div className="card-body">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between py-2 border-b">
-                        <span>새로운 사용자 등록</span>
-                        <span className="text-sm text-gray-500">2시간 전</span>
-                      </div>
-                      <div className="flex items-center justify-between py-2 border-b">
-                        <span>시스템 설정 변경</span>
-                        <span className="text-sm text-gray-500">5시간 전</span>
-                      </div>
-                      <div className="flex items-center justify-between py-2">
-                        <span>데이터베이스 백업 완료</span>
-                        <span className="text-sm text-gray-500">1일 전</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="card max-w-md w-full">
+        <div className="card-header">
+          <h1 className="text-2xl font-bold text-center">관리자 페이지</h1>
+        </div>
+        <div className="card-body text-center">
+          <p className="text-gray-600 mb-4">관리자 기능은 현재 개발 중입니다.</p>
+          <a href="/" className="btn btn-primary">
+            홈으로 돌아가기
+          </a>
         </div>
       </div>
-    </AuthGuard>
+    </div>
   );
 }
