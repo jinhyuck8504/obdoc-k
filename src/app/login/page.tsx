@@ -1,96 +1,76 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, UserPlus } from 'lucide-react'
-import Logo from '@/components/common/Logo'
-import LoginForm from '@/components/auth/LoginForm'
-import PasswordResetForm from '@/components/auth/PasswordResetForm'
+import { useState } from 'react';
 
 export default function LoginPage() {
-  const [showPasswordReset, setShowPasswordReset] = useState(false)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (showPasswordReset) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23e2e8f0%22%20fill-opacity%3D%220.4%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%221.5%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
-        
-        <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="w-full max-w-md">
-            <PasswordResetForm onBack={() => setShowPasswordReset(false)} />
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // 간단한 로그인 로직 (실제로는 API 호출)
+    setTimeout(() => {
+      setIsLoading(false);
+      alert('로그인 기능은 현재 개발 중입니다.');
+    }, 1000);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23e2e8f0%22%20fill-opacity%3D%220.4%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%221.5%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
-      
-      <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mb-6">
-              <Logo size="lg" showText={true} showSlogan={false} href="/" />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="card max-w-md w-full">
+        <div className="card-header text-center">
+          <h1 className="text-2xl font-bold text-gray-900">로그인</h1>
+          <p className="text-gray-600 mt-2">계정에 로그인하세요</p>
+        </div>
+        
+        <div className="card-body">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="form-label">이메일</label>
+              <input
+                type="email"
+                className="form-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="이메일을 입력하세요"
+                required
+              />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              다시 오신 것을 환영합니다
-            </h1>
-            <p className="text-gray-600">
-              Obdoc 계정으로 로그인하세요
-            </p>
-          </div>
-
-          {/* Login Form Card */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-            <LoginForm />
             
-            {/* Additional Actions */}
-            <div className="mt-6 space-y-4">
-              <div className="text-center">
-                <button
-                  onClick={() => setShowPasswordReset(true)}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
-                >
-                  비밀번호를 잊으셨나요?
-                </button>
-              </div>
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">또는</span>
-                </div>
-              </div>
-              
-              <Link
-                href="/signup"
-                className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-              >
-                <UserPlus className="h-5 w-5 mr-2" />
-                새 계정 만들기
-              </Link>
+            <div>
+              <label className="form-label">비밀번호</label>
+              <input
+                type="password"
+                className="form-input"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="비밀번호를 입력하세요"
+                required
+              />
             </div>
-          </div>
-
-          {/* Back to Home */}
-          <div className="text-center mt-6">
-            <Link
-              href="/"
-              className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
+            
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn btn-primary w-full"
             >
-              <ArrowLeft className="h-4 w-4 mr-1" />
+              {isLoading ? '로그인 중...' : '로그인'}
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center space-y-2">
+            <a href="/signup" className="text-blue-600 hover:text-blue-700 block">
+              계정이 없으신가요? 회원가입
+            </a>
+            <a href="/" className="text-gray-600 hover:text-gray-700 block">
               홈으로 돌아가기
-            </Link>
+            </a>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
