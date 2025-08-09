@@ -1,30 +1,54 @@
-# Dependencies
-node_modules/
-.pnp
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
 .pnp.js
 
-# Testing
-coverage/
+# testing
+/coverage
 
-# Next.js
-.next/
-out/
-build/
+# next.js
+/.next/
+/out/
 
-# Production
-dist/
+# production
+/build
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# misc
+.DS_Store
+*.pem
 
-# Debug logs
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+
+# Logs
+logs
+*.log
 
 # Runtime data
 pids
@@ -32,17 +56,18 @@ pids
 *.seed
 *.pid.lock
 
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
 # Optional npm cache directory
 .npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
 
 # Optional REPL history
 .node_repl_history
@@ -52,6 +77,15 @@ pids
 
 # Yarn Integrity file
 .yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+.env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -63,11 +97,11 @@ pids
 # nuxt.js build output
 .nuxt
 
-# vuepress build directory
+# vuepress build output
 .vuepress/dist
 
 # Serverless directories
-.serverless/
+.serverless
 
 # FuseBox cache
 .fusebox/
@@ -77,30 +111,3 @@ pids
 
 # TernJS port file
 .tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# Temporary folders
-tmp/
-temp/
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Logs
-logs
-*.log
