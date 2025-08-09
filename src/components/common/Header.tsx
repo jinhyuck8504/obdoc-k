@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { LogOut, User, Menu, X, LayoutDashboard, Users, Calendar, MessageCircle, Activity, Settings } from 'lucide-react'
+// Removed lucide-react dependency - using emoji icons instead
 import { useAuth } from '@/contexts/AuthContext'
 import { getNavigationItems, UserRole } from '@/lib/roleUtils'
 import Logo from './Logo'
@@ -27,15 +27,15 @@ export default function Header() {
     console.log('Filtered admin navigation items:', navigationItems)
   }
   
-  // 아이콘 매핑
-  const iconMap: { [key: string]: React.ComponentType<any> } = {
-    LayoutDashboard,
-    Users,
-    Calendar,
-    MessageCircle,
-    Activity,
-    Settings,
-    User
+  // 아이콘 매핑 (이모지로 대체)
+  const iconMap: { [key: string]: string } = {
+    LayoutDashboard: '📊',
+    Users: '👥',
+    Calendar: '📅',
+    MessageCircle: '💬',
+    Activity: '📈',
+    Settings: '⚙️',
+    User: '👤'
   }
 
   const handleLogout = async () => {
@@ -77,13 +77,13 @@ export default function Header() {
                 prefetch={false}
                 className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium flex items-center"
               >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
+                <span className="mr-2">📊</span>
                 대시보드
               </Link>
               
               {/* 전역 네비게이션 메뉴 */}
               {navigationItems.map((item) => {
-                const IconComponent = iconMap[item.icon] || User
+                const iconEmoji = iconMap[item.icon] || '👤'
                 return (
                   <Link
                     key={item.href}
@@ -91,7 +91,7 @@ export default function Header() {
                     prefetch={false}
                     className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium flex items-center"
                   >
-                    <IconComponent className="w-4 h-4 mr-2" />
+                    <span className="mr-2">{iconEmoji}</span>
                     {item.name}
                   </Link>
                 )
@@ -114,7 +114,7 @@ export default function Header() {
                   onClick={handleLogout}
                   className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-red-50"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <span>🚪</span>
                   <span>로그아웃</span>
                 </button>
               </>
@@ -143,9 +143,9 @@ export default function Header() {
               className="text-gray-700 hover:text-blue-600 p-2"
             >
               {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
+                <span className="text-xl">❌</span>
               ) : (
-                <Menu className="h-6 w-6" />
+                <span className="text-xl">☰</span>
               )}
             </button>
           </div>
@@ -176,13 +176,13 @@ export default function Header() {
                     className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md font-medium flex items-center"
                     onClick={closeMobileMenu}
                   >
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    <span className="mr-2">📊</span>
                     대시보드
                   </Link>
                   
                   {/* 전역 네비게이션 메뉴 */}
                   {navigationItems.map((item) => {
-                    const IconComponent = iconMap[item.icon] || User
+                    const iconEmoji = iconMap[item.icon] || '👤'
                     return (
                       <Link
                         key={item.href}
@@ -191,7 +191,7 @@ export default function Header() {
                         className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md font-medium flex items-center"
                         onClick={closeMobileMenu}
                       >
-                        <IconComponent className="w-4 h-4 mr-2" />
+                        <span className="mr-2">{iconEmoji}</span>
                         {item.name}
                       </Link>
                     )
@@ -202,7 +202,7 @@ export default function Header() {
                     onClick={handleLogout}
                     className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md font-medium flex items-center space-x-2"
                   >
-                    <LogOut className="h-5 w-5" />
+                    <span>🚪</span>
                     <span>로그아웃</span>
                   </button>
                 </>
