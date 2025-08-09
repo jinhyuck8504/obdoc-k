@@ -4,21 +4,8 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns'],
   },
-
-  // CSS 처리 비활성화
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // CSS 파일을 일반 파일로 처리
-    config.module.rules.push({
-      test: /\.css$/,
-      use: ['style-loader', 'css-loader'],
-    })
-
-    return config
-  },
-
   // 서버 외부 패키지 설정
   serverExternalPackages: ['@supabase/supabase-js'],
-
   // 이미지 최적화
   images: {
     formats: ['image/webp', 'image/avif'],
@@ -28,10 +15,8 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-
   // 압축 설정
   compress: true,
-
   // 헤더 최적화
   async headers() {
     return [
@@ -54,7 +39,6 @@ const nextConfig = {
       },
     ]
   },
-
   // 리다이렉트 최적화
   async redirects() {
     return [
@@ -65,7 +49,6 @@ const nextConfig = {
       },
     ]
   },
-
   // 빌드 설정
   eslint: {
     ignoreDuringBuilds: true,
@@ -73,7 +56,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-
   // 출력 설정
   output: 'standalone',
 }
