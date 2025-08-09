@@ -1,4 +1,4 @@
-import { WeightRecord, WeightGoal, HealthMetrics, WeightFormData, GoalFormData } from '@/types/health'
+import { WeightRecord, HealthMetrics, WeightFormData, GoalFormData } from '@/types/health'
 import { supabase } from './supabase'
 
 // 개발 환경 체크
@@ -11,7 +11,7 @@ const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
 let mockWeightRecords: WeightRecord[] = [
   {
     id: '1',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 70,
     date: '2024-01-01',
     note: '시작 체중',
@@ -20,7 +20,7 @@ let mockWeightRecords: WeightRecord[] = [
   },
   {
     id: '2',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 69.2,
     date: '2024-01-07',
     note: '첫 주 결과',
@@ -29,7 +29,7 @@ let mockWeightRecords: WeightRecord[] = [
   },
   {
     id: '3',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 68.1,
     date: '2024-01-14',
     note: '꾸준한 감소',
@@ -38,7 +38,7 @@ let mockWeightRecords: WeightRecord[] = [
   },
   {
     id: '4',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 66.8,
     date: '2024-01-21',
     note: '목표 달성 중',
@@ -47,7 +47,7 @@ let mockWeightRecords: WeightRecord[] = [
   },
   {
     id: '5',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 65.5,
     date: '2024-01-28',
     note: '좋은 진전',
@@ -56,7 +56,7 @@ let mockWeightRecords: WeightRecord[] = [
   },
   {
     id: '6',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 65.2,
     date: '2024-02-04',
     note: '거의 목표 달성',
@@ -65,7 +65,7 @@ let mockWeightRecords: WeightRecord[] = [
   },
   {
     id: '7',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 65.1,
     date: '2024-02-11',
     note: '목표 근접',
@@ -74,7 +74,7 @@ let mockWeightRecords: WeightRecord[] = [
   },
   {
     id: '8',
-    patientId: 'patient-1',
+    customerId: 'patient-1',
     weight: 65,
     date: '2024-02-18',
     note: '목표 달성!',
@@ -82,6 +82,17 @@ let mockWeightRecords: WeightRecord[] = [
     updatedAt: '2024-02-18T00:00:00Z'
   }
 ]
+
+interface WeightGoal {
+  id: string
+  patientId: string
+  initialWeight: number
+  targetWeight: number
+  currentWeight: number
+  targetDate?: string
+  createdAt: string
+  updatedAt: string
+}
 
 let mockWeightGoals: WeightGoal[] = [
   {
@@ -104,7 +115,7 @@ export async function getWeightRecords(customerId: string): Promise<WeightRecord
     return new Promise((resolve) => {
       setTimeout(() => {
         const records = mockWeightRecords
-          .filter(record => record.patientId === customerId)
+          .filter(record => record.customerId === customerId)
           .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         resolve(records)
       }, 500)
@@ -122,7 +133,7 @@ export async function getWeightRecords(customerId: string): Promise<WeightRecord
 
     return data?.map(record => ({
       id: record.id,
-      patientId: record.patient_id,
+      customerId: record.patient_id,
       weight: record.weight,
       date: record.date,
       note: record.note,
@@ -183,7 +194,7 @@ export async function addWeightRecord(customerId: string, data: WeightFormData):
       setTimeout(() => {
         const newRecord: WeightRecord = {
           id: Date.now().toString(),
-          patientId: customerId,
+          customerId,
           weight: data.weight,
           date: data.date,
           note: data.note,
@@ -230,7 +241,7 @@ export async function addWeightRecord(customerId: string, data: WeightFormData):
 
     return {
       id: record.id,
-      patientId: record.patient_id,
+      customerId: record.patient_id,
       weight: record.weight,
       date: record.date,
       note: record.note,
@@ -324,6 +335,7 @@ export function calculateHealthMetrics(
 ): HealthMetrics {
   if (!goal || weightRecords.length === 0) {
     return {
+      customerId: '',
       currentWeight: 0,
       targetWeight: 0,
       initialWeight: 0,
@@ -332,7 +344,8 @@ export function calculateHealthMetrics(
       remainingWeight: 0,
       bmi: 0,
       targetBMI: 0,
-      height
+      height,
+      lastUpdated: new Date().toISOString()
     }
   }
 
@@ -349,6 +362,7 @@ export function calculateHealthMetrics(
   const targetBMI = targetWeight / Math.pow(height / 100, 2)
 
   return {
+    customerId: goal.patientId,
     currentWeight,
     targetWeight,
     initialWeight,
@@ -357,7 +371,8 @@ export function calculateHealthMetrics(
     remainingWeight,
     bmi,
     targetBMI,
-    height
+    height,
+    lastUpdated: goal.updatedAt
   }
 }
 
