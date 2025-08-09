@@ -126,7 +126,6 @@ export default function SignupForm() {
 
           // 검증 성공 시 코드 정보 저장 (나중에 사용 기록용)
           window.verifiedHospitalCode = result.code
-          setCodeVerified(true)
         } catch (error) {
           console.error('Hospital code verification error:', error)
           if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -326,6 +325,14 @@ export default function SignupForm() {
   const isDummySupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
+
+  // disabled 조건을 명확하게 boolean으로 계산
+  const isButtonDisabled = isSubmitting || (
+    selectedRole === 'customer' && 
+    hospitalCode && 
+    hospitalCode.length >= 8 && 
+    !codeVerified
+  )
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -571,7 +578,7 @@ export default function SignupForm() {
 
         <Button
           type="submit"
-          disabled={isSubmitting || (selectedRole === 'customer' && hospitalCode && hospitalCode.length >= 8 && !codeVerified)}
+          disabled={isButtonDisabled}
           className="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isSubmitting ? (
