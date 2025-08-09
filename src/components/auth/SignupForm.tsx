@@ -54,6 +54,7 @@ export default function SignupForm() {
   const [signupSuccess, setSignupSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [hospitalCode, setHospitalCode] = useState('')
   const [codeVerified, setCodeVerified] = useState(false)
 
   const {
@@ -70,7 +71,6 @@ export default function SignupForm() {
   })
 
   const selectedRole = watch('role')
-  const hospitalCode = watch('hospitalCode')
 
   // URL 파라미터에서 플랜 정보 읽기
   useEffect(() => {
@@ -79,6 +79,12 @@ export default function SignupForm() {
       setValue('subscriptionPlan', planParam as '1month' | '6months' | '12months')
     }
   }, [searchParams, setValue])
+
+  // 버튼 비활성화 조건을 명확한 boolean으로 계산
+  const isButtonDisabled = Boolean(
+    isSubmitting || 
+    (selectedRole === 'customer' && hospitalCode && hospitalCode.length >= 8 && !codeVerified)
+  )
 
   const onSubmit = async (data: SignupFormData) => {
     try {
@@ -126,7 +132,6 @@ export default function SignupForm() {
 
           // 검증 성공 시 코드 정보 저장 (나중에 사용 기록용)
           window.verifiedHospitalCode = result.code
-          setCodeVerified(true)
         } catch (error) {
           console.error('Hospital code verification error:', error)
           if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -327,14 +332,6 @@ export default function SignupForm() {
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy-project') ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
-  // disabled 조건을 명확하게 boolean으로 변환
-  const isButtonDisabled = isSubmitting || (
-    selectedRole === 'customer' && 
-    hospitalCode && 
-    hospitalCode.trim().length >= 8 && 
-    !codeVerified
-  )
-
   return (
     <div className="w-full max-w-md mx-auto">
       {/* 개발 모드 안내 */}
@@ -518,6 +515,8 @@ export default function SignupForm() {
                   type="text"
                   id="hospitalCode"
                   placeholder="병원에서 제공받은 가입 코드를 입력하세요"
+                  value={hospitalCode}
+                  onChange={(e) => setHospitalCode(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 />
               </div>
