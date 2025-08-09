@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { X, Save, Target, Calendar, AlertCircle } from 'lucide-react'
+// Removed lucide-react dependency - using emoji icons instead
 import { GoalFormData, HealthMetrics } from '@/types/health'
 
 interface GoalSettingModalProps {
@@ -100,14 +100,14 @@ export default function GoalSettingModal({
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
-            <Target className="w-5 h-5 text-green-600" />
+            <span className="text-green-600">🎯</span>
             <h3 className="text-lg font-semibold text-gray-900">목표 설정</h3>
           </div>
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 rounded"
           >
-            <X className="w-5 h-5" />
+            <span>❌</span>
           </button>
         </div>
 
@@ -135,7 +135,7 @@ export default function GoalSettingModal({
               목표 체중 (kg) <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🎯</span>
               <input
                 type="number"
                 step="0.1"
@@ -160,7 +160,7 @@ export default function GoalSettingModal({
               목표 달성 날짜 (선택사항)
             </label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📅</span>
               <input
                 type="date"
                 value={formData.targetDate}
@@ -210,7 +210,7 @@ export default function GoalSettingModal({
               </div>
               {!isHealthyTarget && (
                 <div className="mt-3 flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-orange-600 mt-0.5 flex-shrink-0">⚠️</span>
                   <p className="text-xs text-orange-800">
                     {targetBMI < 18.5 
                       ? '목표 체중이 너무 낮을 수 있습니다. 건강한 체중 범위를 고려해보세요.'
@@ -236,7 +236,7 @@ export default function GoalSettingModal({
               disabled={isSubmitting}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg transition-colors flex items-center"
             >
-              <Save className="w-4 h-4 mr-2" />
+              <span className="mr-2">💾</span>
               {isSubmitting ? '저장 중...' : '목표 설정'}
             </button>
           </div>
