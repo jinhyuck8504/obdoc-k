@@ -327,11 +327,12 @@ export default function SignupForm() {
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your_supabase_url_here')
 
   // disabled 조건을 명확하게 boolean으로 계산
-  const isButtonDisabled = isSubmitting || (
-    selectedRole === 'customer' && 
-    hospitalCode && 
-    hospitalCode.length >= 8 && 
-    !codeVerified
+  const isButtonDisabled = Boolean(
+    isSubmitting || 
+    (selectedRole === 'customer' && 
+     hospitalCode && 
+     hospitalCode.length >= 8 && 
+     !codeVerified)
   )
 
   return (
