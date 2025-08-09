@@ -1,29 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // PostCSS 완전 비활성화
+  // 실험적 기능
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns'],
-  },
-
-  // CSS 처리 비활성화
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // PostCSS 로더 제거
-    config.module.rules.forEach((rule) => {
-      if (rule.oneOf) {
-        rule.oneOf.forEach((oneOf) => {
-          if (oneOf.use && Array.isArray(oneOf.use)) {
-            oneOf.use = oneOf.use.filter((use) => {
-              if (typeof use === 'object' && use.loader) {
-                return !use.loader.includes('postcss-loader')
-              }
-              return true
-            })
-          }
-        })
-      }
-    })
-
-    return config
   },
 
   // 서버 외부 패키지 설정
